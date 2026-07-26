@@ -1,0 +1,19 @@
+{
+  "name": "amazon-ungate-checker",
+  "version": "1.0.0",
+  "description": "Bulk auto-check Amazon ASIN ungating eligibility via SP-API",
+  "main": "checker.js",
+  "scripts": {
+    "check": "node checker.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.0",
+    "express": "^5.2.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

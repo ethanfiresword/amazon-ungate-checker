@@ -1,0 +1,1495 @@
+{
+  "anetik_apparel": {
+    "brand": "ANETIK",
+    "verifiedBrand": "Anetik",
+    "matchedAsin": "B09JNTBVZJ",
+    "amazonTitle": "[Anetik] Anetik Low Pro Tech LS Tee DarkOliveHeather M - Men's Fashion Casual Long Sleeve Shirts Cotton Shirts - Regular Fit - Lifestyle Beach Apparel",
+    "status": "ungated",
+    "reasonCode": "",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "safe_ungated"
+  },
+  "artisan collection by reprime_apparel": {
+    "brand": "Artisan Collection by Reprime",
+    "verifiedBrand": "Artisan Collection by Reprime",
+    "matchedAsin": "B07P1SLSV6",
+    "amazonTitle": "[Artisan Collection by Reprime] Men's Microcheck Gingham Long-Sleeve Cotton Shirt M RED/WHITE",
+    "status": "ungated",
+    "reasonCode": "",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "safe_ungated"
+  },
+  "alpine fleece_apparel": {
+    "brand": "Alpine Fleece",
+    "verifiedBrand": "Vortex",
+    "matchedAsin": "B0FKVWZT9J",
+    "amazonTitle": "[Vortex] Vortex Men's Alpine Continental Short Sleeve T-Shirts (US, Alpha, Large, Regular, Regular, Polar Night)",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "alleson athletic_apparel": {
+    "brand": "Alleson Athletic",
+    "verifiedBrand": "Alleson Athletic",
+    "matchedAsin": "B079G4M9BS",
+    "amazonTitle": "[Alleson Athletic] Alleson Athletic Unisex-Teen Youth Tech Crew Neck Tshirt, Scarlet, Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "allpro_apparel": {
+    "brand": "AllPro",
+    "verifiedBrand": "Holloway",
+    "matchedAsin": "B0F8BWLJXC",
+    "amazonTitle": "[Holloway] Holloway WNBA Seattle Storm All-Pro Tee - Lightweight Basketball Shirt, Perfect for Athletes & Sports Fan, Multi, Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "adams headwear_apparel": {
+    "brand": "Adams Headwear",
+    "verifiedBrand": "Syuesyinihoot",
+    "matchedAsin": "B0DZN1YWPB",
+    "amazonTitle": "[Syuesyinihoot] Men's T-Shirts Name Adam Gift Embroidered Classics Crewneck Cotton Short Sleeve T Shirt (Black,Large)",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "adidas_apparel": {
+    "brand": "Adidas",
+    "verifiedBrand": "adidas",
+    "matchedAsin": "B0F4QDYJLH",
+    "amazonTitle": "[adidas] adidas Men's Workout Essentials Feel Ready T-Shirt, Black, XX-Large",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "bagedge_apparel": {
+    "brand": "BAGedge",
+    "verifiedBrand": "Bayside",
+    "matchedAsin": "B004SWNEDG",
+    "amazonTitle": "[Bayside] Bagedge BE080 Polyester Zip Tote - Red - OS",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "atlantis headwear_apparel": {
+    "brand": "Atlantis Headwear",
+    "verifiedBrand": "Vintage Atlantis Bahamas Skyline Tees",
+    "matchedAsin": "B0FHMBWY72",
+    "amazonTitle": "[Vintage Atlantis Bahamas Skyline Tees] Vintage Atlantis Bahamas Skyline Beach Souvenir T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "augusta sportswear_apparel": {
+    "brand": "Augusta Sportswear",
+    "verifiedBrand": "Augusta Sportswear",
+    "matchedAsin": "B003XGEE4Q",
+    "amazonTitle": "[Augusta Sportswear] Augusta Sportswear Mens Ringer T-Shirt â€“ Soft Jersey Knit Tee with Contrast Collar, Cuffs, and Classic Set-in Sleeves 4Q White/Navy",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "american apparel_apparel": {
+    "brand": "American Apparel",
+    "verifiedBrand": "American Apparel",
+    "matchedAsin": "B07WT5DZKL",
+    "amazonTitle": "[American Apparel] American Apparel Unisex Fine Jersey T-Shirt, Style G2001, Multipack, Black (2-Pack), Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "authentic pigment_apparel": {
+    "brand": "Authentic Pigment",
+    "verifiedBrand": "Authentic Pigment",
+    "matchedAsin": "B014WC9KKM",
+    "amazonTitle": "[Authentic Pigment] Authentic Pigment Men's Xtrafine Pocket T-Shirt, Mustard, Small",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "bayside_apparel": {
+    "brand": "Bayside",
+    "verifiedBrand": "Bayside",
+    "matchedAsin": "B019C0B48K",
+    "amazonTitle": "[Bayside] Bayside Apparel 6.1 oz. Basic T-Shirt (BA5100) Black, L",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "badger_apparel": {
+    "brand": "Badger",
+    "verifiedBrand": "UrbanThread",
+    "matchedAsin": "B0GQ3NPW1X",
+    "amazonTitle": "[UrbanThread] Badgers Vintage Gift for Men Women Boys Girls Kids T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "bulwark_apparel": {
+    "brand": "Bulwark",
+    "verifiedBrand": "Bulwark FR",
+    "matchedAsin": "B0FW1YBWNH",
+    "amazonTitle": "[Bulwark FR] Bulwark FR Men's Flame Resistant Flex Knit Tee, Black, Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "berne apparel_apparel": {
+    "brand": "Berne Apparel",
+    "verifiedBrand": "Berne",
+    "matchedAsin": "B08FM8SKDX",
+    "amazonTitle": "[Berne] Berne Men's Lightweight Performance Short Sleeve Pocket T-Shirt, X-Large Regular, Space Blue",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "carmel towel company_apparel": {
+    "brand": "Carmel Towel Company",
+    "verifiedBrand": "California Local Apparel",
+    "matchedAsin": "B0F1VV5VTZ",
+    "amazonTitle": "[California Local Apparel] Carmel-By-The-Sea California | Carmel-By-The-Sea CA Print T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "bella + canvas_apparel": {
+    "brand": "BELLA + CANVAS",
+    "verifiedBrand": "Bella + Canvas",
+    "matchedAsin": "B00L8A62PI",
+    "amazonTitle": "[Bella + Canvas] BELLA+CANVAS Men's Tri-Blend Tee - GR Triblend - XL",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "boxercraft_apparel": {
+    "brand": "Boxercraft",
+    "verifiedBrand": "boxercraft",
+    "matchedAsin": "B012HLCIIG",
+    "amazonTitle": "[boxercraft] boxercraft Pom Pom Pullover Jersey T14, Adult Sizes, White, X-Small",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "c2 sport_apparel": {
+    "brand": "C2 Sport",
+    "verifiedBrand": "C2 Sport",
+    "matchedAsin": "B00BBW8VMA",
+    "amazonTitle": "[C2 Sport] C2 Sport Men's Athletic Performance T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "big accessories_apparel": {
+    "brand": "Big Accessories",
+    "verifiedBrand": "Delivery Driver Gift & Delivery Driver Accessories",
+    "matchedAsin": "B0CXN6X3G5",
+    "amazonTitle": "[Delivery Driver Gift & Delivery Driver Accessories] Delivery Driver Supplier Package Grocery Deliveries T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "comfort colors_apparel": {
+    "brand": "Comfort Colors",
+    "verifiedBrand": "Comfort Colors",
+    "matchedAsin": "B07M8NV1ZJ",
+    "amazonTitle": "[Comfort Colors] Comfort Colors Adult Short Sleeve Tee, Style G1717, Black (1-pack), Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "champion_apparel": {
+    "brand": "Champion",
+    "verifiedBrand": "Champion",
+    "matchedAsin": "B09PF6Q6YV",
+    "amazonTitle": "[Champion] Champion Men's Everyday Cotton Stretch Boxer Briefs",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "colortone_apparel": {
+    "brand": "Colortone",
+    "verifiedBrand": "Colortone",
+    "matchedAsin": "B084SQ322F",
+    "amazonTitle": "[Colortone] Colortone 100% Cotton Tie Dye T-Shirt for Women and Men, X-Large, Cotton Candy",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "comfortwash by hanes_apparel": {
+    "brand": "ComfortWash by Hanes",
+    "verifiedBrand": "Hanes",
+    "matchedAsin": "B077YFMQ1X",
+    "amazonTitle": "[Hanes] Men's 5.5 oz., 100% Ringspun Cotton Garment-Dyed T-Shirt M CONCRETE",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "classic caps_apparel": {
+    "brand": "Classic Caps",
+    "verifiedBrand": "UNCLECAT",
+    "matchedAsin": "B0FXM82JF6",
+    "amazonTitle": "[UNCLECAT] UNCLECAT Womens Crop Tops Cap Sleeve Cropped T Shirts Crewneck Loose Fit Short Sleeves Tee Summer Fashion Clothes HS0L Black",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "code five_apparel": {
+    "brand": "Code Five",
+    "verifiedBrand": "CODE FIVE",
+    "matchedAsin": "B07TCQVP5C",
+    "amazonTitle": "[CODE FIVE] CODE FIVE Adult Unisex 100% Cotton Camouflage Crew Neck Short Sleeve Tee (Medium, Green Woodland)",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "columbia_apparel": {
+    "brand": "Columbia",
+    "verifiedBrand": "Columbia",
+    "matchedAsin": "B096DBP8F3",
+    "amazonTitle": "[Columbia] Columbia Mens Thistletown Hills Short Sleeve T-Shirt, City Grey Heather, Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "core365_apparel": {
+    "brand": "CORE365",
+    "verifiedBrand": "Core 365",
+    "matchedAsin": "B083VZ95XC",
+    "amazonTitle": "[Core 365] Core 365 Adult Fusion ChromaSoft™ Performance T-Shirt XL CARBON",
+    "status": "ungated",
+    "reasonCode": "",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "safe_ungated"
+  },
+  "devon & jones_apparel": {
+    "brand": "Devon & Jones",
+    "verifiedBrand": "Devon & Jones",
+    "matchedAsin": "B01G5QMFBE",
+    "amazonTitle": "[Devon & Jones] Devon & Jones Men's Pima Pique Polo Shirt, White, Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "chef designs_apparel": {
+    "brand": "Chef Designs",
+    "verifiedBrand": "Chef Designs",
+    "matchedAsin": "B007EWYZXK",
+    "amazonTitle": "[Chef Designs] Chef Designs mens Cook Shirt, Black, X-Large US",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "doggie skins_apparel": {
+    "brand": "Doggie Skins",
+    "verifiedBrand": "Doggie Skins",
+    "matchedAsin": "B09HJNXLRD",
+    "amazonTitle": "[Doggie Skins] Doggie Skins 100% Combed Ringspun Cotton 1x1 Baby Rib Dog Tank Top, Granite Heather, Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "dickies_apparel": {
+    "brand": "Dickies",
+    "verifiedBrand": "Dickies",
+    "matchedAsin": "B00B6EDXG2",
+    "amazonTitle": "[Dickies] Dickies Mens Heavyweight Crew Neck Short Sleeve Tee Shirt, Dark Navy, Large US",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "dri duck_apparel": {
+    "brand": "DRI DUCK",
+    "verifiedBrand": "DRI Duck",
+    "matchedAsin": "B09VBC3BBG",
+    "amazonTitle": "[DRI Duck] DRI DUCK - Crossroad Woven Shirt - 4441 - L - Grey",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "econscious_apparel": {
+    "brand": "econscious",
+    "verifiedBrand": "econscious",
+    "matchedAsin": "B0018ZF5C4",
+    "amazonTitle": "[econscious] econscious Unisex Standard 100% Cotton Short Sleeve Fashion Tee, Loden, Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "fairway & greene_apparel": {
+    "brand": "Fairway & Greene",
+    "verifiedBrand": "Fairway & Greene",
+    "matchedAsin": "B00MFMS9PY",
+    "amazonTitle": "[Fairway & Greene] Fairway & Greene Longsleeve, Marine, Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "flexfit_apparel": {
+    "brand": "Flexfit",
+    "verifiedBrand": "Flexfit",
+    "matchedAsin": "B00HLWQ77U",
+    "amazonTitle": "[Flexfit] Flex fit Flexfit Wooly Combed T-Shirt, Darkgrey, S/M",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "harriton_apparel": {
+    "brand": "Harriton",
+    "verifiedBrand": "Harriton",
+    "matchedAsin": "B00VZD8H4W",
+    "amazonTitle": "[Harriton] Harriton 4.2 oz. Athletic Sport T-Shirt (M320Y) Dark Green, M",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "hanes_apparel": {
+    "brand": "Hanes",
+    "verifiedBrand": "Hanes",
+    "matchedAsin": "B00L6PI71W",
+    "amazonTitle": "[Hanes] Hanes Mens Undershirt Packs, Stay-tucked Soft Cotton Best For Men, White/Black/Asstd Multipacks Base Layer, White - 6 Pack, X-Large US",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "gildan_apparel": {
+    "brand": "Gildan",
+    "verifiedBrand": "Gildan",
+    "matchedAsin": "B07CX29FLX",
+    "amazonTitle": "[Gildan] Gildan Men's Crew T-Shirts, Multipack, Style G1100, White (12-Pack), Medium",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "holloway_apparel": {
+    "brand": "Holloway",
+    "verifiedBrand": "Holloway",
+    "matchedAsin": "B08MT8SN8P",
+    "amazonTitle": "[Holloway] Holloway Sportswear Momentum Tee L Vegas Gold",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "huk_apparel": {
+    "brand": "HUK",
+    "verifiedBrand": "HUK",
+    "matchedAsin": "B0FHMYQ26F",
+    "amazonTitle": "[HUK] HUK Mens Short Sleeve Performance Tee, Fishing T-Shirt for Men, Huk and Bars - Cerulean, Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "independent trading co._apparel": {
+    "brand": "Independent Trading Co.",
+    "verifiedBrand": "Independent Trading Co.",
+    "matchedAsin": "B00DLFTCNW",
+    "amazonTitle": "[Independent Trading Co.] Independent Trading Co. Midweight Hood Sweatshirt SS4500-Black-LG",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "infinity her_apparel": {
+    "brand": "Infinity Her",
+    "verifiedBrand": "Peach Fizz Designs",
+    "matchedAsin": "B07DKWJYN4",
+    "amazonTitle": "[Peach Fizz Designs] Infinite Love Infinity Symbol Short-Sleeved T-Shirt T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "j. america_apparel": {
+    "brand": "J. America",
+    "verifiedBrand": "J. America",
+    "matchedAsin": "B07DP44MPN",
+    "amazonTitle": "[J. America] J America Adult Sport Lace Hood M ASH HEATHER",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "kastlfel_apparel": {
+    "brand": "Kastlfel",
+    "verifiedBrand": "Kastlfel",
+    "matchedAsin": "B0BGNB7YNW",
+    "amazonTitle": "[Kastlfel] Kastlfel Womens RecycledSoft T-Shirt, S, Midnight",
+    "status": "ungated",
+    "reasonCode": "",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "safe_ungated"
+  },
+  "jaanuu_apparel": {
+    "brand": "Jaanuu",
+    "verifiedBrand": "JAANUU",
+    "matchedAsin": "B0DCCFFPC4",
+    "amazonTitle": "[JAANUU] JAANUU Holmes Men's V-Neck 1-Pocket Scrub Top – UltraLAST Soft Stretch Fabric, Wrinkle & Fade Resistant, Durable Medical Workwear Top -Royal Blue,Small",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "jerzees_apparel": {
+    "brand": "JERZEES",
+    "verifiedBrand": "Jerzees",
+    "matchedAsin": "B00T7U957S",
+    "amazonTitle": "[Jerzees] Jerzees Men's Dri-Power Short Sleeve T-Shirt (Pocket & No, Pocket-3 Pack-Black, X-Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "kati_apparel": {
+    "brand": "Kati",
+    "verifiedBrand": "Funny Forename Kat Given Name Gift Ideas",
+    "matchedAsin": "B09V5R9V34",
+    "amazonTitle": "[Funny Forename Kat Given Name Gift Ideas] It's A Kat Thing You Wouldn't Understand First Name T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "kishigo_apparel": {
+    "brand": "Kishigo",
+    "verifiedBrand": "Kishigo",
+    "matchedAsin": "B00AU7YDY2",
+    "amazonTitle": "[Kishigo] Kishigo 9114 Polyester Black Series Class 2 T-Shirt, Large, Lime",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "liberty bags_apparel": {
+    "brand": "Liberty Bags",
+    "verifiedBrand": "Liberty Tshirts",
+    "matchedAsin": "B07CFQPXD9",
+    "amazonTitle": "[Liberty Tshirts] Statue of Liberty T-Shirt, Best Gift idea Tshirt T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "lat_apparel": {
+    "brand": "LAT",
+    "verifiedBrand": "LAT",
+    "matchedAsin": "B0CG9Y55MZ",
+    "amazonTitle": "[LAT] LAT Womens Relaxed Deep Crew Neck Drop Shoulder Short Sleeve Vintage Wash Jersey T-Shirt, Washed Gray, XL",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "imperial_apparel": {
+    "brand": "Imperial",
+    "verifiedBrand": "POLO RALPH LAUREN",
+    "matchedAsin": "B085QPL9LB",
+    "amazonTitle": "POLO RALPH LAUREN Mens Jersey Knit Hoodie Tee (White/Navy, Medium) at Amazon Men’s Clothing store",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "legacy_apparel": {
+    "brand": "LEGACY",
+    "verifiedBrand": "Legacy Personalized Name Apparel Cld.",
+    "matchedAsin": "B0GK5P5BZD",
+    "amazonTitle": "[Legacy Personalized Name Apparel Cld.] Team Legacy Lifetime Member Funny Name Legacy T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "m&o_apparel": {
+    "brand": "M&O",
+    "verifiedBrand": "M&O",
+    "matchedAsin": "B08SR5HHKQ",
+    "amazonTitle": "[M&O] M&O - Gold Soft Touch T-Shirt - 4800 - L - Black",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "locale_apparel": {
+    "brand": "LOCALE",
+    "verifiedBrand": "Classic Retro Nature Forest Apparel",
+    "matchedAsin": "B0H8RB811Y",
+    "amazonTitle": "[Classic Retro Nature Forest Apparel] Nature Lover Respect The Locals Forest Wildlife Clothing T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "meret_apparel": {
+    "brand": "MERET",
+    "verifiedBrand": "Love Heart Meret Nametag",
+    "matchedAsin": "B0DKT8M9QY",
+    "amazonTitle": "[Love Heart Meret Nametag] Love Heart Meret Tee Grunge Vintage Style Black Meret T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "los angeles apparel_apparel": {
+    "brand": "Los Angeles Apparel",
+    "verifiedBrand": "LOS ANGELES APPAREL",
+    "matchedAsin": "B0CKG9B3P2",
+    "amazonTitle": "[LOS ANGELES APPAREL] The 1801-6.5oz Garment Dye Crew Neck T-Shirt, Durable USA Cotton Black",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "marmot_apparel": {
+    "brand": "Marmot",
+    "verifiedBrand": "MARMOT",
+    "matchedAsin": "B0F3NCDY8V",
+    "amazonTitle": "[MARMOT] MARMOT Men's Coastal Logo Short Sleeve T-Shirt, Nightfall Navy, X-Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "lane seven_apparel": {
+    "brand": "Lane Seven",
+    "verifiedBrand": "Lane Seven",
+    "matchedAsin": "B08T5TSCKD",
+    "amazonTitle": "[Lane Seven] Lane Seven Unisex Premium Pullover Hooded Sweatshirt XL Black : Clothing, Shoes &amp; Jewelry",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "nautica_apparel": {
+    "brand": "Nautica",
+    "verifiedBrand": "Nautica",
+    "matchedAsin": "B0DHBD88JF",
+    "amazonTitle": "[Nautica] Nautica Men's 4-Pack Cotton Limited Edition Crew Neck T-Shirts",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "nomadix_apparel": {
+    "brand": "Nomadix",
+    "verifiedBrand": "NOMAD",
+    "matchedAsin": "B09QNGBKC6",
+    "amazonTitle": "[NOMAD] Nomad Logo Tee | Short Sleeve Moisture-Wicking Hunting T-Shirt Black",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "ninja transfers_apparel": {
+    "brand": "Ninja Transfers",
+    "verifiedBrand": "IVF Embryo Mothers Fathers Day Gifts",
+    "matchedAsin": "B081TW5M2L",
+    "amazonTitle": "[IVF Embryo Mothers Fathers Day Gifts] IVF Gift Warrior Dad Ninja Transfer Day Infertility T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "high",
+      "label": "🔴 High IP Risk",
+      "warning": "Known aggressive IP Complaints & Brand Protection claims reported by sellers"
+    },
+    "overallVerdict": "restricted"
+  },
+  "oad_apparel": {
+    "brand": "OAD",
+    "verifiedBrand": "Outdoor Adventure Offroad Off-oad Cars Enthusiasts",
+    "matchedAsin": "B0FR3KYPWG",
+    "amazonTitle": "[Outdoor Adventure Offroad Off-oad Cars Enthusiasts] When It Gets Hot My Top Comes Off Fun T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "north end_apparel": {
+    "brand": "North End",
+    "verifiedBrand": "Boston North End Little Italy Italian Neighborhood",
+    "matchedAsin": "B0CS9332KL",
+    "amazonTitle": "[Boston North End Little Italy Italian Neighborhood] Boston North End Italian Flag Little Italy Heritage 1890 T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "oakley_apparel": {
+    "brand": "Oakley",
+    "verifiedBrand": "Oakley",
+    "matchedAsin": "B0DS97VKWC",
+    "amazonTitle": "[Oakley] Oakley Mens Icon Thermonuclear Protect Recycled Polo Shirt, Pacific, Large",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "mv sport_apparel": {
+    "brand": "MV Sport",
+    "verifiedBrand": "MV Sport",
+    "matchedAsin": "B0FFK67TC6",
+    "amazonTitle": "[Visit the MV Sport Store] MV Sport Mens Polo Shirts – Short Sleeve Terry Knit Cotton Polos for Men | Golf Shirt, Casual Workwear, Athletic Polo, Collared T-Shirt, Moisture-Wicking Men’s Shirts Vintage White at Amazon Men’s Clothing store",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "onna_apparel": {
+    "brand": "Onna",
+    "verifiedBrand": "Onna - Style",
+    "matchedAsin": "B0FLW8V1HB",
+    "amazonTitle": "[Onna - Style] Onna T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "paragon_apparel": {
+    "brand": "Paragon",
+    "verifiedBrand": "Paragon Pro Inc",
+    "matchedAsin": "B0FLYLLYFJ",
+    "amazonTitle": "[Paragon Pro Inc] Paragon Pro Inc 62-10200 Cooling Shirt, Paragon, Kink Free Water Tubing, Right Side Exit, Cotton, Short Sleeve, Black, X-Large, Each",
+    "status": "ungated",
+    "reasonCode": "",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "safe_ungated"
+  },
+  "puma golf_apparel": {
+    "brand": "Puma Golf",
+    "verifiedBrand": "PUMA",
+    "matchedAsin": "B0FHC2W5CR",
+    "amazonTitle": "[PUMA] PUMA X Volition Morse Men's Golf Polo Shirt, White Glow-Deep Navy, L",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "pukka_apparel": {
+    "brand": "Pukka",
+    "verifiedBrand": "Pukka",
+    "matchedAsin": "B0D5MFLFM2",
+    "amazonTitle": "[Pukka] Pukka Premium Herbal Tea Gift Set, 45 Organic Tea Bags with 9 Flavors",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "outdoor cap_apparel": {
+    "brand": "Outdoor Cap",
+    "verifiedBrand": "Bliwov",
+    "matchedAsin": "B0DXZD7RZ1",
+    "amazonTitle": "[Bliwov] Bliwov Womens Summer Tops Cap Sleeve Crew Neck Casual T Shirts Grey",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "next level_apparel": {
+    "brand": "Next Level",
+    "verifiedBrand": "The Next Level",
+    "matchedAsin": "B0FGG6KPH6",
+    "amazonTitle": "[The Next Level] Next Level Mens Premium Fitted CVC Crew-Tee (N6210) Black",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "rabbit skins_apparel": {
+    "brand": "Rabbit Skins",
+    "verifiedBrand": "RABBIT SKINS",
+    "matchedAsin": "B014WBYEXQ",
+    "amazonTitle": "[RABBIT SKINS] RABBIT SKINS 5.5 oz. Jersey Short-Sleeve T-Shirt (RS3301) White, 7",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "q-tees_apparel": {
+    "brand": "Q-Tees",
+    "verifiedBrand": "Big Letters of the Alphabet gifts",
+    "matchedAsin": "B09HSM9YDB",
+    "amazonTitle": "[Big Letters of the Alphabet gifts] Letter Q - City Skyline Q T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "red kap_apparel": {
+    "brand": "Red Kap",
+    "verifiedBrand": "Red Kap",
+    "matchedAsin": "B0CZ17T45L",
+    "amazonTitle": "[Red Kap] Red Kap Men's Standard Size Cooling Short Sleeve Pocket Tee, Crimson, X-Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "russell athletic_apparel": {
+    "brand": "Russell Athletic",
+    "verifiedBrand": "Russell Athletic",
+    "matchedAsin": "B00MOURT1W",
+    "amazonTitle": "[Russell Athletic] Russell Athletic Men's Short Sleeve Performance T-Shirt, True Red, Medium",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "realtree_apparel": {
+    "brand": "RealTree",
+    "verifiedBrand": "Realtree",
+    "matchedAsin": "B0FFQH44WK",
+    "amazonTitle": "[Realtree] Realtree Men's Short Sleeve Graphic Performance Tee, Moisture Wicking Lightweight T-Shirt for Hunting and Outdoor Lifestyle, Olive/Mountain Bars, Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "sublivie_apparel": {
+    "brand": "SubliVie",
+    "verifiedBrand": "Sublivie",
+    "matchedAsin": "B096CXF5WG",
+    "amazonTitle": "[Sublivie] Sublivie Adult Unisex 100% Polyester Crew Neck Short Sleeve Sublimation T-Shirt, Pack of 10- White, Medium",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "recover_apparel": {
+    "brand": "Recover",
+    "verifiedBrand": "Support Sobriety Sober Recovery",
+    "matchedAsin": "B09QM6GG3C",
+    "amazonTitle": "[Support Sobriety Sober Recovery] Sober Recover Sobriety Heartbeat EKG Pulse Abstinence T-Shirt : Clothing, Shoes &amp; Jewelry",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "richardson_apparel": {
+    "brand": "Richardson",
+    "verifiedBrand": "POLO RALPH LAUREN",
+    "matchedAsin": "B0G1MQLTNN",
+    "amazonTitle": "POLO RALPH LAUREN Men Long Sleeve Hoodied T-Shirt (Black, XL) at Amazon Men’s Clothing store",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "softshirts_apparel": {
+    "brand": "SoftShirts",
+    "verifiedBrand": "SoftShirts",
+    "matchedAsin": "B0FBM18VD1",
+    "amazonTitle": "[SoftShirts] Classic SoftShirts Men&#x27;s T-Shirt | Amazon.com",
+    "status": "ungated",
+    "reasonCode": "",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "safe_ungated"
+  },
+  "the game_apparel": {
+    "brand": "The Game",
+    "verifiedBrand": "Not Found on Amazon",
+    "matchedAsin": null,
+    "amazonTitle": "No Official Brand Product Found on Amazon",
+    "status": "no_match",
+    "hasApprovalRoute": false,
+    "reasonCode": "BRAND_NOT_FOUND",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "unknown"
+  },
+  "tasc performance inc_apparel": {
+    "brand": "TASC Performance Inc",
+    "verifiedBrand": "tasc Performance",
+    "matchedAsin": "B079XXN655",
+    "amazonTitle": "[tasc Performance] tasc Performance Carrollton T-Shirt, classic Navy, Large",
+    "status": "ungated",
+    "reasonCode": "",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "safe_ungated"
+  },
+  "sportsman_apparel": {
+    "brand": "Sportsman",
+    "verifiedBrand": "Cool Sportsman - Team Sports - Tournament Stuff",
+    "matchedAsin": "B09CD5W85S",
+    "amazonTitle": "[Cool Sportsman - Team Sports - Tournament Stuff] Kickball - New Kicks On The Block - Boy - Camp - Football T-Shirt : Clothing, Shoes &amp; Jewelry",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "shaka wear_apparel": {
+    "brand": "Shaka Wear",
+    "verifiedBrand": "Shaka Wear",
+    "matchedAsin": "B07R723W8N",
+    "amazonTitle": "[Visit the Shaka Wear Store] Shaka Wear 7.5oz Max Heavyweight Short Sleeve | Amazon.com",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "team 365_apparel": {
+    "brand": "Team 365",
+    "verifiedBrand": "Team 365",
+    "matchedAsin": "B079BNNML4",
+    "amazonTitle": "[Team 365] Team 365 Men's Zone Polo - TT51 - Black - Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "tridri_apparel": {
+    "brand": "TriDri",
+    "verifiedBrand": "Tri Dri",
+    "matchedAsin": "B0FJ7VS4Q7",
+    "amazonTitle": "[Tri Dri] TriDri Mens Performance Recycled T-Shirt (L) (White)",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "top of the world_apparel": {
+    "brand": "Top of the World",
+    "verifiedBrand": "American Apparel",
+    "matchedAsin": "B076DDMWGV",
+    "amazonTitle": "[American Apparel] Unisex Triblend Short Sleeve Track T-Shirt by American Apparel",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "tultex_apparel": {
+    "brand": "Tultex",
+    "verifiedBrand": "Tultex",
+    "matchedAsin": "B08WVP9HQP",
+    "amazonTitle": "[Tultex] Tultex Unisex Tee (Large, Black)",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "swannies_apparel": {
+    "brand": "Swannies",
+    "verifiedBrand": "Swannanoa NC Retro T-Shirts & Gifts",
+    "matchedAsin": "B0B82YY6WR",
+    "amazonTitle": "[Swannanoa NC Retro T-Shirts &amp; Gifts] Swannanoa North Carolina NC Vintage Athletic Sports Design T-Shirt : Clothing, Shoes &amp; Jewelry",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "ultraclub_apparel": {
+    "brand": "UltraClub",
+    "verifiedBrand": "ULTRACLUB",
+    "matchedAsin": "B00C22UW84",
+    "amazonTitle": "[ULTRACLUB] UltraClub Men's Cool & Dry Sport Performance Interlock T-Shirt XL GREY",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "unionwear_apparel": {
+    "brand": "Unionwear",
+    "verifiedBrand": "POLO RALPH LAUREN",
+    "matchedAsin": "B0G1MQLTNN",
+    "amazonTitle": "POLO RALPH LAUREN Men Long Sleeve Hoodied T-Shirt (Black, XL) at Amazon Men’s Clothing store",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "restricted"
+  },
+  "under armour_apparel": {
+    "brand": "Under Armour",
+    "verifiedBrand": "Under Armour",
+    "matchedAsin": "B0785VXRX2",
+    "amazonTitle": "[Under Armour] Under Armour Men's Tech 2.0 Short-Sleeve T-Shirt , Black (001)/Graphite, Large",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "high",
+      "label": "🔴 High IP Risk",
+      "warning": "Known aggressive IP Complaints & Brand Protection claims reported by sellers"
+    },
+    "overallVerdict": "restricted"
+  },
+  "valucap_apparel": {
+    "brand": "Valucap",
+    "verifiedBrand": "Valucap",
+    "matchedAsin": "B007KOD04C",
+    "amazonTitle": "[Valucap] Valucap Six Panel Bio-Washed Unstructured Cap, Butter, Adjustable",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "spyder_apparel": {
+    "brand": "Spyder",
+    "verifiedBrand": "Spyder",
+    "matchedAsin": "B0GLX6LGSB",
+    "amazonTitle": "[Visit the Spyder Store] Spyder Mens Performance Moisture Wicking Crew Neck Undershirts/Ultra Soft Stretch Sports T-Shirt(Black/Black/Black, Large) at Amazon Men’s Clothing store",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "threadfast apparel_apparel": {
+    "brand": "Threadfast Apparel",
+    "verifiedBrand": "Threadfast Apparel",
+    "matchedAsin": "B083VZQNKH",
+    "amazonTitle": "[Threadfast Apparel] Threadfast Apparel Unisex Ultimate Fleece Pullover Hooded Sweatshirt M NAVY",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "weatherproof_apparel": {
+    "brand": "Weatherproof",
+    "verifiedBrand": "Weatherproof Vintage",
+    "matchedAsin": "B0G27G1SH2",
+    "amazonTitle": "[Weatherproof Vintage] Weatherproof Vintage Boys' 4 Pack Variety Super Soft Stretchable Tee Short Sleeve Graphic T-Shirt, Olive Collection Set, Small",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "us blanks_apparel": {
+    "brand": "US Blanks",
+    "verifiedBrand": "American Apparel",
+    "matchedAsin": "B0C7Y5XM5Z",
+    "amazonTitle": "[American Apparel] American Apparel Unisex CVC T-Shirt, Style G2001CVC, 2-Pack, Black (2-Pack), X-Large",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  },
+  "vineyard vines_apparel": {
+    "brand": "vineyard vines",
+    "verifiedBrand": "vineyard vines",
+    "matchedAsin": "B0C15T272M",
+    "amazonTitle": "[vineyard vines] vineyard vines Mens Flag Whale Short Sleeve Pocket Tee T-Shirt, White Cap, XX-Large US",
+    "status": "gated",
+    "hasApprovalRoute": true,
+    "reasonCode": "APPROVAL_REQUIRED",
+    "ipRisk": {
+      "level": "low",
+      "label": "🟢 Low IP Risk",
+      "warning": "Standard wholesale reseller friendly"
+    },
+    "overallVerdict": "softgated"
+  }
+}
