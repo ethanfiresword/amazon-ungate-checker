@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Boxem Auto-Ungate & UPC Converter</title>
+  <title>Boxem Auto-Ungate & Wholesale Intelligence</title>
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,6 +26,9 @@
         </button>
         <button class="nav-tool-btn" data-tool="converter">
           <span>🏷️ UPC to ASIN Converter</span>
+        </button>
+        <button class="nav-tool-btn" data-tool="feasibility">
+          <span>🤝 Wholesale Feasibility & B2B Outreach</span>
         </button>
       </nav>
 
@@ -331,6 +334,135 @@
             </table>
           </div>
         </div>
+      </section>
+    </div>
+
+    <!-- ================================================= -->
+    <!-- TOOL VIEW 3: WHOLESALE FEASIBILITY & B2B OUTREACH -->
+    <!-- ================================================= -->
+    <div id="tool-view-feasibility" class="tool-view" style="display: none;">
+      <!-- Header Hero -->
+      <section class="hero-section">
+        <h1 class="hero-title">Wholesale Feasibility & B2B Outreach</h1>
+        <p class="hero-subtitle">Analyze brand reputation, reseller rules, authorized distributors, invoice eligibility, and automate 1-click B2B sales outreach</p>
+      </section>
+
+      <!-- Input Card -->
+      <section class="card input-card">
+        <div class="manual-box" style="gap: 14px;">
+          <label for="feasibility-input" class="label" style="font-size: 1.05rem; font-weight: 700;">Enter ASIN, Barcode, or Brand Name</label>
+          <div style="display: flex; gap: 12px; width: 100%;">
+            <input type="text" id="feasibility-input" class="search-input" style="flex: 1; padding: 14px 18px; font-size: 1.05rem; font-family: 'JetBrains Mono', monospace;" placeholder="e.g. Anker, LEGO, Burt's Bees, B08N5WRWNW, or 848061074719..." />
+            <button class="btn btn-primary btn-lg" id="btn-check-feasibility" style="white-space: nowrap;">
+              <span>🤝 Analyze Feasibility</span>
+            </button>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">
+            <span>Try sample brands:</span>
+            <button class="btn btn-secondary btn-sm sample-brand-btn" data-brand="Anker">Anker</button>
+            <button class="btn btn-secondary btn-sm sample-brand-btn" data-brand="LEGO">LEGO</button>
+            <button class="btn btn-secondary btn-sm sample-brand-btn" data-brand="Burt's Bees">Burt's Bees</button>
+            <button class="btn btn-secondary btn-sm sample-brand-btn" data-brand="Nike">Nike (Restricted Ex.)</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Feasibility Results Display -->
+      <section id="feasibility-results" style="display: none; flex-direction: column; gap: 24px;">
+        
+        <!-- 4-Point Criteria Scorecards Grid -->
+        <div class="stats-row" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+          
+          <!-- Criteria 1: Overall Doable Product -->
+          <div class="stat-card" id="card-doable">
+            <div class="stat-icon" id="card-doable-icon">❓</div>
+            <div class="stat-content">
+              <div class="stat-value" id="card-doable-verdict" style="font-size: 1.3rem;">-</div>
+              <div class="stat-label" style="font-weight: 700; color: var(--text-primary);">1. Overall Doable Product</div>
+              <div id="card-doable-reason" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">-</div>
+            </div>
+          </div>
+
+          <!-- Criteria 2: Amazon Resellers Allowed -->
+          <div class="stat-card" id="card-resellers">
+            <div class="stat-icon" id="card-resellers-icon">❓</div>
+            <div class="stat-content">
+              <div class="stat-value" id="card-resellers-verdict" style="font-size: 1.3rem;">-</div>
+              <div class="stat-label" style="font-weight: 700; color: var(--text-primary);">2. Amazon Resellers Allowed</div>
+              <div id="card-resellers-policy" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">-</div>
+            </div>
+          </div>
+
+          <!-- Criteria 3: Authorized Distributors -->
+          <div class="stat-card" id="card-distributors">
+            <div class="stat-icon">🏢</div>
+            <div class="stat-content">
+              <div class="stat-value text-green" id="card-distributors-count">0</div>
+              <div class="stat-label" style="font-weight: 700; color: var(--text-primary);">3. Authorized Distributors</div>
+              <div id="card-distributors-list" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">-</div>
+            </div>
+          </div>
+
+          <!-- Criteria 4: Distributor Gives Valid Invoice -->
+          <div class="stat-card" id="card-invoice">
+            <div class="stat-icon" id="card-invoice-icon">📜</div>
+            <div class="stat-content">
+              <div class="stat-value" id="card-invoice-verdict" style="font-size: 1.3rem;">-</div>
+              <div class="stat-label" style="font-weight: 700; color: var(--text-primary);">4. Valid Amazon Invoice</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Itemized 10+ Unit Tax Invoice</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- CONDITIONAL: Automated 1-Click B2B Wholesale Email Pitch Card -->
+        <div class="card" id="b2b-email-card" style="display: none; padding: 24px; border: 1px solid var(--green); background: linear-gradient(180deg, rgba(34, 197, 94, 0.05), var(--bg-card));">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+            <div>
+              <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--green); display: flex; align-items: center; gap: 8px;">
+                <span>⚡ 1-Click B2B Wholesale Application Email</span>
+              </h2>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">
+                Product is 100% Doable & Resellers Allowed! Click below to send an automated B2B wholesale application pitch to their sales team.
+              </p>
+            </div>
+            <span class="badge badge-ungated" style="padding: 6px 12px; font-size: 0.85rem;">QUALIFIED FOR OUTREACH</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
+            <div>
+              <label class="label">Target Sales Email</label>
+              <select id="b2b-recipient-select" class="search-input" style="width: 100%; padding: 10px;"></select>
+            </div>
+            <div>
+              <label class="label">Your Company Name</label>
+              <input type="text" id="b2b-company-name" class="search-input" value="Werner Enterprise Wholesale LLC" style="width: 100%; padding: 10px;" />
+            </div>
+            <div>
+              <label class="label">Your Tax ID / EIN</label>
+              <input type="text" id="b2b-ein" class="search-input" value="XX-XXXXXXX" style="width: 100%; padding: 10px;" />
+            </div>
+            <div>
+              <label class="label">Your Contact Name</label>
+              <input type="text" id="b2b-contact-name" class="search-input" value="Ethan Werner, Purchasing Manager" style="width: 100%; padding: 10px;" />
+            </div>
+          </div>
+
+          <div>
+            <label class="label">Generated B2B Wholesale Application Pitch</label>
+            <textarea id="b2b-pitch-textarea" rows="7" style="width: 100%; padding: 14px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); font-family: inherit; font-size: 0.92rem; line-height: 1.6; resize: vertical;"></textarea>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 16px; justify-content: flex-end;">
+            <button class="btn btn-secondary btn-md" id="btn-copy-pitch">
+              <span>📋 Copy Pitch to Clipboard</span>
+            </button>
+            <button class="btn btn-primary btn-md" id="btn-send-email" style="background: linear-gradient(135deg, var(--green), #16a34a);">
+              <span>⚡ 1-Click Send Email (Mail/Outlook)</span>
+            </button>
+          </div>
+        </div>
+
       </section>
     </div>
 

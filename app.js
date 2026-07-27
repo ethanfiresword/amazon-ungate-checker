@@ -825,6 +825,195 @@
     });
   }
 
+  // Wholesale Feasibility State & Handlers
+  let currentFeasibilityData = null;
+
+  // Sample Brand Chips
+  $$('.sample-brand-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const brand = btn.dataset.brand;
+      $('#feasibility-input').value = brand;
+      runFeasibilityAnalysis(brand);
+    });
+  });
+
+  const btnCheckFeasibility = $('#btn-check-feasibility');
+  if (btnCheckFeasibility) {
+    btnCheckFeasibility.addEventListener('click', () => {
+      const val = $('#feasibility-input').value.trim();
+      if (!val) {
+        showToast('Please enter an ASIN, barcode, or brand name first', 'error');
+        return;
+      }
+      runFeasibilityAnalysis(val);
+    });
+  }
+
+  async function runFeasibilityAnalysis(inputVal) {
+    showToast(`Analyzing feasibility for "${inputVal}"...`, 'info');
+    try {
+      const res = await fetch('/api/check-feasibility', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: inputVal })
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText);
+      }
+
+      const data = await res.json();
+      currentFeasibilityData = data;
+      renderFeasibilityUI(data);
+      showToast(`Feasibility analysis complete for ${data.brandName}!`, 'success');
+
+    } catch (err) {
+      console.error('Feasibility error:', err);
+      showToast(`Feasibility error: ${err.message}`, 'error');
+    }
+  }
+
+  function renderFeasibilityUI(data) {
+    const resultsSec = $('#feasibility-results');
+    if (resultsSec) resultsSec.style.display = 'flex';
+
+    // 1. Overall Doable Verdict
+    const elDoable = $('#card-doable-verdict');
+    const elDoableIcon = $('#card-doable-icon');
+    const elDoableReason = $('#card-doable-reason');
+
+    if (data.overallDoable) {
+      elDoable.textContent = 'YES';
+      elDoable.className = 'stat-value text-green';
+      elDoableIcon.textContent = '✅';
+      elDoableReason.textContent = data.overallReason;
+    } else {
+      elDoable.textContent = 'NO';
+      elDoable.className = 'stat-value text-red';
+      elDoableIcon.textContent = '❌';
+      elDoableReason.textContent = data.overallReason;
+    }
+
+    // 2. Amazon Resellers Allowed Verdict
+    const elResellers = $('#card-resellers-verdict');
+    const elResellersIcon = $('#card-resellers-icon');
+    const elResellersPolicy = $('#card-resellers-policy');
+
+    if (data.resellersAllowed) {
+      elResellers.textContent = 'YES';
+      elResellers.className = 'stat-value text-green';
+      elResellersIcon.textContent = '✅';
+      elResellersPolicy.textContent = data.resellerPolicy;
+    } else {
+      elResellers.textContent = 'NO';
+      elResellers.className = 'stat-value text-red';
+      elResellersIcon.textContent = '❌';
+      elResellersPolicy.textContent = data.resellerPolicy;
+    }
+
+    // 3. Authorized Distributors
+    const elDistCount = $('#card-distributors-count');
+    const elDistList = $('#card-distributors-list');
+
+    elDistCount.textContent = data.distributors.length;
+    if (data.distributors.length > 0) {
+      elDistList.innerHTML = data.distributors.map(d => 
+        `<div style="margin-top: 2px;"><a href="${d.url}" target="_blank" style="color: var(--primary); text-decoration: underline;">${d.name}</a> (${d.email})</div>`
+      ).join('');
+    } else {
+      elDistList.textContent = 'No public wholesale distributors listed.';
+    }
+
+    // 4. Distributor Invoice Valid
+    const elInvoice = $('#card-invoice-verdict');
+    const elInvoiceIcon = $('#card-invoice-icon');
+
+    if (data.distributorInvoiceValid) {
+      elInvoice.textContent = 'YES';
+      elInvoice.className = 'stat-value text-green';
+      elInvoiceIcon.textContent = '✅';
+    } else {
+      elInvoice.textContent = 'NO';
+      elInvoice.className = 'stat-value text-red';
+      elInvoiceIcon.textContent = '❌';
+    }
+
+    // CONDITIONAL: B2B Outreach Email Card
+    const emailCard = $('#b2b-email-card');
+    if (data.shouldGenerateEmail) {
+      emailCard.style.display = 'block';
+
+      // Populate recipient select
+      const selectRecip = $('#b2b-recipient-select');
+      selectRecip.innerHTML = data.distributors.map(d => 
+        `<option value="${d.email}">${d.name} (${d.email})</option>`
+      ).join('');
+
+      updateB2bPitchText();
+    } else {
+      emailCard.style.display = 'none';
+    }
+  }
+
+  function updateB2bPitchText() {
+    if (!currentFeasibilityData) return;
+    const company = $('#b2b-company-name').value.trim() || '[Company Name]';
+    const ein = $('#b2b-ein').value.trim() || '[Tax ID / EIN]';
+    const contact = $('#b2b-contact-name').value.trim() || '[Your Name]';
+    const brand = currentFeasibilityData.brandName;
+
+    const pitch = `Hello Sales & Purchasing Team,
+
+My name is ${contact} representing ${company} (Tax ID / EIN: ${ein}).
+
+We are an established commercial retail & e-commerce distributor actively expanding our B2B wholesale catalog. We are looking to open a direct wholesale reseller account with your team to purchase itemized inventory for ${brand} products.
+
+Key Details of Our Business:
+- Business Entity: ${company}
+- EIN / Resell State Tax ID: ${ein}
+- Payment Terms: Pre-payment via Credit Card / ACH wire
+- Estimated Initial Order Value: $2,500 - $10,000+
+
+Could you please forward the new wholesale customer application form or put us in touch with a sales account representative? We are ready to submit our credit application and tax documentation immediately.
+
+Thank you,
+${contact}
+${company}`;
+
+    $('#b2b-pitch-textarea').value = pitch;
+  }
+
+  ['#b2b-company-name', '#b2b-ein', '#b2b-contact-name'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('input', updateB2bPitchText);
+  });
+
+  // Action: 1-Click Send Email
+  const btnSendEmail = $('#btn-send-email');
+  if (btnSendEmail) {
+    btnSendEmail.addEventListener('click', () => {
+      const recipient = $('#b2b-recipient-select').value;
+      const brand = currentFeasibilityData ? currentFeasibilityData.brandName : 'Wholesale Catalog';
+      const company = $('#b2b-company-name').value.trim();
+      const subject = encodeURIComponent(`B2B Wholesale Account Application - ${company} (${brand})`);
+      const body = encodeURIComponent($('#b2b-pitch-textarea').value);
+
+      window.location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
+      showToast('Opened your email client with pre-filled pitch!', 'success');
+    });
+  }
+
+  // Action: Copy Pitch
+  const btnCopyPitch = $('#btn-copy-pitch');
+  if (btnCopyPitch) {
+    btnCopyPitch.addEventListener('click', () => {
+      const pitchText = $('#b2b-pitch-textarea').value;
+      navigator.clipboard.writeText(pitchText);
+      showToast('B2B Wholesale Pitch copied to clipboard!', 'success');
+    });
+  }
+
   // Save / Remove event listeners for table buttons
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-save-link');
