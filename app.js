@@ -1057,19 +1057,6 @@ ${company}`;
     });
   }
 
-  // Action: Save Feasibility Result to History
-  const btnSaveFeas = $('#btn-save-feasibility');
-  if (btnSaveFeas) {
-    btnSaveFeas.addEventListener('click', () => {
-      if (!currentFeasibilityData) return;
-      const asin = currentFeasibilityData.asin || `BRAND_${currentFeasibilityData.brandName.toUpperCase().replace(/\s+/g, '_')}`;
-      const title = currentFeasibilityData.productTitle || currentFeasibilityData.brandName;
-      toggleSaveHistory(asin, title);
-      const isSaved = loadHistory().some(h => h.asin === asin);
-      btnSaveFeas.textContent = isSaved ? '⭐ Saved' : '☆ Save to History';
-    });
-  }
-
   // Save / Remove event listeners for table buttons
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-save-link');
