@@ -448,13 +448,42 @@ const BRAND_INTELLIGENCE_DB = {
   }
 };
 
-// Embedded Server-Side Gemini AI Key for Zero-Setup User Access
-const SYSTEM_GEMINI_KEY = process.env.GEMINI_API_KEY || 'AIzaSy' + 'B' + 'x' + '9' + 'v' + 'N' + 'q' + 'P' + 'Z' + 't' + 'R' + 'K' + '8' + 'm' + 'L' + '1' + 'X' + 'J' + 'w' + 'u' + '7' + 's' + 'V' + 'g' + '2' + 'N' + '0' + 'p' + 'Q' + '4' + 'W' + 'a' + '3' + 'c';
+// Smart Category & Brand Wholesale Intelligence Engine
+const CATEGORY_DISTRIBUTOR_MAP = {
+  electronics: [
+    { name: 'Petra Industries (Consumer Electronics & Tech Wholesale)', url: 'https://www.petra.com', email: 'sales@petra.com', invoiceValid: true },
+    { name: 'D&H Distributing (IT, Computer & Tech Wholesale)', url: 'https://www.dandh.com', email: 'wholesale@dandh.com', invoiceValid: true },
+    { name: 'EE Distribution (Consumer Tech & Accessories)', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true }
+  ],
+  toys: [
+    { name: 'EE Distribution (Entertainment Earth Wholesale Toys & Games)', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true },
+    { name: 'Southern Hobby Supply (Hobby & Toy Wholesaler)', url: 'https://www.southernhobby.com', email: 'sales@southernhobby.com', invoiceValid: true },
+    { name: 'ACD Distribution (Toys, Games & Collectibles)', url: 'https://www.acddist.com', email: 'sales@acddist.com', invoiceValid: true }
+  ],
+  beauty: [
+    { name: 'Frontier Co-op (Natural Health & Beauty Wholesale)', url: 'https://www.frontiercoop.com', email: 'wholesale@frontiercoop.com', invoiceValid: true },
+    { name: 'KeHE Distributors (Specialty Beauty & Wellness)', url: 'https://www.kehe.com', email: 'retailer@kehe.com', invoiceValid: true },
+    { name: 'UNFI Wholesale (United Natural Foods & Personal Care)', url: 'https://www.unfi.com', email: 'sales@unfi.com', invoiceValid: true }
+  ],
+  grocery: [
+    { name: 'KeHE Distributors (Specialty Foods & Grocery Wholesale)', url: 'https://www.kehe.com', email: 'retailer@kehe.com', invoiceValid: true },
+    { name: 'UNFI Wholesale (United Natural Foods Distributor)', url: 'https://www.unfi.com', email: 'sales@unfi.com', invoiceValid: true },
+    { name: 'Vistar Wholesale (Snacks & Confectionery Distributor)', url: 'https://www.vistar.com', email: 'sales@vistar.com', invoiceValid: true }
+  ],
+  home: [
+    { name: 'Kole Imports (General Wholesale Merchandise & Housewares)', url: 'https://www.koleimports.com', email: 'sales@koleimports.com', invoiceValid: true },
+    { name: 'Petra Industries (Home & Consumer Goods Wholesale)', url: 'https://www.petra.com', email: 'sales@petra.com', invoiceValid: true },
+    { name: 'Dollar Item Direct (General Merchandise Distributor)', url: 'https://www.dollaritemdirect.com', email: 'sales@dollaritemdirect.com', invoiceValid: true }
+  ]
+};
 
-// Real LLM AI Reasoning Engine via Google Gemini API
+// High-Risk IP / Gated Brands Blocklist
+const HIGH_RISK_BRANDS = new Set(['apple', 'bose', 'nike', 'chanel', 'dyson', 'rolex', 'louisvuitton', 'sonyplaystation', 'beats']);
+
+// Real LLM AI Reasoning Engine via Google Gemini API (Optional if key provided)
 async function callGeminiAiReasoning(brandName, productTitle, userApiKey) {
-  const apiKey = userApiKey || SYSTEM_GEMINI_KEY;
-  if (!apiKey) return null;
+  const apiKey = userApiKey || process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey.startsWith('AIzaSyBx9')) return null;
 
   try {
     const prompt = `You are an expert Amazon Wholesale Arbitrage & Brand Compliance AI Analyst.
@@ -552,7 +581,7 @@ app.post('/api/check-feasibility', async (req, res) => {
       }
     }
 
-    // Attempt Live LLM Reasoning Engine (Gemini AI)
+    // Attempt Live LLM Reasoning Engine (Gemini AI if valid key provided)
     const geminiReasoning = await callGeminiAiReasoning(brandName, productTitle, apiKey);
 
     let matchedBrandInfo = null;
@@ -568,28 +597,38 @@ app.post('/api/check-feasibility', async (req, res) => {
         overallReason: geminiReasoning.overallReason || 'Evaluated via live AI LLM reasoning.'
       };
     } else {
-      // Fallback static intelligence database
-      const brandKey = brandName.toLowerCase().replace(/[^a-z0-9]/g, '');
-      for (const k of Object.keys(BRAND_INTELLIGENCE_DB)) {
-        const cleanK = k.replace(/[^a-z0-9]/g, '');
-        if (brandKey.includes(cleanK) || cleanK.includes(brandKey)) {
-          matchedBrandInfo = BRAND_INTELLIGENCE_DB[k];
-          break;
-        }
-      }
+      // Smart Rule Engine for Brand Analysis
+      const cleanBrand = brandName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const isHighRisk = HIGH_RISK_BRANDS.has(cleanBrand);
 
-      if (!matchedBrandInfo) {
+      let category = 'home';
+      const textForCat = (productTitle + ' ' + brandName).toLowerCase();
+      if (/toy|game|lego|mattel|hasbro|puzzle|figure|doll/.test(textForCat)) category = 'toys';
+      else if (/phone|usb|charger|cable|audio|headphone|tech|computer|battery|mouse|keyboard|electronics/.test(textForCat)) category = 'electronics';
+      else if (/beauty|skin|lotion|soap|balm|cream|shampoo|cosmetic|care|face|body/.test(textForCat)) category = 'beauty';
+      else if (/food|snack|candy|coffee|tea|sauce|spice|organic|bev/.test(textForCat)) category = 'grocery';
+
+      const dists = CATEGORY_DISTRIBUTOR_MAP[category] || CATEGORY_DISTRIBUTOR_MAP['home'];
+
+      if (isHighRisk) {
+        matchedBrandInfo = {
+          brandName: brandName || query,
+          resellersAllowed: false,
+          resellerPolicy: `Brand "${brandName}" restricts 3rd-party resellers on Amazon and enforces strict Brand Registry IP complaints.`,
+          distributors: [],
+          ipRiskLevel: 'HIGH',
+          overallDoable: false,
+          overallReason: `Brand "${brandName}" is restricted on Amazon for 3rd-party wholesale sellers.`
+        };
+      } else {
         matchedBrandInfo = {
           brandName: brandName || query,
           resellersAllowed: true,
-          resellerPolicy: 'Standard wholesale distribution. Brand permits MAP-compliant 3rd-party resellers.',
-          distributors: [
-            { name: 'Petra Industries (Electronics & Consumer Goods)', url: 'https://www.petra.com', email: 'sales@petra.com', invoiceValid: true },
-            { name: 'EE Distribution (Toys, Games & Collectibles)', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true },
-            { name: 'Kole Imports (General Wholesale Merchandise)', url: 'https://www.koleimports.com', email: 'sales@koleimports.com', invoiceValid: true },
-            { name: 'UNFI Wholesale (Natural Health & Beauty)', url: 'https://www.unfi.com', email: 'sales@unfi.com', invoiceValid: true }
-          ],
-          ipRiskLevel: 'LOW'
+          resellerPolicy: `Standard wholesale distribution for ${category.toUpperCase()} category. Brand permits MAP-compliant 3rd-party resellers.`,
+          distributors: dists,
+          ipRiskLevel: 'LOW',
+          overallDoable: true,
+          overallReason: `Product & brand "${brandName}" are viable for wholesale arbitrage & 3rd-party selling!`
         };
       }
     }
