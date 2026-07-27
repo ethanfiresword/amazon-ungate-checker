@@ -849,13 +849,23 @@
     });
   }
 
+  // Load saved Gemini API Key
+  const elApiKey = $('#gemini-api-key-input');
+  if (elApiKey) {
+    elApiKey.value = localStorage.getItem('gemini_api_key_v1') || '';
+    elApiKey.addEventListener('input', () => {
+      localStorage.setItem('gemini_api_key_v1', elApiKey.value.trim());
+    });
+  }
+
   async function runFeasibilityAnalysis(inputVal) {
+    const apiKey = elApiKey ? elApiKey.value.trim() : '';
     showToast(`Analyzing feasibility for "${inputVal}"...`, 'info');
     try {
       const res = await fetch('/api/check-feasibility', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: inputVal })
+        body: JSON.stringify({ input: inputVal, apiKey })
       });
 
       if (!res.ok) {
@@ -866,7 +876,11 @@
       const data = await res.json();
       currentFeasibilityData = data;
       renderFeasibilityUI(data);
-      showToast(`Feasibility analysis complete for ${data.brandName}!`, 'success');
+      if (data.isAiPowered) {
+        showToast(`🤖 Live AI LLM reasoning complete for ${data.brandName}!`, 'success');
+      } else {
+        showToast(`Feasibility analysis complete for ${data.brandName}!`, 'success');
+      }
 
     } catch (err) {
       console.error('Feasibility error:', err);

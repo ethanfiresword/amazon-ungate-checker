@@ -448,9 +448,66 @@ const BRAND_INTELLIGENCE_DB = {
   }
 };
 
+// Real LLM AI Reasoning Engine via Google Gemini API
+async function callGeminiAiReasoning(brandName, productTitle, userApiKey) {
+  const apiKey = userApiKey || process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const prompt = `You are an expert Amazon Wholesale Arbitrage & Brand Compliance AI Analyst.
+Analyze the brand "${brandName}" and product "${productTitle}".
+
+Respond strictly with a JSON object (no markdown, no wrap) matching this exact schema:
+{
+  "brandName": "${brandName}",
+  "resellersAllowed": true,
+  "resellerPolicy": "Explanation of brand reseller policy on Amazon (e.g. MAP compliance allowed vs strict IP enforcement)",
+  "distributors": [
+    {
+      "name": "Exact Authorized Distributor Name",
+      "url": "https://exact-distributor-website.com",
+      "email": "sales@exact-distributor-website.com",
+      "invoiceValid": true
+    }
+  ],
+  "ipRiskLevel": "LOW",
+  "overallDoable": true,
+  "overallReason": "Reasoning on whether 3rd party sellers can buy from authorized distributors and sell on Amazon"
+}
+
+Rules:
+1. Provide REAL, ACCURATE, verified wholesale distributors specific to this brand and product category.
+2. If the brand strictly enforces Brand Registry IP complaints or restricts 3rd-party sellers on Amazon (e.g., Apple, Bose, Nike, Chanel, Dyson, Rolex), set resellersAllowed: false, ipRiskLevel: "HIGH", and overallDoable: false.
+3. If the brand allows MAP-compliant 3rd party wholesale sellers, set resellersAllowed: true, overallDoable: true.
+4. Ensure distributor email and website URLs are real and accurate.`;
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: "application/json" }
+      })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (textResponse) {
+        const parsed = JSON.parse(textResponse);
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error('Gemini AI Reasoning Error:', e.message);
+  }
+  return null;
+}
+
 // API Endpoint 3: Brand & Wholesale Feasibility Analyzer + B2B Outreach Data
 app.post('/api/check-feasibility', async (req, res) => {
-  const { input } = req.body;
+  const { input, apiKey } = req.body;
   if (!input || typeof input !== 'string') {
     return res.status(400).json({ error: 'Missing or invalid "input" parameter' });
   }
@@ -492,31 +549,46 @@ app.post('/api/check-feasibility', async (req, res) => {
       }
     }
 
-    // Clean brand key for lookup
-    const brandKey = brandName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    // Attempt Live LLM Reasoning Engine (Gemini AI)
+    const geminiReasoning = await callGeminiAiReasoning(brandName, productTitle, apiKey);
+
     let matchedBrandInfo = null;
 
-    for (const k of Object.keys(BRAND_INTELLIGENCE_DB)) {
-      const cleanK = k.replace(/[^a-z0-9]/g, '');
-      if (brandKey.includes(cleanK) || cleanK.includes(brandKey)) {
-        matchedBrandInfo = BRAND_INTELLIGENCE_DB[k];
-        break;
-      }
-    }
-
-    if (!matchedBrandInfo) {
+    if (geminiReasoning) {
       matchedBrandInfo = {
-        brandName: brandName || query,
-        resellersAllowed: true,
-        resellerPolicy: 'Standard wholesale distribution. Brand permits MAP-compliant 3rd-party resellers.',
-        distributors: [
-          { name: 'Petra Industries (Electronics & Consumer Goods)', url: 'https://www.petra.com', email: 'sales@petra.com', invoiceValid: true },
-          { name: 'EE Distribution (Toys, Games & Collectibles)', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true },
-          { name: 'Kole Imports (General Wholesale Merchandise)', url: 'https://www.koleimports.com', email: 'sales@koleimports.com', invoiceValid: true },
-          { name: 'UNFI Wholesale (Natural Health & Beauty)', url: 'https://www.unfi.com', email: 'sales@unfi.com', invoiceValid: true }
-        ],
-        ipRiskLevel: 'LOW'
+        brandName: geminiReasoning.brandName || brandName,
+        resellersAllowed: geminiReasoning.resellersAllowed ?? true,
+        resellerPolicy: geminiReasoning.resellerPolicy || 'Analyzed via Gemini AI Reasoning.',
+        distributors: geminiReasoning.distributors || [],
+        ipRiskLevel: geminiReasoning.ipRiskLevel || 'LOW',
+        overallDoable: geminiReasoning.overallDoable ?? true,
+        overallReason: geminiReasoning.overallReason || 'Evaluated via live AI LLM reasoning.'
       };
+    } else {
+      // Fallback static intelligence database
+      const brandKey = brandName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      for (const k of Object.keys(BRAND_INTELLIGENCE_DB)) {
+        const cleanK = k.replace(/[^a-z0-9]/g, '');
+        if (brandKey.includes(cleanK) || cleanK.includes(brandKey)) {
+          matchedBrandInfo = BRAND_INTELLIGENCE_DB[k];
+          break;
+        }
+      }
+
+      if (!matchedBrandInfo) {
+        matchedBrandInfo = {
+          brandName: brandName || query,
+          resellersAllowed: true,
+          resellerPolicy: 'Standard wholesale distribution. Brand permits MAP-compliant 3rd-party resellers.',
+          distributors: [
+            { name: 'Petra Industries (Electronics & Consumer Goods)', url: 'https://www.petra.com', email: 'sales@petra.com', invoiceValid: true },
+            { name: 'EE Distribution (Toys, Games & Collectibles)', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true },
+            { name: 'Kole Imports (General Wholesale Merchandise)', url: 'https://www.koleimports.com', email: 'sales@koleimports.com', invoiceValid: true },
+            { name: 'UNFI Wholesale (Natural Health & Beauty)', url: 'https://www.unfi.com', email: 'sales@unfi.com', invoiceValid: true }
+          ],
+          ipRiskLevel: 'LOW'
+        };
+      }
     }
 
     const resellersAllowed = matchedBrandInfo.resellersAllowed;
@@ -524,19 +596,21 @@ app.post('/api/check-feasibility', async (req, res) => {
     const isUngatedOrSoft = !spApiResult || spApiResult.status === 'ungated' || (spApiResult.status === 'gated' && spApiResult.hasApprovalRoute);
 
     // Evaluate Overall Doable Product (YES / NO)
-    const overallDoable = resellersAllowed && (ipRiskLevel !== 'HIGH') && isUngatedOrSoft;
+    const overallDoable = matchedBrandInfo.overallDoable ?? (resellersAllowed && (ipRiskLevel !== 'HIGH') && isUngatedOrSoft);
 
-    let overallReason = '';
-    if (!overallDoable) {
-      if (!resellersAllowed) {
-        overallReason = `Brand "${matchedBrandInfo.brandName}" restricts 3rd-party Amazon resellers.`;
-      } else if (ipRiskLevel === 'HIGH') {
-        overallReason = `Brand "${matchedBrandInfo.brandName}" carries high Brand Registry IP claim risk.`;
+    let overallReason = matchedBrandInfo.overallReason || '';
+    if (!overallReason) {
+      if (!overallDoable) {
+        if (!resellersAllowed) {
+          overallReason = `Brand "${matchedBrandInfo.brandName}" restricts 3rd-party Amazon resellers.`;
+        } else if (ipRiskLevel === 'HIGH') {
+          overallReason = `Brand "${matchedBrandInfo.brandName}" carries high Brand Registry IP claim risk.`;
+        } else {
+          overallReason = `Hard restricted on Amazon (Not Eligible for Ungating).`;
+        }
       } else {
-        overallReason = `Hard restricted on Amazon (Not Eligible for Ungating).`;
+        overallReason = `Product & brand are viable for wholesale arbitrage & 3rd-party selling!`;
       }
-    } else {
-      overallReason = `Product & brand are viable for wholesale arbitrage & 3rd-party selling!`;
     }
 
     const distributors = matchedBrandInfo.distributors || [];
@@ -557,6 +631,7 @@ app.post('/api/check-feasibility', async (req, res) => {
       distributors,
       distributorInvoiceValid,
       shouldGenerateEmail,
+      isAiPowered: !!geminiReasoning,
       spApiResult
     });
 
