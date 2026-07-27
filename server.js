@@ -806,8 +806,32 @@ app.post('/api/check-feasibility', async (req, res) => {
       overallReason = `Product & brand are 100% viable for wholesale arbitrage & 3rd-party selling!`;
     }
 
-    // Enable automated B2B email whenever distributors exist to contact
-    const shouldGenerateEmail = distributors.length > 0;
+    // Formulate 3 Distinct Reseller Checks for perfect clarity
+    let ungatingStatusText = 'AUTO UNGATED';
+    let ungatingIsGreen = true;
+    let ungatingSubText = 'Directly eligible to list on Amazon';
+
+    if (spApiResult) {
+      if (spApiResult.status === 'ungated') {
+        ungatingStatusText = 'AUTO UNGATED';
+        ungatingIsGreen = true;
+        ungatingSubText = 'Directly eligible to sell without ungating application';
+      } else if (spApiResult.hasApprovalRoute) {
+        ungatingStatusText = 'APPROVAL ROUTE AVAILABLE';
+        ungatingIsGreen = true;
+        ungatingSubText = 'Requires 10-unit invoice submission via Seller Central';
+      } else {
+        ungatingStatusText = 'HARD RESTRICTED';
+        ungatingIsGreen = false;
+        ungatingSubText = 'Not eligible for ungating application on Amazon';
+      }
+    }
+
+    const brandPolicyStatusText = resellersAllowed && ipRiskLevel !== 'HIGH' ? 'RESELLERS PERMITTED' : 'RESTRICTED BRAND (IP RISK)';
+    const brandPolicyIsGreen = resellersAllowed && ipRiskLevel !== 'HIGH';
+
+    const invoiceStatusText = distributorInvoiceValid ? 'VALID INVOICE AVAILABLE' : 'NO INVOICE SUPPLIERS';
+    const invoiceIsGreen = distributorInvoiceValid;
 
     res.json({
       query,
@@ -816,6 +840,11 @@ app.post('/api/check-feasibility', async (req, res) => {
       productTitle: productTitle || query,
       overallDoable,
       overallReason,
+      checks: {
+        ungating: { status: ungatingStatusText, isGreen: ungatingIsGreen, desc: ungatingSubText },
+        brandPolicy: { status: brandPolicyStatusText, isGreen: brandPolicyIsGreen, desc: matchedBrandInfo.resellerPolicy },
+        invoice: { status: invoiceStatusText, isGreen: invoiceIsGreen, desc: distributorInvoiceValid ? 'Accredited suppliers issue 10+ unit tax invoices' : 'No accredited invoice suppliers found' }
+      },
       resellersAllowed,
       resellerPolicy: matchedBrandInfo.resellerPolicy,
       distributors,

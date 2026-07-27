@@ -909,52 +909,73 @@
       }
     }
 
-    // 1. Single Clean Result Banner (YES / NO)
+    // 1. Populate 3 Separate Reseller Check Cards
+    if (data.checks) {
+      // Check 1: Ungating Status
+      const uVal = $('#check-ungating-val');
+      const uSub = $('#check-ungating-sub');
+      if (uVal) {
+        uVal.innerHTML = data.checks.ungating.isGreen ? `<span>✅</span> <span>${data.checks.ungating.status}</span>` : `<span>❌</span> <span>${data.checks.ungating.status}</span>`;
+        uVal.style.color = data.checks.ungating.isGreen ? 'var(--green)' : 'var(--red)';
+      }
+      if (uSub) uSub.textContent = data.checks.ungating.desc;
+
+      // Check 2: Brand Reseller & IP Policy
+      const pVal = $('#check-policy-val');
+      const pSub = $('#check-policy-sub');
+      if (pVal) {
+        pVal.innerHTML = data.checks.brandPolicy.isGreen ? `<span>✅</span> <span>${data.checks.brandPolicy.status}</span>` : `<span>❌</span> <span>${data.checks.brandPolicy.status}</span>`;
+        pVal.style.color = data.checks.brandPolicy.isGreen ? 'var(--green)' : 'var(--red)';
+      }
+      if (pSub) pSub.textContent = data.checks.brandPolicy.desc;
+
+      // Check 3: Valid Ungating Invoice
+      const iVal = $('#check-invoice-val');
+      const iSub = $('#check-invoice-sub');
+      if (iVal) {
+        iVal.innerHTML = data.checks.invoice.isGreen ? `<span>✅</span> <span>${data.checks.invoice.status}</span>` : `<span>❌</span> <span>${data.checks.invoice.status}</span>`;
+        iVal.style.color = data.checks.invoice.isGreen ? 'var(--green)' : 'var(--red)';
+      }
+      if (iSub) iSub.textContent = data.checks.invoice.desc;
+    }
+
+    // 2. Single Overall Verdict Summary Banner (YES / NO)
     const banner = $('#feasibility-status-banner');
-    const icon = $('#feasibility-status-icon');
     const title = $('#feasibility-status-title');
     const desc = $('#feasibility-status-desc');
 
     if (data.overallDoable) {
       if (banner) banner.style.border = '1px solid var(--green)';
-      if (icon) icon.textContent = '✅';
       if (title) {
-        title.textContent = 'YES - DOABLE WHOLESALE PRODUCT';
+        title.textContent = '✅ YES - DOABLE WHOLESALE PRODUCT';
         title.style.color = 'var(--green)';
       }
       if (desc) desc.textContent = data.overallReason;
     } else {
       if (banner) banner.style.border = '1px solid var(--red)';
-      if (icon) icon.textContent = '❌';
       if (title) {
-        title.textContent = 'NO - NOT DOABLE ON AMAZON';
+        title.textContent = '❌ NO - NOT DOABLE ON AMAZON';
         title.style.color = 'var(--red)';
       }
       if (desc) desc.textContent = data.overallReason;
     }
 
-    // 2. Authorized Distributors List & 1-Click Pitch Action
+    // 3. Sleek, Minimalist Cut-Down Authorized Distributors & 1-Click Outreach List
     const elDistBadge = $('#distributors-count-badge');
     const elDistGrid = $('#distributors-full-grid');
 
     const count = data.distributors ? data.distributors.length : 0;
-    if (elDistBadge) elDistBadge.textContent = `${count} Distributor${count === 1 ? '' : 's'} Verified`;
+    if (elDistBadge) elDistBadge.textContent = `${count} Supplier${count === 1 ? '' : 's'}`;
 
     if (count > 0 && elDistGrid) {
       elDistGrid.innerHTML = data.distributors.map(d => `
-        <div style="padding: 14px 18px; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 240px;">
-            <div style="font-weight: 700; font-size: 0.96rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
-              <span>🏢 ${d.name}</span>
-            </div>
-            <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
-              Sales Email: <strong style="color: var(--text-secondary); font-family: monospace;">${d.email}</strong>
-            </div>
+        <div style="padding: 10px 14px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+            <span>🏢 ${d.name}</span>
           </div>
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <span class="badge badge-ungated" style="font-size: 0.75rem;">✅ Valid 10+ Unit Invoice</span>
-            <a href="${d.url}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.82rem; white-space: nowrap;">🌐 Visit Website ↗</a>
-            <button class="btn btn-primary btn-sm btn-pitch-distributor" data-email="${d.email}" style="font-size: 0.82rem; white-space: nowrap; background: linear-gradient(135deg, var(--green), #16a34a);">⚡ 1-Click Pitch Email</button>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <a href="${d.url}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 4px 10px;">Website ↗</a>
+            <button class="btn btn-primary btn-sm btn-pitch-distributor" data-email="${d.email}" style="font-size: 0.78rem; padding: 4px 10px; background: linear-gradient(135deg, var(--green), #16a34a);">⚡ Pitch Sales</button>
           </div>
         </div>
       `).join('');
@@ -974,7 +995,7 @@
         });
       });
     } else if (elDistGrid) {
-      elDistGrid.innerHTML = `<div style="color: var(--text-muted); font-size: 0.88rem; padding: 12px; text-align: center;">No 3rd party wholesale distributors permitted for this brand.</div>`;
+      elDistGrid.innerHTML = `<div style="color: var(--text-muted); font-size: 0.84rem; padding: 8px; text-align: center;">No 3rd party wholesale distributors permitted for this brand.</div>`;
     }
 
     // 3. Automated 1-Click B2B Wholesale Application Email Sender Box
