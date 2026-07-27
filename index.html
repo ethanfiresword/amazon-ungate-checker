@@ -369,14 +369,14 @@
       </section>
 
       <!-- Feasibility Results Display -->
-      <section id="feasibility-results" style="display: none; flex-direction: column; gap: 24px;">
+      <section id="feasibility-results" style="display: none; flex-direction: column; gap: 20px;">
         
         <!-- Matched Product & Brand Bar (Copy-Pastable) -->
-        <div class="card" id="matched-product-card" style="padding: 18px 24px; background: var(--bg-card); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+        <div class="card" id="matched-product-card" style="padding: 16px 20px; background: var(--bg-card); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
           <div>
-            <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Matched Product & Brand</div>
-            <div id="matched-product-title" style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-top: 2px;">-</div>
-            <div id="matched-product-meta" style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 2px;">-</div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Matched Product & Brand</div>
+            <div id="matched-product-title" style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-top: 2px;">-</div>
+            <div id="matched-product-meta" style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px;">-</div>
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
             <button class="btn btn-secondary btn-sm" id="btn-copy-product-title">📋 Copy Product Name</button>
@@ -384,112 +384,73 @@
           </div>
         </div>
 
-        <!-- 4-Point Criteria Scorecards Grid -->
-        <div class="stats-row" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
-          
-          <!-- Criteria 1: Overall Doable Product -->
-          <div class="stat-card" id="card-doable">
-            <div class="stat-icon" id="card-doable-icon">❓</div>
-            <div class="stat-content">
-              <div class="stat-value" id="card-doable-verdict" style="font-size: 1.3rem;">-</div>
-              <div class="stat-label" style="font-weight: 700; color: var(--text-primary);">1. Overall Doable Product</div>
-              <div id="card-doable-reason" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">-</div>
-            </div>
-          </div>
-
-          <!-- Criteria 2: Amazon Resellers Allowed -->
-          <div class="stat-card" id="card-resellers">
-            <div class="stat-icon" id="card-resellers-icon">❓</div>
-            <div class="stat-content">
-              <div class="stat-value" id="card-resellers-verdict" style="font-size: 1.3rem;">-</div>
-              <div class="stat-label" style="font-weight: 700; color: var(--text-primary);">2. Amazon Resellers Allowed</div>
-              <div id="card-resellers-policy" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">-</div>
-            </div>
-          </div>
-
-          <!-- Criteria 3: Authorized Distributors -->
-          <div class="stat-card" id="card-distributors">
-            <div class="stat-icon">🏢</div>
-            <div class="stat-content">
-              <div class="stat-value text-green" id="card-distributors-count">0</div>
-              <div class="stat-label" style="font-weight: 700; color: var(--text-primary);">3. Authorized Distributors</div>
-              <div id="card-distributors-list" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">-</div>
-            </div>
-          </div>
-
-          <!-- Criteria 4: Distributor Gives Valid Invoice -->
-          <div class="stat-card" id="card-invoice">
-            <div class="stat-icon" id="card-invoice-icon">📜</div>
-            <div class="stat-content">
-              <div class="stat-value" id="card-invoice-verdict" style="font-size: 1.3rem;">-</div>
-              <div class="stat-label" style="font-weight: 700; color: var(--text-primary);">4. Valid Amazon Invoice</div>
-              <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Itemized 10+ Unit Tax Invoice</div>
-            </div>
-          </div>
-
+        <!-- 1. Single Clean Result Banner (YES / NO) -->
+        <div class="card" id="feasibility-status-banner" style="padding: 24px; text-align: center; border-radius: var(--radius-lg);">
+          <div id="feasibility-status-icon" style="font-size: 2.8rem; margin-bottom: 6px;">✅</div>
+          <h2 id="feasibility-status-title" style="font-size: 1.45rem; font-weight: 800;">-</h2>
+          <p id="feasibility-status-desc" style="font-size: 0.92rem; color: var(--text-secondary); max-width: 650px; margin: 6px auto 0 auto;">-</p>
         </div>
 
-        <!-- Dedicated Verified Authorized Distributors Card -->
-        <div class="card" id="distributors-detail-card" style="padding: 24px; border: 1px solid var(--border-color); background: var(--bg-card);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+        <!-- 2. Verified Authorized Distributors & 1-Click Email List -->
+        <div class="card" id="distributors-detail-card" style="padding: 20px 24px; border: 1px solid var(--border-color); background: var(--bg-card);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
             <div>
-              <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
-                <span>🏢 Verified Authorized Distributors & Wholesalers</span>
-              </h2>
-              <p style="font-size: 0.83rem; color: var(--text-muted); margin-top: 2px;">
-                Accredited wholesale suppliers issuing valid 10+ unit itemized invoices accepted for Amazon ungating.
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                <span>🏢 Authorized Distributors & Sales Outreach</span>
+              </h3>
+              <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">
+                Accredited wholesale suppliers issuing valid 10+ unit invoices for Amazon ungating.
               </p>
             </div>
-            <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); font-size: 0.82rem; padding: 6px 12px;" id="distributors-count-badge">0 Distributors Found</span>
+            <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); font-size: 0.8rem; padding: 4px 10px;" id="distributors-count-badge">0 Distributors</span>
           </div>
 
-          <!-- Distributor Grid List -->
-          <div id="distributors-full-grid" style="display: flex; flex-direction: column; gap: 12px;"></div>
+          <div id="distributors-full-grid" style="display: flex; flex-direction: column; gap: 10px;"></div>
         </div>
 
-        <!-- CONDITIONAL: Automated 1-Click B2B Wholesale Email Pitch Card -->
-        <div class="card" id="b2b-email-card" style="display: none; padding: 24px; border: 1px solid var(--green); background: linear-gradient(180deg, rgba(34, 197, 94, 0.05), var(--bg-card));">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+        <!-- 3. Automated 1-Click B2B Wholesale Application Email Sender -->
+        <div class="card" id="b2b-email-card" style="padding: 20px 24px; border: 1px solid var(--green); background: linear-gradient(180deg, rgba(34, 197, 94, 0.05), var(--bg-card));">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
             <div>
-              <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--green); display: flex; align-items: center; gap: 8px;">
-                <span>⚡ 1-Click B2B Wholesale Application Email</span>
-              </h2>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">
-                Product is 100% Doable & Resellers Allowed! Click below to send an automated B2B wholesale application pitch to their sales team.
+              <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--green); display: flex; align-items: center; gap: 8px;">
+                <span>⚡ 1-Click B2B Wholesale Application Email Sender</span>
+              </h3>
+              <p style="font-size: 0.83rem; color: var(--text-secondary); margin-top: 2px;">
+                Automated application pitch ready to send to sales teams in 1 click.
               </p>
             </div>
-            <span class="badge badge-ungated" style="padding: 6px 12px; font-size: 0.85rem;">QUALIFIED FOR OUTREACH</span>
+            <span class="badge badge-ungated" style="padding: 4px 10px; font-size: 0.8rem;">READY TO SEND</span>
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 14px;">
             <div>
               <label class="label">Target Sales Email</label>
-              <select id="b2b-recipient-select" class="search-input" style="width: 100%; padding: 10px;"></select>
+              <select id="b2b-recipient-select" class="search-input" style="width: 100%; padding: 8px 12px; font-size: 0.88rem;"></select>
             </div>
             <div>
               <label class="label">Your Company Name</label>
-              <input type="text" id="b2b-company-name" class="search-input" value="Werner Enterprise Wholesale LLC" style="width: 100%; padding: 10px;" />
+              <input type="text" id="b2b-company-name" class="search-input" value="Werner Enterprise Wholesale LLC" style="width: 100%; padding: 8px 12px; font-size: 0.88rem;" />
             </div>
             <div>
               <label class="label">Your Tax ID / EIN</label>
-              <input type="text" id="b2b-ein" class="search-input" value="XX-XXXXXXX" style="width: 100%; padding: 10px;" />
+              <input type="text" id="b2b-ein" class="search-input" value="XX-XXXXXXX" style="width: 100%; padding: 8px 12px; font-size: 0.88rem;" />
             </div>
             <div>
               <label class="label">Your Contact Name</label>
-              <input type="text" id="b2b-contact-name" class="search-input" value="Ethan Werner, Purchasing Manager" style="width: 100%; padding: 10px;" />
+              <input type="text" id="b2b-contact-name" class="search-input" value="Ethan Werner, Purchasing Manager" style="width: 100%; padding: 8px 12px; font-size: 0.88rem;" />
             </div>
           </div>
 
           <div>
-            <label class="label">Generated B2B Wholesale Application Pitch</label>
-            <textarea id="b2b-pitch-textarea" rows="7" style="width: 100%; padding: 14px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); font-family: inherit; font-size: 0.92rem; line-height: 1.6; resize: vertical;"></textarea>
+            <label class="label">Generated B2B Wholesale Pitch</label>
+            <textarea id="b2b-pitch-textarea" rows="6" style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); font-family: inherit; font-size: 0.88rem; line-height: 1.5; resize: vertical;"></textarea>
           </div>
 
-          <div style="display: flex; gap: 12px; margin-top: 16px; justify-content: flex-end;">
-            <button class="btn btn-secondary btn-md" id="btn-copy-pitch">
-              <span>📋 Copy Pitch to Clipboard</span>
+          <div style="display: flex; gap: 10px; margin-top: 14px; justify-content: flex-end;">
+            <button class="btn btn-secondary btn-sm" id="btn-copy-pitch">
+              <span>📋 Copy Pitch</span>
             </button>
-            <button class="btn btn-primary btn-md" id="btn-send-email" style="background: linear-gradient(135deg, var(--green), #16a34a);">
+            <button class="btn btn-primary btn-sm" id="btn-send-email" style="background: linear-gradient(135deg, var(--green), #16a34a);">
               <span>⚡ 1-Click Send Email (Mail/Outlook)</span>
             </button>
           </div>

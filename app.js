@@ -909,119 +909,89 @@
       }
     }
 
-    // 1. Overall Doable Verdict
-    const elDoable = $('#card-doable-verdict');
-    const elDoableIcon = $('#card-doable-icon');
-    const elDoableReason = $('#card-doable-reason');
+    // 1. Single Clean Result Banner (YES / NO)
+    const banner = $('#feasibility-status-banner');
+    const icon = $('#feasibility-status-icon');
+    const title = $('#feasibility-status-title');
+    const desc = $('#feasibility-status-desc');
 
     if (data.overallDoable) {
-      elDoable.textContent = 'YES';
-      elDoable.className = 'stat-value text-green';
-      elDoableIcon.textContent = '✅';
-      elDoableReason.textContent = data.overallReason;
+      if (banner) banner.style.border = '1px solid var(--green)';
+      if (icon) icon.textContent = '✅';
+      if (title) {
+        title.textContent = 'YES - DOABLE WHOLESALE PRODUCT';
+        title.style.color = 'var(--green)';
+      }
+      if (desc) desc.textContent = data.overallReason;
     } else {
-      elDoable.textContent = 'NO';
-      elDoable.className = 'stat-value text-red';
-      elDoableIcon.textContent = '❌';
-      elDoableReason.textContent = data.overallReason;
+      if (banner) banner.style.border = '1px solid var(--red)';
+      if (icon) icon.textContent = '❌';
+      if (title) {
+        title.textContent = 'NO - NOT DOABLE ON AMAZON';
+        title.style.color = 'var(--red)';
+      }
+      if (desc) desc.textContent = data.overallReason;
     }
 
-    // 2. Amazon Resellers Allowed Verdict
-    const elResellers = $('#card-resellers-verdict');
-    const elResellersIcon = $('#card-resellers-icon');
-    const elResellersPolicy = $('#card-resellers-policy');
-
-    if (data.resellersAllowed) {
-      elResellers.textContent = 'YES';
-      elResellers.className = 'stat-value text-green';
-      elResellersIcon.textContent = '✅';
-      elResellersPolicy.textContent = data.resellerPolicy;
-    } else {
-      elResellers.textContent = 'NO';
-      elResellers.className = 'stat-value text-red';
-      elResellersIcon.textContent = '❌';
-      elResellersPolicy.textContent = data.resellerPolicy;
-    }
-
-    // 3. Authorized Distributors Summary & Detail Grid
-    const elDistCount = $('#card-distributors-count');
-    const elDistList = $('#card-distributors-list');
+    // 2. Authorized Distributors List & 1-Click Pitch Action
     const elDistBadge = $('#distributors-count-badge');
     const elDistGrid = $('#distributors-full-grid');
 
-    const count = data.distributors.length;
-    elDistCount.textContent = count;
+    const count = data.distributors ? data.distributors.length : 0;
     if (elDistBadge) elDistBadge.textContent = `${count} Distributor${count === 1 ? '' : 's'} Verified`;
 
-    if (count > 0) {
-      elDistList.textContent = `${count} verified wholesale supplier${count === 1 ? '' : 's'} available below.`;
-
-      if (elDistGrid) {
-        elDistGrid.innerHTML = data.distributors.map(d => `
-          <div style="padding: 14px 18px; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 240px;">
-              <div style="font-weight: 700; font-size: 0.98rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
-                <span>🏢 ${d.name}</span>
-              </div>
-              <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 8px;">
-                <span>Sales Email: <strong style="color: var(--text-secondary); font-family: monospace;">${d.email}</strong></span>
-              </div>
+    if (count > 0 && elDistGrid) {
+      elDistGrid.innerHTML = data.distributors.map(d => `
+        <div style="padding: 14px 18px; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 240px;">
+            <div style="font-weight: 700; font-size: 0.96rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+              <span>🏢 ${d.name}</span>
             </div>
-            <div style="display: flex; gap: 10px; align-items: center;">
-              <span class="badge badge-ungated" style="font-size: 0.75rem;">✅ Valid 10+ Unit Invoice</span>
-              <a href="${d.url}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.82rem; white-space: nowrap;">🌐 Visit B2B Site ↗</a>
-              <button class="btn btn-primary btn-sm btn-pitch-distributor" data-email="${d.email}" style="font-size: 0.82rem; white-space: nowrap; background: linear-gradient(135deg, var(--green), #16a34a);">⚡ Pitch Sales Team</button>
+            <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+              Sales Email: <strong style="color: var(--text-secondary); font-family: monospace;">${d.email}</strong>
             </div>
           </div>
-        `).join('');
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <span class="badge badge-ungated" style="font-size: 0.75rem;">✅ Valid 10+ Unit Invoice</span>
+            <a href="${d.url}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.82rem; white-space: nowrap;">🌐 Visit Website ↗</a>
+            <button class="btn btn-primary btn-sm btn-pitch-distributor" data-email="${d.email}" style="font-size: 0.82rem; white-space: nowrap; background: linear-gradient(135deg, var(--green), #16a34a);">⚡ 1-Click Pitch Email</button>
+          </div>
+        </div>
+      `).join('');
 
-        // Add event listeners for Pitch Sales Team buttons
-        elDistGrid.querySelectorAll('.btn-pitch-distributor').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const email = e.target.dataset.email;
-            const selectRecip = $('#b2b-recipient-select');
-            if (selectRecip) selectRecip.value = email;
-            updateB2bPitchText();
-            const emailCard = $('#b2b-email-card');
-            if (emailCard) {
-              emailCard.scrollIntoView({ behavior: 'smooth' });
-              showToast(`Pre-filled B2B pitch for ${email}!`, 'success');
-            }
-          });
+      // Add event listeners for Pitch Sales Team buttons
+      elDistGrid.querySelectorAll('.btn-pitch-distributor').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const targetEmail = e.target.dataset.email;
+          const selectRecip = $('#b2b-recipient-select');
+          if (selectRecip) selectRecip.value = targetEmail;
+          updateB2bPitchText();
+          const emailCard = $('#b2b-email-card');
+          if (emailCard) {
+            emailCard.scrollIntoView({ behavior: 'smooth' });
+            showToast(`Pre-filled pitch for ${targetEmail}!`, 'success');
+          }
         });
-      }
-    } else {
-      elDistList.textContent = 'Brand restricts 3rd party distributors.';
-      if (elDistGrid) elDistGrid.innerHTML = `<div style="color: var(--text-muted); font-size: 0.88rem; padding: 12px;">No 3rd party wholesale distributors permitted for this brand.</div>`;
+      });
+    } else if (elDistGrid) {
+      elDistGrid.innerHTML = `<div style="color: var(--text-muted); font-size: 0.88rem; padding: 12px; text-align: center;">No 3rd party wholesale distributors permitted for this brand.</div>`;
     }
 
-    // 4. Distributor Invoice Valid
-    const elInvoice = $('#card-invoice-verdict');
-    const elInvoiceIcon = $('#card-invoice-icon');
-
-    if (data.distributorInvoiceValid) {
-      elInvoice.textContent = 'YES';
-      elInvoice.className = 'stat-value text-green';
-      elInvoiceIcon.textContent = '✅';
-    } else {
-      elInvoice.textContent = 'NO';
-      elInvoice.className = 'stat-value text-red';
-      elInvoiceIcon.textContent = '❌';
-    }
-
-    // ALWAYS DISPLAY: B2B Outreach Email Card whenever distributors exist
+    // 3. Automated 1-Click B2B Wholesale Application Email Sender Box
     const emailCard = $('#b2b-email-card');
     if (data.distributors && data.distributors.length > 0) {
-      emailCard.style.display = 'block';
+      if (emailCard) emailCard.style.display = 'block';
 
       // Populate recipient select
       const selectRecip = $('#b2b-recipient-select');
-      selectRecip.innerHTML = data.distributors.map(d => 
-        `<option value="${d.email}">${d.name} (${d.email})</option>`
-      ).join('');
+      if (selectRecip) {
+        selectRecip.innerHTML = data.distributors.map(d => 
+          `<option value="${d.email}">${d.name} (${d.email})</option>`
+        ).join('');
+      }
 
       updateB2bPitchText();
-    } else {
+    } else if (emailCard) {
       emailCard.style.display = 'none';
     }
   }
