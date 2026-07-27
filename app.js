@@ -390,48 +390,48 @@
       }
 
       if (item.isHistory) {
-        badgeHtml = `<span class="badge badge-ungated">📜 SAVED HISTORY</span>`;
-        detailsHtml = `<span class="text-green">Saved on ${item.date || 'Previous Scan'}</span>`;
+        badgeHtml = `<span class="badge badge-ungated">📜 VAULT</span>`;
+        detailsHtml = `<span class="t-green">Saved ${item.date || 'Previous Scan'}</span>`;
         quickLinksHtml = `
-          <div class="link-group" style="justify-content: flex-end; align-items: center; gap: 6px;">
-            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="icon-link" title="Amazon">Amazon</a>
-            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="icon-link" title="Keepa">Keepa</a>
-            <a href="https://sas.selleramp.com/sas/lookup?asin=${item.asin}&country=us" target="_blank" class="icon-link" title="SellerAmp">SAS</a>
+          <div class="link-cluster">
+            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="link-chip">Amazon</a>
+            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="link-chip">Keepa</a>
+            <a href="https://sas.selleramp.com/sas/lookup?asin=${item.asin}&country=us" target="_blank" class="link-chip">SAS</a>
             ${saveBtnHtml}
           </div>
         `;
       } else if (item.status === 'ungated') {
         badgeHtml = `<span class="badge badge-ungated">✅ AUTO UNGATED</span>`;
-        detailsHtml = `<span class="text-green">Ready to List & Sell</span>`;
+        detailsHtml = `<span class="t-green">Ready to List & Sell</span>`;
         quickLinksHtml = `
-          <div class="link-group" style="justify-content: flex-end; align-items: center; gap: 6px;">
-            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="icon-link" title="Amazon">Amazon</a>
-            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="icon-link" title="Keepa">Keepa</a>
-            <a href="https://sas.selleramp.com/sas/lookup?asin=${item.asin}&country=us" target="_blank" class="icon-link" title="SellerAmp">SAS</a>
+          <div class="link-cluster">
+            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="link-chip">Amazon</a>
+            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="link-chip">Keepa</a>
+            <a href="https://sas.selleramp.com/sas/lookup?asin=${item.asin}&country=us" target="_blank" class="link-chip">SAS</a>
             ${saveBtnHtml}
           </div>
         `;
       } else if (item.status === 'gated' && item.hasApprovalRoute) {
         badgeHtml = `<span class="badge badge-softgated">⚠️ SOFT GATE</span>`;
-        detailsHtml = `<span class="text-yellow">APPROVAL_REQUIRED</span>`;
+        detailsHtml = `<span class="t-yellow">APPROVAL_REQUIRED</span>`;
         const ungateUrl = `https://sellercentral.amazon.com/hz/approvalrequest/restrictions/approve?asin=${item.asin}`;
         quickLinksHtml = `
-          <div class="link-group" style="justify-content: flex-end; align-items: center; gap: 6px;">
-            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="icon-link" title="Amazon">Amazon</a>
-            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="icon-link" title="Keepa">Keepa</a>
-            <a href="${ungateUrl}" target="_blank" class="btn-ungate-link" style="margin-left: 2px;">⚡ 1-Click Ungate</a>
+          <div class="link-cluster">
+            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="link-chip">Amazon</a>
+            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="link-chip">Keepa</a>
+            <a href="${ungateUrl}" target="_blank" class="btn-ungate-link">⚡ 1-Click Ungate</a>
             ${saveBtnHtml}
           </div>
         `;
       } else {
         badgeHtml = `<span class="badge badge-hardgated">❌ RESTRICTED</span>`;
         const reason = item.reasonCode || (item.reasons && item.reasons[0] ? item.reasons[0].reasonCode : 'NOT_ELIGIBLE');
-        detailsHtml = `<span class="text-red">${reason}</span>`;
+        detailsHtml = `<span class="t-red">${reason}</span>`;
         quickLinksHtml = `
-          <div class="link-group" style="justify-content: flex-end; align-items: center; gap: 6px;">
-            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="icon-link" title="Amazon">Amazon</a>
-            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="icon-link" title="Keepa">Keepa</a>
-            <a href="https://sellercentral.amazon.com/product-search/search?q=${item.asin}" target="_blank" class="icon-link" title="Seller Central">Seller Central</a>
+          <div class="link-cluster">
+            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="link-chip">Amazon</a>
+            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="link-chip">Keepa</a>
+            <a href="https://sellercentral.amazon.com/product-search/search?q=${item.asin}" target="_blank" class="link-chip">Seller Central</a>
             ${saveBtnHtml}
           </div>
         `;
@@ -449,10 +449,10 @@
     }).join('');
   }
 
-  // Tab Switching
-  $$('.tab-btn').forEach(btn => {
+  // Tab Switching (filter pills)
+  $$('.f-pill:not([data-tab^="converter-"])').forEach(btn => {
     btn.addEventListener('click', () => {
-      $$('.tab-btn').forEach(b => b.classList.remove('active'));
+      $$('.f-pill:not([data-tab^="converter-"])').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       activeTab = btn.dataset.tab;
       renderResults();
@@ -501,24 +501,12 @@
     });
   }
 
-  // Sidebar Command Navigation Switcher
-  $$('.nav-item').forEach(btn => {
+  // Sidebar Navigation Switcher
+  $$('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      $$('.nav-item').forEach(b => b.classList.remove('active'));
+      $$('.nav-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const targetTool = btn.dataset.tool;
-
-      const titleEl = $('#active-tool-title');
-      const subEl = $('#active-tool-sub');
-
-      if (targetTool === 'checker') {
-        if (titleEl) titleEl.textContent = 'Bulk Ungate Scanner';
-        if (subEl) subEl.textContent = 'Execute high-speed Amazon SP-API restriction checks across batch ASIN manifests.';
-      } else if (targetTool === 'converter') {
-        if (titleEl) titleEl.textContent = 'UPC Barcode Resolver';
-        if (subEl) subEl.textContent = 'Bulk convert 12-digit UPCs and 13-digit EAN barcodes into matched Amazon ASINs.';
-      }
-
       $$('.tool-view').forEach(v => {
         v.style.display = (v.id === `tool-view-${targetTool}`) ? 'flex' : 'none';
       });
@@ -792,10 +780,10 @@
     }).join('');
   }
 
-  // Converter Tabs
-  $$('.tab-btn[data-tab^="converter-"]').forEach(btn => {
+  // Converter Filter Pills
+  $$('.f-pill[data-tab^="converter-"]').forEach(btn => {
     btn.addEventListener('click', () => {
-      $$('.tab-btn[data-tab^="converter-"]').forEach(b => b.classList.remove('active'));
+      $$('.f-pill[data-tab^="converter-"]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       activeConverterTab = btn.dataset.tab;
       renderConverterResults();
