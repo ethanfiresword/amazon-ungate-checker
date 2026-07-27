@@ -501,6 +501,330 @@
     });
   }
 
+  // Top-Level Tool Switcher Navigation
+  $$('.nav-tool-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.nav-tool-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const targetTool = btn.dataset.tool;
+      $$('.tool-view').forEach(v => {
+        v.style.display = (v.id === `tool-view-${targetTool}`) ? 'flex' : 'none';
+      });
+    });
+  });
+
+  // UPC Converter State & Helper
+  let converterResults = [];
+  let activeConverterTab = 'converter-all';
+  let converterSearchQuery = '';
+
+  function parseUpcs(text) {
+    const matches = text.match(/\b\d{12,14}\b/g) || [];
+    const seen = new Set();
+    const upcs = [];
+    for (const m of matches) {
+      if (!seen.has(m)) {
+        seen.add(m);
+        upcs.push(m);
+      }
+    }
+    return upcs;
+  }
+
+  // UPC Input Handlers & Conversion Loop
+  const upcPaste = $('#upc-paste');
+  const upcPasteCount = $('#upc-paste-count');
+  if (upcPaste) {
+    upcPaste.addEventListener('input', () => {
+      const upcs = parseUpcs(upcPaste.value);
+      upcPasteCount.textContent = `${upcs.length} Barcodes detected`;
+    });
+  }
+
+  const btnClearUpc = $('#btn-clear-upc-input');
+  if (btnClearUpc) {
+    btnClearUpc.addEventListener('click', () => {
+      upcPaste.value = '';
+      upcPasteCount.textContent = '0 Barcodes detected';
+    });
+  }
+
+  const dropzoneUpc = $('#dropzone-upc');
+  const fileInputUpc = $('#file-input-upc');
+  const btnBrowseUpc = $('#btn-browse-upc');
+
+  if (btnBrowseUpc) {
+    btnBrowseUpc.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInputUpc.click();
+    });
+  }
+
+  if (dropzoneUpc) {
+    dropzoneUpc.addEventListener('click', () => fileInputUpc.click());
+
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropzoneUpc.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzoneUpc.classList.add('drag-over');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+      dropzoneUpc.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzoneUpc.classList.remove('drag-over');
+      });
+    });
+
+    dropzoneUpc.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt.files.length) handleUpcFile(dt.files[0]);
+    });
+  }
+
+  if (fileInputUpc) {
+    fileInputUpc.addEventListener('change', (e) => {
+      if (e.target.files.length) handleUpcFile(e.target.files[0]);
+    });
+  }
+
+  function handleUpcFile(file) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const upcs = parseUpcs(ev.target.result);
+      if (upcs.length > 0) {
+        upcPaste.value = upcs.join('\n');
+        upcPasteCount.textContent = `${upcs.length} Barcodes loaded from ${file.name}`;
+        showToast(`Loaded ${upcs.length} barcodes from file`, 'success');
+      } else {
+        showToast('No valid 12-14 digit UPCs found in file', 'error');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // Start UPC to ASIN Conversion
+  const btnStartConvert = $('#btn-start-convert');
+  const converterProgressCard = $('#converter-progress-card');
+  const converterProgressFill = $('#converter-progress-fill');
+  const converterProgressStatus = $('#converter-progress-status');
+  const converterProgressCount = $('#converter-progress-count');
+
+  if (btnStartConvert) {
+    btnStartConvert.addEventListener('click', async () => {
+      const upcs = parseUpcs(upcPaste.value);
+      if (upcs.length === 0) {
+        showToast('Please enter or drop a list of UPCs first', 'error');
+        return;
+      }
+
+      converterResults = [];
+      converterProgressCard.style.display = 'flex';
+      converterProgressFill.style.width = '0%';
+      converterProgressStatus.textContent = `Querying Amazon SP-API for ${upcs.length} barcodes...`;
+      converterProgressCount.textContent = `0 / ${upcs.length}`;
+
+      const CHUNK_SIZE = 50;
+      for (let i = 0; i < upcs.length; i += CHUNK_SIZE) {
+        const chunk = upcs.slice(i, i + CHUNK_SIZE);
+        const pct = Math.round((converterResults.length / upcs.length) * 100);
+        converterProgressFill.style.width = `${pct}%`;
+        converterProgressCount.textContent = `${converterResults.length} / ${upcs.length}`;
+
+        try {
+          const res = await fetch('/api/convert-upc', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ upcs: chunk })
+          });
+
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(errText);
+          }
+
+          const data = await res.json();
+          const chunkResults = data.results || [];
+          converterResults.push(...chunkResults);
+          renderConverterResults();
+
+        } catch (err) {
+          console.error('UPC conversion error:', err);
+          showToast(`Conversion error: ${err.message}`, 'error');
+        }
+      }
+
+      converterProgressFill.style.width = '100%';
+      converterProgressCount.textContent = `${converterResults.length} / ${upcs.length}`;
+      converterProgressStatus.textContent = 'Conversion Complete!';
+
+      setTimeout(() => {
+        converterProgressCard.style.display = 'none';
+        renderConverterResults();
+        showToast(`Converted ${converterResults.filter(r => r.asin).length} of ${upcs.length} barcodes into ASINs!`, 'success');
+      }, 600);
+    });
+  }
+
+  // Render Converter Results Datatable
+  function renderConverterResults() {
+    const converted = converterResults.filter(r => r.asin);
+    const ungated = converterResults.filter(r => r.status === 'ungated');
+    const softgated = converterResults.filter(r => r.status === 'gated' && r.hasApprovalRoute);
+    const hardgated = converterResults.filter(r => r.status === 'gated' && !r.hasApprovalRoute);
+
+    const cTotal = $('#converter-stat-total');
+    if (cTotal) cTotal.textContent = converterResults.length;
+    const cAsins = $('#converter-stat-asins');
+    if (cAsins) cAsins.textContent = converted.length;
+    const cUngated = $('#converter-stat-ungated');
+    if (cUngated) cUngated.textContent = ungated.length;
+    const cSoft = $('#converter-stat-soft');
+    if (cSoft) cSoft.textContent = softgated.length;
+
+    const bAll = $('#converter-badge-all');
+    if (bAll) bAll.textContent = converterResults.length;
+    const bUngated = $('#converter-badge-ungated');
+    if (bUngated) bUngated.textContent = ungated.length;
+
+    let filtered = [...converterResults];
+    if (activeConverterTab === 'converter-ungated') {
+      filtered = ungated;
+    }
+
+    if (converterSearchQuery) {
+      const q = converterSearchQuery.toLowerCase();
+      filtered = filtered.filter(r => 
+        r.upc.toLowerCase().includes(q) || 
+        (r.asin && r.asin.toLowerCase().includes(q)) || 
+        (r.title && r.title.toLowerCase().includes(q))
+      );
+    }
+
+    const tbody = $('#converter-table-body');
+    if (!tbody) return;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr class="empty-row">
+          <td colspan="5">
+            <div class="empty-state">
+              <div class="empty-icon">🏷️</div>
+              <div class="empty-title">${converterResults.length === 0 ? 'No UPCs Converted Yet' : 'No Converted Results in This Category'}</div>
+              <div class="empty-desc">${converterResults.length === 0 ? 'Paste barcodes above or drop a wholesale CSV file to convert to ASINs.' : 'Try clearing your search or selecting a different tab.'}</div>
+            </div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const historyList = loadHistory();
+    const savedSet = new Set(historyList.map(h => h.asin));
+
+    tbody.innerHTML = filtered.map(item => {
+      let badgeHtml = '';
+      let quickLinksHtml = '';
+
+      if (item.asin) {
+        const isSaved = savedSet.has(item.asin);
+        const saveBtnHtml = isSaved ? 
+          `<button class="btn-save-link saved" data-asin="${item.asin}" data-title="${(item.title || '').replace(/"/g, '&quot;')}" title="Saved to History">⭐ Saved</button>` : 
+          `<button class="btn-save-link" data-asin="${item.asin}" data-title="${(item.title || '').replace(/"/g, '&quot;')}" title="Save to History">☆ Save</button>`;
+
+        if (item.status === 'ungated') {
+          badgeHtml = `<span class="badge badge-ungated">✅ AUTO UNGATED</span>`;
+          quickLinksHtml = `
+            <div class="link-group" style="justify-content: flex-end; align-items: center; gap: 6px;">
+              <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="icon-link">Amazon ↗</a>
+              <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="icon-link">Keepa</a>
+              <a href="https://sas.selleramp.com/sas/lookup?asin=${item.asin}&country=us" target="_blank" class="icon-link">SAS</a>
+              ${saveBtnHtml}
+            </div>
+          `;
+        } else if (item.status === 'gated' && item.hasApprovalRoute) {
+          badgeHtml = `<span class="badge badge-softgated">⚠️ SOFT GATE</span>`;
+          const ungateUrl = `https://sellercentral.amazon.com/hz/approvalrequest/restrictions/approve?asin=${item.asin}`;
+          quickLinksHtml = `
+            <div class="link-group" style="justify-content: flex-end; align-items: center; gap: 6px;">
+              <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="icon-link">Amazon ↗</a>
+              <a href="${ungateUrl}" target="_blank" class="btn-ungate-link">⚡ 1-Click Ungate</a>
+              ${saveBtnHtml}
+            </div>
+          `;
+        } else {
+          badgeHtml = `<span class="badge badge-hardgated">❌ RESTRICTED</span>`;
+          quickLinksHtml = `
+            <div class="link-group" style="justify-content: flex-end; align-items: center; gap: 6px;">
+              <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="icon-link">Amazon ↗</a>
+              <a href="https://sellercentral.amazon.com/product-search/search?q=${item.asin}" target="_blank" class="icon-link">Seller Central</a>
+              ${saveBtnHtml}
+            </div>
+          `;
+        }
+      } else {
+        badgeHtml = `<span class="badge" style="background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border-color);">❓ NO MATCH</span>`;
+        quickLinksHtml = `<span style="color: var(--text-muted); font-size: 0.8rem;">-</span>`;
+      }
+
+      return `
+        <tr>
+          <td class="asin-cell" style="color: var(--text-primary); font-size: 0.88rem;">${item.upc}</td>
+          <td class="asin-cell">${item.asin || '-'}</td>
+          <td class="title-cell" title="${(item.title || '').replace(/"/g, '&quot;')}">${item.title || '-'}</td>
+          <td>${badgeHtml}</td>
+          <td style="text-align: right;">${quickLinksHtml}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Converter Tabs
+  $$('.tab-btn[data-tab^="converter-"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.tab-btn[data-tab^="converter-"]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeConverterTab = btn.dataset.tab;
+      renderConverterResults();
+    });
+  });
+
+  // Converter Search Filter
+  const elConverterSearch = $('#converter-search-input');
+  if (elConverterSearch) {
+    elConverterSearch.addEventListener('input', (e) => {
+      converterSearchQuery = e.target.value.trim();
+      renderConverterResults();
+    });
+  }
+
+  // Converter CSV Export
+  const btnExportConverterCsv = $('#btn-export-converter-csv');
+  if (btnExportConverterCsv) {
+    btnExportConverterCsv.addEventListener('click', () => {
+      const converted = converterResults.filter(r => r.asin);
+      if (converted.length === 0) {
+        showToast('No converted ASINs to export', 'info');
+        return;
+      }
+
+      let csv = 'Input UPC,Matched ASIN,Product Title,Ungating Status,Amazon Link\n';
+      converted.forEach(item => {
+        csv += `"${item.upc}","${item.asin}","${(item.title || '').replace(/"/g, '""')}","${item.status}","https://www.amazon.com/dp/${item.asin}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `converted-upc-asins-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`Exported ${converted.length} converted UPC-to-ASIN records`, 'success');
+    });
+  }
+
   // Save / Remove event listeners for table buttons
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-save-link');
@@ -509,6 +833,7 @@
     const asin = btn.dataset.asin;
     const title = btn.dataset.title;
     toggleSaveHistory(asin, title);
+    renderConverterResults();
   });
 
   // Clear History Button
@@ -540,4 +865,5 @@
 
   // Initial render
   renderResults();
+  renderConverterResults();
 })();

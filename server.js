@@ -206,7 +206,41 @@ async function processBatchConcurrent(asins, accessToken, concurrency = 6) {
   return results;
 }
 
-// High-Speed API Endpoint to check ASINs
+// Lookup UPC or EAN barcode in Amazon SP-API Catalog API
+async function lookupUpcInAmazonCatalog(upc, accessToken) {
+  try {
+    const cleanUpc = upc.trim().replace(/\D/g, '');
+    if (!cleanUpc) return null;
+    const type = cleanUpc.length === 13 ? 'EAN' : (cleanUpc.length === 8 ? 'JAN' : 'UPC');
+    const url = `${CONFIG.apiBaseUrl}/catalog/2022-04-01/items?identifiers=${encodeURIComponent(cleanUpc)}&identifiersType=${type}&marketplaceIds=${CONFIG.marketplaceId}&includedData=summaries`;
+    
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-amz-access-token': accessToken,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.items && data.items.length > 0) {
+        const item = data.items[0];
+        const asin = item.asin;
+        const summary = item.summaries && item.summaries[0];
+        const brand = summary ? (summary.brandName || summary.brand || summary.manufacturer || '') : '';
+        const title = summary ? (summary.itemName || '') : '';
+        const fullTitle = brand ? `[${brand}] ${title}` : title;
+        return { asin, title: fullTitle, brand };
+      }
+    }
+  } catch (e) {
+    console.error(`UPC Lookup error for ${upc}:`, e.message);
+  }
+  return null;
+}
+
+// High-Speed API Endpoint 1: ASIN Batch Check
 app.post('/api/check', async (req, res) => {
   const { asins } = req.body;
   if (!asins || !Array.isArray(asins)) {
@@ -219,6 +253,67 @@ app.post('/api/check', async (req, res) => {
     res.json({ results });
   } catch (error) {
     console.error('Server error during check:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// API Endpoint 2: Convert UPCs to ASINs & Check Ungating Eligibility
+app.post('/api/convert-upc', async (req, res) => {
+  const { upcs } = req.body;
+  if (!upcs || !Array.isArray(upcs)) {
+    return res.status(400).json({ error: 'Missing or invalid "upcs" array in request body' });
+  }
+
+  try {
+    const accessToken = await getAccessToken();
+    const results = [];
+    const concurrency = 6;
+    let index = 0;
+
+    async function worker() {
+      while (index < upcs.length) {
+        const currentIndex = index++;
+        const rawUpc = upcs[currentIndex];
+        const match = await lookupUpcInAmazonCatalog(rawUpc, accessToken);
+
+        if (match && match.asin) {
+          const checkResult = await checkSingleAsinWithRetry(match.asin, accessToken);
+          results[currentIndex] = {
+            upc: rawUpc,
+            asin: match.asin,
+            title: checkResult.title || match.title || `ASIN ${match.asin}`,
+            brand: checkResult.brand || match.brand || '',
+            status: checkResult.status,
+            hasApprovalRoute: checkResult.hasApprovalRoute,
+            reasonCode: checkResult.reasonCode || '',
+            reasons: checkResult.reasons || []
+          };
+        } else {
+          results[currentIndex] = {
+            upc: rawUpc,
+            asin: null,
+            title: 'No Amazon ASIN Found',
+            brand: '',
+            status: 'no_match',
+            hasApprovalRoute: false,
+            reasonCode: 'NO_AMAZON_MATCH',
+            reasons: []
+          };
+        }
+        await delay(120);
+      }
+    }
+
+    const workers = [];
+    for (let i = 0; i < Math.min(concurrency, upcs.length); i++) {
+      workers.push(worker());
+    }
+
+    await Promise.all(workers);
+    saveCache();
+    res.json({ results });
+  } catch (error) {
+    console.error('Server error during UPC conversion:', error);
     res.status(500).json({ error: error.message });
   }
 });
