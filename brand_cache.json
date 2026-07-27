@@ -1491,5 +1491,20 @@
       "warning": "Standard wholesale reseller friendly"
     },
     "overallVerdict": "softgated"
+  },
+  "hasbro_apparel": {
+    "brand": "Hasbro",
+    "verifiedBrand": "Hasbro",
+    "matchedAsin": "B081BR9TQ7",
+    "amazonTitle": "[Hasbro] Beyblade Generation 1 Logo Dark T-Shirt",
+    "status": "gated",
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "ipRisk": {
+      "level": "medium",
+      "label": "🟡 Moderate Risk",
+      "warning": "Requires authorized distributor invoice or Brand LOA"
+    },
+    "overallVerdict": "restricted"
   }
 }

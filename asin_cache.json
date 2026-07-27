@@ -541386,5 +541386,43 @@
         ]
       }
     ]
+  },
+  "B081BR9TQ7": {
+    "asin": "B081BR9TQ7",
+    "brand": "Hasbro",
+    "title": "[Hasbro] Beyblade Generation 1 Logo Dark T-Shirt",
+    "status": "gated",
+    "restrictions": [
+      {
+        "marketplaceId": "ATVPDKIKX0DER",
+        "conditionType": "new_new",
+        "reasons": [
+          {
+            "reasonCode": "NOT_ELIGIBLE",
+            "message": "This product has other listing limitations.",
+            "links": []
+          },
+          {
+            "reasonCode": "NOT_ELIGIBLE",
+            "message": "You are not approved to list this brand and we are currently not accepting applications.",
+            "links": []
+          }
+        ]
+      }
+    ],
+    "hasApprovalRoute": false,
+    "reasonCode": "NOT_ELIGIBLE",
+    "reasons": [
+      {
+        "reasonCode": "NOT_ELIGIBLE",
+        "message": "This product has other listing limitations.",
+        "links": []
+      },
+      {
+        "reasonCode": "NOT_ELIGIBLE",
+        "message": "You are not approved to list this brand and we are currently not accepting applications.",
+        "links": []
+      }
+    ]
   }
 }

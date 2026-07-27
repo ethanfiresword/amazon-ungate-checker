@@ -19,19 +19,6 @@
         <span class="brand-name">BOXEM <span class="brand-badge">UNGATE</span></span>
       </div>
 
-      <!-- Top-Level Tool Switcher Tabs -->
-      <nav class="nav-tools">
-        <button class="nav-tool-btn active" data-tool="checker">
-          <span>⚡ Bulk Ungate Checker</span>
-        </button>
-        <button class="nav-tool-btn" data-tool="brands">
-          <span>🏷️ Brand Ungate & IP Risk Profiler</span>
-        </button>
-        <button class="nav-tool-btn" data-tool="matcher">
-          <span>🔍 Wholesaler Item Matcher</span>
-        </button>
-      </nav>
-
       <div class="nav-status">
         <span class="status-indicator active"></span>
         <span class="status-text">SP-API Connected</span>
@@ -41,466 +28,155 @@
 
   <!-- Main Container -->
   <main class="app-container">
+    <!-- Header Hero -->
+    <section class="hero-section">
+      <h1 class="hero-title">Bulk Ungate Checker</h1>
+      <p class="hero-subtitle">Instantly verify selling eligibility, soft gates, and hard restrictions via Amazon SP-API</p>
+    </section>
 
-    <!-- ================================================= -->
-    <!-- TOOL VIEW 1: BULK UNGATE CHECKER                  -->
-    <!-- ================================================= -->
-    <div id="tool-view-checker" class="tool-view active">
-      <!-- Header Hero -->
-      <section class="hero-section">
-        <h1 class="hero-title">Bulk Ungate Checker</h1>
-        <p class="hero-subtitle">Instantly verify selling eligibility, soft gates, and hard restrictions via Amazon SP-API</p>
-      </section>
-
-      <!-- Scan Input Card -->
-      <section class="card input-card">
-        <div class="input-grid">
-          <!-- File Dropzone -->
-          <div class="dropzone-box" id="dropzone">
-            <input type="file" id="file-input" accept=".txt,.csv" hidden />
-            <div class="dropzone-icon">📁</div>
-            <div class="dropzone-title">Drag & Drop File</div>
-            <div class="dropzone-sub">Supports .csv or .txt (Keepa exports, ASIN lists)</div>
-            <button class="btn btn-secondary btn-sm" id="btn-browse">Browse Files</button>
-          </div>
-
-          <!-- Manual Text Area -->
-          <div class="manual-box">
-            <label for="bulk-paste" class="label">Or Paste ASINs Manually</label>
-            <textarea id="bulk-paste" placeholder="Paste ASINs here (one per line, comma or space separated)..."></textarea>
-            <div class="input-footer">
-              <span id="paste-count" class="count-badge">0 ASINs detected</span>
-              <button class="btn btn-secondary btn-sm" id="btn-clear-input">Clear</button>
-            </div>
-          </div>
+    <!-- Scan Input Card -->
+    <section class="card input-card">
+      <div class="input-grid">
+        <!-- File Dropzone -->
+        <div class="dropzone-box" id="dropzone">
+          <input type="file" id="file-input" accept=".txt,.csv" hidden />
+          <div class="dropzone-icon">📁</div>
+          <div class="dropzone-title">Drag & Drop File</div>
+          <div class="dropzone-sub">Supports .csv or .txt (Keepa exports, ASIN lists)</div>
+          <button class="btn btn-secondary btn-sm" id="btn-browse">Browse Files</button>
         </div>
 
-        <div class="input-actions">
-          <button class="btn btn-primary btn-lg" id="btn-start-scan">
-            <span>⚡ Start Bulk Scan</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- Progress Overlay / Bar -->
-      <section class="card progress-card" id="progress-card" style="display: none;">
-        <div class="progress-header">
-          <div class="progress-title">
-            <span class="spinner"></span>
-            <span id="progress-status">Scanning ASINs against Amazon SP-API...</span>
-          </div>
-          <div class="progress-stats" style="display: flex; align-items: center; gap: 12px;">
-            <span id="progress-eta" style="color: var(--text-muted); font-size: 0.85rem;">Est. time: --</span>
-            <span id="progress-count" style="font-weight: 700;">0 / 0</span>
-            <button class="btn btn-secondary btn-sm" id="btn-stop-scan" style="color: var(--red); border-color: var(--red-border);">Stop Scan</button>
+        <!-- Manual Text Area -->
+        <div class="manual-box">
+          <label for="bulk-paste" class="label">Or Paste ASINs Manually</label>
+          <textarea id="bulk-paste" placeholder="Paste ASINs here (one per line, comma or space separated)..."></textarea>
+          <div class="input-footer">
+            <span id="paste-count" class="count-badge">0 ASINs detected</span>
+            <button class="btn btn-secondary btn-sm" id="btn-clear-input">Clear</button>
           </div>
         </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar-fill" id="progress-bar-fill"></div>
+      </div>
+
+      <div class="input-actions">
+        <button class="btn btn-primary btn-lg" id="btn-start-scan">
+          <span>⚡ Start Bulk Scan</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Progress Overlay / Bar -->
+    <section class="card progress-card" id="progress-card" style="display: none;">
+      <div class="progress-header">
+        <div class="progress-title">
+          <span class="spinner"></span>
+          <span id="progress-status">Scanning ASINs against Amazon SP-API...</span>
         </div>
-      </section>
-
-      <!-- Results Section -->
-      <section class="results-section" id="results-section">
-        <!-- Stats Dashboard -->
-        <div class="stats-row">
-          <div class="stat-card">
-            <div class="stat-icon">📦</div>
-            <div class="stat-content">
-              <div class="stat-value" id="stat-total">0</div>
-              <div class="stat-label">Total Checked</div>
-            </div>
-          </div>
-          <div class="stat-card stat-ungated">
-            <div class="stat-icon">✅</div>
-            <div class="stat-content">
-              <div class="stat-value text-green" id="stat-ungated">0</div>
-              <div class="stat-label">Auto Ungated</div>
-            </div>
-          </div>
-          <div class="stat-card stat-soft">
-            <div class="stat-icon">⚠️</div>
-            <div class="stat-content">
-              <div class="stat-value text-yellow" id="stat-soft">0</div>
-              <div class="stat-label">Soft Gate (Approval Required)</div>
-            </div>
-          </div>
-          <div class="stat-card stat-hard">
-            <div class="stat-icon">❌</div>
-            <div class="stat-content">
-              <div class="stat-value text-red" id="stat-hard">0</div>
-              <div class="stat-label">Restricted (Not Eligible)</div>
-            </div>
-          </div>
+        <div class="progress-stats" style="display: flex; align-items: center; gap: 12px;">
+          <span id="progress-eta" style="color: var(--text-muted); font-size: 0.85rem;">Est. time: --</span>
+          <span id="progress-count" style="font-weight: 700;">0 / 0</span>
+          <button class="btn btn-secondary btn-sm" id="btn-stop-scan" style="color: var(--red); border-color: var(--red-border);">Stop Scan</button>
         </div>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progress-bar-fill"></div>
+      </div>
+    </section>
 
-        <!-- Results Table Header & Controls -->
-        <div class="card table-card">
-          <div class="table-header">
-            <!-- Boxem Style Tabs -->
-            <div class="tabs-container">
-              <button class="tab-btn active" data-tab="all">
-                All Results <span class="tab-badge" id="badge-all">0</span>
-              </button>
-              <button class="tab-btn tab-ungated" data-tab="ungated">
-                ✅ Auto Ungated <span class="tab-badge" id="badge-ungated">0</span>
-              </button>
-              <button class="tab-btn tab-soft" data-tab="softgated">
-                ⚠️ Soft Gate (Approval Required) <span class="tab-badge" id="badge-soft">0</span>
-              </button>
-              <button class="tab-btn tab-hard" data-tab="hardgated">
-                ❌ Restricted (Not Eligible) <span class="tab-badge" id="badge-hard">0</span>
-              </button>
-              <button class="tab-btn" data-tab="history" style="border-left: 1px solid var(--border-color); margin-left: 4px;">
-                📜 Saved History <span class="tab-badge" id="badge-history">0</span>
-              </button>
-            </div>
-
-            <!-- Actions -->
-            <div class="table-actions">
-              <input type="text" id="search-input" class="search-input" placeholder="Search ASIN..." />
-              <button class="btn btn-secondary btn-sm" id="btn-clear-history" style="display: none; color: var(--red); border-color: var(--red-border);">
-                🗑️ Clear History
-              </button>
-              <button class="btn btn-primary btn-sm" id="btn-export-csv">
-                📥 Export Ungated CSV
-              </button>
-            </div>
-          </div>
-
-          <!-- Datatable -->
-          <div class="table-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th style="width: 30%;">Title</th>
-                  <th>ASIN</th>
-                  <th>Status</th>
-                  <th>Details / Reason</th>
-                  <th style="text-align: right;">Quick Links</th>
-                </tr>
-              </thead>
-              <tbody id="table-body">
-                <tr class="empty-row">
-                  <td colspan="5">
-                    <div class="empty-state">
-                      <div class="empty-icon">🔍</div>
-                      <div class="empty-title">No ASINs Scanned Yet</div>
-                      <div class="empty-desc">Paste ASINs above or drop a file to start bulk ungating.</div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+    <!-- Results Section -->
+    <section class="results-section" id="results-section">
+      <!-- Stats Dashboard -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-content">
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">Total Checked</div>
           </div>
         </div>
-      </section>
-    </div>
-
-    <!-- ================================================= -->
-    <!-- TOOL VIEW 2: BRAND UNGATE & IP RISK PROFILER      -->
-    <!-- ================================================= -->
-    <div id="tool-view-brands" class="tool-view" style="display: none;">
-      <!-- Header Hero -->
-      <section class="hero-section">
-        <h1 class="hero-title">Brand Ungate & IP Risk Profiler</h1>
-        <p class="hero-subtitle">Paste wholesaler brand names to instantly verify Amazon selling eligibility and detect IP complaint risks</p>
-      </section>
-
-      <!-- Input Card -->
-      <section class="card input-card">
-        <div class="manual-box" style="gap: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <label for="brands-input" class="label" style="font-size: 1rem; font-weight: 700;">Wholesaler Brand Names</label>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <label for="category-focus-select" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Wholesaler Industry Focus:</label>
-              <select id="category-focus-select" class="search-input" style="padding: 6px 12px; font-size: 0.85rem; width: auto; font-weight: 600; cursor: pointer; background: var(--bg-card); border-color: var(--border-color);">
-                <option value="apparel" selected>👕 Apparel & Clothing (S&S, SanMar, AlphaBroder)</option>
-                <option value="toys">🧸 Toys, Games & Collectibles (EE, Hasbro)</option>
-                <option value="beauty">💄 Beauty, Health & Grocery (KeHE, UNFI)</option>
-                <option value="home">🏠 Home & Kitchen (Stanley, Keurig)</option>
-                <option value="electronics">🔌 Electronics & Tech (Anker, Logitech)</option>
-                <option value="general">📦 General Wholesale / Auto-Detect</option>
-              </select>
-            </div>
+        <div class="stat-card stat-ungated">
+          <div class="stat-icon">✅</div>
+          <div class="stat-content">
+            <div class="stat-value text-green" id="stat-ungated">0</div>
+            <div class="stat-label">Auto Ungated</div>
           </div>
-          <textarea id="brands-input" style="height: 120px; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem;" placeholder="Paste brand names here (one per line or comma separated)...
-Example:
-Gildan
-Bella Canvas
-Champion
-Stanley
-Nike
-Otterbox
-Burt's Bees"></textarea>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span id="brands-count" class="count-badge">0 brands detected</span>
-            <button class="btn btn-primary btn-lg" id="btn-start-brands-scan">
-              <span>🏷️ Profile Brands & IP Risk</span>
+        </div>
+        <div class="stat-card stat-soft">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-content">
+            <div class="stat-value text-yellow" id="stat-soft">0</div>
+            <div class="stat-label">Soft Gate (Approval Required)</div>
+          </div>
+        </div>
+        <div class="stat-card stat-hard">
+          <div class="stat-icon">❌</div>
+          <div class="stat-content">
+            <div class="stat-value text-red" id="stat-hard">0</div>
+            <div class="stat-label">Restricted (Not Eligible)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Table Header & Controls -->
+      <div class="card table-card">
+        <div class="table-header">
+          <!-- Boxem Style Tabs -->
+          <div class="tabs-container">
+            <button class="tab-btn active" data-tab="all">
+              All Results <span class="tab-badge" id="badge-all">0</span>
+            </button>
+            <button class="tab-btn tab-ungated" data-tab="ungated">
+              ✅ Auto Ungated <span class="tab-badge" id="badge-ungated">0</span>
+            </button>
+            <button class="tab-btn tab-soft" data-tab="softgated">
+              ⚠️ Soft Gate (Approval Required) <span class="tab-badge" id="badge-soft">0</span>
+            </button>
+            <button class="tab-btn tab-hard" data-tab="hardgated">
+              ❌ Restricted (Not Eligible) <span class="tab-badge" id="badge-hard">0</span>
+            </button>
+            <button class="tab-btn" data-tab="history" style="border-left: 1px solid var(--border-color); margin-left: 4px;">
+              📜 Saved History <span class="tab-badge" id="badge-history">0</span>
             </button>
           </div>
-        </div>
-      </section>
 
-      <!-- Progress Overlay / Bar -->
-      <section class="card progress-card" id="brands-progress-card" style="display: none;">
-        <div class="progress-header">
-          <div class="progress-title">
-            <span class="spinner"></span>
-            <span id="brands-progress-status">Profiling brand catalog & IP risks via SP-API...</span>
-          </div>
-          <div class="progress-stats">
-            <span id="brands-progress-count" style="font-weight: 700;">0 / 0</span>
-          </div>
-        </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar-fill" id="brands-progress-fill"></div>
-        </div>
-      </section>
-
-      <!-- Results Section -->
-      <section class="results-section" id="brands-results-section">
-        <!-- Stats Dashboard -->
-        <div class="stats-row">
-          <div class="stat-card">
-            <div class="stat-icon">🏷️</div>
-            <div class="stat-content">
-              <div class="stat-value" id="brands-stat-total">0</div>
-              <div class="stat-label">Total Brands</div>
-            </div>
-          </div>
-          <div class="stat-card stat-ungated">
-            <div class="stat-icon">✅</div>
-            <div class="stat-content">
-              <div class="stat-value text-green" id="brands-stat-safe">0</div>
-              <div class="stat-label">Safe & Ungated</div>
-            </div>
-          </div>
-          <div class="stat-card stat-soft">
-            <div class="stat-icon">⚠️</div>
-            <div class="stat-content">
-              <div class="stat-value text-yellow" id="brands-stat-soft">0</div>
-              <div class="stat-label">Approval Required</div>
-            </div>
-          </div>
-          <div class="stat-card stat-hard">
-            <div class="stat-icon">🔴</div>
-            <div class="stat-content">
-              <div class="stat-value text-red" id="brands-stat-iprisk">0</div>
-              <div class="stat-label">High IP Risk Flags</div>
-            </div>
+          <!-- Actions -->
+          <div class="table-actions">
+            <input type="text" id="search-input" class="search-input" placeholder="Search ASIN..." />
+            <button class="btn btn-secondary btn-sm" id="btn-clear-history" style="display: none; color: var(--red); border-color: var(--red-border);">
+              🗑️ Clear History
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-export-csv">
+              📥 Export Ungated CSV
+            </button>
           </div>
         </div>
 
         <!-- Datatable -->
-        <div class="card table-card">
-          <div class="table-header">
-            <div class="tabs-container">
-              <button class="tab-btn active" data-tab="brands-all">
-                All Brands <span class="tab-badge" id="brands-badge-all">0</span>
-              </button>
-              <button class="tab-btn tab-ungated" data-tab="brands-safe">
-                ✅ Safe & Ungated <span class="tab-badge" id="brands-badge-safe">0</span>
-              </button>
-              <button class="tab-btn tab-soft" data-tab="brands-soft">
-                ⚠️ Invoice Approval Needed <span class="tab-badge" id="brands-badge-soft">0</span>
-              </button>
-              <button class="tab-btn tab-hard" data-tab="brands-iprisk">
-                🔴 High IP Risk Flags <span class="tab-badge" id="brands-badge-iprisk">0</span>
-              </button>
-            </div>
-            <div class="table-actions">
-              <button class="btn btn-primary btn-sm" id="btn-export-brands-csv">
-                📥 Export Safe Brands CSV
-              </button>
-            </div>
-          </div>
-
-          <div class="table-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th style="width: 25%;">Brand Name</th>
-                  <th>Ungating Status</th>
-                  <th>IP Risk Profile</th>
-                  <th style="width: 25%;">Representative ASIN</th>
-                  <th style="text-align: right;">Actions & Links</th>
-                </tr>
-              </thead>
-              <tbody id="brands-table-body">
-                <tr class="empty-row">
-                  <td colspan="5">
-                    <div class="empty-state">
-                      <div class="empty-icon">🏷️</div>
-                      <div class="empty-title">No Brands Profiled Yet</div>
-                      <div class="empty-desc">Paste brand names above and click "Profile Brands & IP Risk".</div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 30%;">Title</th>
+                <th>ASIN</th>
+                <th>Status</th>
+                <th>Details / Reason</th>
+                <th style="text-align: right;">Quick Links</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <tr class="empty-row">
+                <td colspan="5">
+                  <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <div class="empty-title">No ASINs Scanned Yet</div>
+                    <div class="empty-desc">Paste ASINs above or drop a file to start bulk ungating.</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </section>
-    </div>
-
-    <!-- ================================================= -->
-    <!-- TOOL VIEW 3: WHOLESALER ITEM MATCHER & VERIFIER   -->
-    <!-- ================================================= -->
-    <div id="tool-view-matcher" class="tool-view" style="display: none;">
-      <!-- Header Hero -->
-      <section class="hero-section">
-        <h1 class="hero-title">Wholesaler Item Matcher & Verifier</h1>
-        <p class="hero-subtitle">Input wholesaler listings, UPCs, style numbers, or CSV price sheets to find exact matching Amazon products and verify ungating status</p>
-      </section>
-
-      <!-- Input Card -->
-      <section class="card input-card">
-        <div class="tabs-container" style="margin-bottom: 16px; width: 100%;">
-          <button class="tab-btn active" id="matcher-mode-btn-single">🎯 Single Item Search</button>
-          <button class="tab-btn" id="matcher-mode-btn-bulk">📋 Bulk CSV / Catalog Importer</button>
-        </div>
-
-        <!-- Mode 1: Single Item Matcher -->
-        <div id="matcher-mode-single" class="manual-box" style="gap: 14px;">
-          <div class="input-grid" style="grid-template-columns: 2fr 1fr 1fr; gap: 12px;">
-            <div>
-              <label for="matcher-single-title" class="label" style="font-weight: 700;">Wholesaler Item Title / Description</label>
-              <input type="text" id="matcher-single-title" class="search-input" style="padding: 12px 16px;" placeholder="e.g. Gildan 5000 Heavy Cotton T-Shirt Black Large..." />
-            </div>
-            <div>
-              <label for="matcher-single-style" class="label" style="font-weight: 700;">Style # / SKU / UPC (Optional)</label>
-              <input type="text" id="matcher-single-style" class="search-input" style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace;" placeholder="e.g. G5000 or UPC barcode..." />
-            </div>
-            <div>
-              <label for="matcher-single-price" class="label" style="font-weight: 700;">Wholesale Price ($)</label>
-              <input type="number" step="0.01" id="matcher-single-price" class="search-input" style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace;" placeholder="e.g. 3.85" />
-            </div>
-          </div>
-          <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
-            <button class="btn btn-primary btn-lg" id="btn-start-matcher-single">
-              <span>🔍 Find Exact Amazon Listing</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Mode 2: Bulk CSV / Sheet Importer -->
-        <div id="matcher-mode-bulk" class="manual-box" style="gap: 12px; display: none;">
-          <label for="matcher-text-input" class="label" style="font-size: 1rem; font-weight: 700;">Paste Wholesaler Catalog Lines or CSV (Title, Style/UPC, Price)</label>
-          <textarea id="matcher-text-input" style="height: 130px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;" placeholder="Paste product lines or CSV from your wholesaler price sheet (one per line)...
-Example:
-Gildan 5000 Heavy Cotton T-Shirt, 5000, $3.85
-Bella Canvas 3001 Unisex Tee White L, 3001, $4.20
-Next Level 3600 Premium Fitted Crew, 3600, $4.50"></textarea>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-            <span id="matcher-text-count" class="count-badge">0 items detected</span>
-            <button class="btn btn-primary btn-lg" id="btn-start-matcher-bulk">
-              <span>⚡ Match All Items & Verify Ungating</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Progress Overlay -->
-      <section class="card progress-card" id="matcher-progress-card" style="display: none;">
-        <div class="progress-header">
-          <div class="progress-title">
-            <span class="spinner"></span>
-            <span id="matcher-progress-status">Matching wholesaler items against Amazon Catalog & SP-API...</span>
-          </div>
-          <div class="progress-stats">
-            <span id="matcher-progress-count" style="font-weight: 700;">0 / 0</span>
-          </div>
-        </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar-fill" id="matcher-progress-fill"></div>
-        </div>
-      </section>
-
-      <!-- Results Section -->
-      <section class="results-section" id="matcher-results-section">
-        <!-- Stats Dashboard -->
-        <div class="stats-row">
-          <div class="stat-card">
-            <div class="stat-icon">🔍</div>
-            <div class="stat-content">
-              <div class="stat-value" id="matcher-stat-total">0</div>
-              <div class="stat-label">Items Searched</div>
-            </div>
-          </div>
-          <div class="stat-card stat-ungated">
-            <div class="stat-icon">✅</div>
-            <div class="stat-content">
-              <div class="stat-value text-green" id="matcher-stat-ungated">0</div>
-              <div class="stat-label">Matched & Auto Ungated</div>
-            </div>
-          </div>
-          <div class="stat-card stat-soft">
-            <div class="stat-icon">⚠️</div>
-            <div class="stat-content">
-              <div class="stat-value text-yellow" id="matcher-stat-soft">0</div>
-              <div class="stat-label">Approval Required</div>
-            </div>
-          </div>
-          <div class="stat-card stat-hard">
-            <div class="stat-icon">❌</div>
-            <div class="stat-content">
-              <div class="stat-value text-red" id="matcher-stat-hard">0</div>
-              <div class="stat-label">Restricted / No Match</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Datatable -->
-        <div class="card table-card">
-          <div class="table-header">
-            <div class="tabs-container">
-              <button class="tab-btn active" data-tab="matcher-all">
-                All Matches <span class="tab-badge" id="matcher-badge-all">0</span>
-              </button>
-              <button class="tab-btn tab-ungated" data-tab="matcher-ungated">
-                ✅ Ungated Matches <span class="tab-badge" id="matcher-badge-ungated">0</span>
-              </button>
-              <button class="tab-btn tab-soft" data-tab="matcher-soft">
-                ⚠️ Approval Needed <span class="tab-badge" id="matcher-badge-soft">0</span>
-              </button>
-            </div>
-            <div class="table-actions">
-              <button class="btn btn-primary btn-sm" id="btn-export-matcher-csv">
-                📥 Export Matched Ungated CSV
-              </button>
-            </div>
-          </div>
-
-          <div class="table-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th style="width: 25%;">Wholesaler Item</th>
-                  <th>Wholesale Price</th>
-                  <th style="width: 30%;">Matched Amazon ASIN & Listing</th>
-                  <th>Match Confidence</th>
-                  <th>Ungating Status</th>
-                  <th style="text-align: right;">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="matcher-table-body">
-                <tr class="empty-row">
-                  <td colspan="6">
-                    <div class="empty-state">
-                      <div class="empty-icon">🔍</div>
-                      <div class="empty-title">No Wholesaler Items Matched Yet</div>
-                      <div class="empty-desc">Search a single wholesaler item above or paste catalog lines to find exact Amazon listings.</div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-    </div>
-
+      </div>
+    </section>
   </main>
 
   <!-- Toast Notification Container -->
