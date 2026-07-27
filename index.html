@@ -384,44 +384,31 @@
           </div>
         </div>
 
-        <!-- 1. 3 Separate Reseller Check Cards (Perfect for Amazon Sellers) -->
-        <div class="stats-row" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px;">
-          <!-- Check 1: Amazon Ungating Status -->
-          <div class="stat-card" id="card-check-ungating" style="padding: 14px 18px;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">1. Ungating Status</div>
-            <div id="check-ungating-val" style="font-size: 1.05rem; font-weight: 800; margin-top: 4px; color: var(--green); display: flex; align-items: center; gap: 6px;">-</div>
-            <div id="check-ungating-sub" style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">-</div>
-          </div>
-
-          <!-- Check 2: Brand Reseller & IP Policy -->
-          <div class="stat-card" id="card-check-policy" style="padding: 14px 18px;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">2. Brand IP & Reseller Policy</div>
-            <div id="check-policy-val" style="font-size: 1.05rem; font-weight: 800; margin-top: 4px; color: var(--green); display: flex; align-items: center; gap: 6px;">-</div>
-            <div id="check-policy-sub" style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">-</div>
-          </div>
-
-          <!-- Check 3: Valid Ungating Invoice -->
-          <div class="stat-card" id="card-check-invoice" style="padding: 14px 18px;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">3. Valid Ungating Invoice</div>
-            <div id="check-invoice-val" style="font-size: 1.05rem; font-weight: 800; margin-top: 4px; color: var(--green); display: flex; align-items: center; gap: 6px;">-</div>
-            <div id="check-invoice-sub" style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">-</div>
-          </div>
+        <!-- 1. Main AI LLM Feasibility Report Card -->
+        <div class="card" style="padding: 24px; border: 1px solid var(--border-color); background: var(--bg-card);">
+          <div id="ai-feasibility-report-markdown" style="font-size: 0.95rem; line-height: 1.7; color: var(--text-primary);"></div>
         </div>
 
-        <!-- 2. Single Overall Verdict Summary Banner (YES / NO) -->
-        <div class="card" id="feasibility-status-banner" style="padding: 16px 20px; text-align: center; border-radius: var(--radius-md);">
-          <h2 id="feasibility-status-title" style="font-size: 1.3rem; font-weight: 800;">-</h2>
-          <p id="feasibility-status-desc" style="font-size: 0.88rem; color: var(--text-secondary); max-width: 650px; margin: 4px auto 0 auto;">-</p>
-        </div>
-
-        <!-- 3. Minimalist Authorized Distributors List & Quick Email Outreach -->
-        <div class="card" id="distributors-detail-card" style="padding: 18px 20px; border: 1px solid var(--border-color); background: var(--bg-card);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary);">🏢 Verified Distributors & 1-Click Outreach</div>
-            <span style="font-size: 0.78rem; color: var(--primary); background: rgba(99, 102, 241, 0.1); padding: 3px 8px; border-radius: var(--radius-full);" id="distributors-count-badge">0 Suppliers</span>
+        <!-- 2. Interactive AI Follow-Up Chat Box -->
+        <div class="card" style="padding: 20px 24px; border: 1px solid var(--border-color); background: var(--bg-card);">
+          <div style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <span>💬 Interactive AI Follow-Up Assistant</span>
+            <span style="font-size: 0.75rem; color: var(--green); background: rgba(34, 197, 94, 0.1); padding: 3px 8px; border-radius: var(--radius-full);">Ask Anything</span>
           </div>
 
-          <div id="distributors-full-grid" style="display: flex; flex-direction: column; gap: 8px;"></div>
+          <!-- Suggested Question Chips -->
+          <div id="ai-suggested-questions" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;"></div>
+
+          <!-- Chat Conversation Log -->
+          <div id="ai-chat-history" style="display: flex; flex-direction: column; gap: 12px; max-height: 350px; overflow-y: auto; margin-bottom: 14px; padding-right: 4px;"></div>
+
+          <!-- Chat Input Bar -->
+          <div style="display: flex; gap: 10px;">
+            <input type="text" id="ai-chat-input" class="search-input" style="flex: 1; padding: 10px 14px; font-size: 0.9rem;" placeholder="Ask any follow-up question (e.g. 'Draft an email pitch to sales', 'How to ungate on Seller Central')..." />
+            <button class="btn btn-primary btn-md" id="btn-send-chat">
+              <span>Send 💬</span>
+            </button>
+          </div>
         </div>
 
         <!-- 3. Automated 1-Click B2B Wholesale Application Email Sender -->

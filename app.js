@@ -888,6 +888,20 @@
     }
   }
 
+  // Simple Markdown to HTML Formatter
+  function parseSimpleMarkdown(md) {
+    if (!md) return '';
+    return md
+      .replace(/^### (.*$)/gim, '<h3 style="font-size: 1.1rem; font-weight: 800; color: var(--primary); margin: 14px 0 6px 0;">$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 16px 0 8px 0;">$1</h2>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--text-primary); font-weight: 700;">$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`([^`]+)`/g, '<code style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.85rem;">$1</code>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline;">$1 ↗</a>')
+      .replace(/^\- (.*$)/gim, '<li style="margin-left: 18px; margin-bottom: 4px;">$1</li>')
+      .replace(/\n/g, '<br />');
+  }
+
   function renderFeasibilityUI(data) {
     const resultsSec = $('#feasibility-results');
     if (resultsSec) resultsSec.style.display = 'flex';
@@ -909,101 +923,36 @@
       }
     }
 
-    // 1. Populate 3 Separate Reseller Check Cards
-    if (data.checks) {
-      // Check 1: Ungating Status
-      const uVal = $('#check-ungating-val');
-      const uSub = $('#check-ungating-sub');
-      if (uVal) {
-        uVal.innerHTML = data.checks.ungating.isGreen ? `<span>✅</span> <span>${data.checks.ungating.status}</span>` : `<span>❌</span> <span>${data.checks.ungating.status}</span>`;
-        uVal.style.color = data.checks.ungating.isGreen ? 'var(--green)' : 'var(--red)';
-      }
-      if (uSub) uSub.textContent = data.checks.ungating.desc;
-
-      // Check 2: Brand Reseller & IP Policy
-      const pVal = $('#check-policy-val');
-      const pSub = $('#check-policy-sub');
-      if (pVal) {
-        pVal.innerHTML = data.checks.brandPolicy.isGreen ? `<span>✅</span> <span>${data.checks.brandPolicy.status}</span>` : `<span>❌</span> <span>${data.checks.brandPolicy.status}</span>`;
-        pVal.style.color = data.checks.brandPolicy.isGreen ? 'var(--green)' : 'var(--red)';
-      }
-      if (pSub) pSub.textContent = data.checks.brandPolicy.desc;
-
-      // Check 3: Valid Ungating Invoice
-      const iVal = $('#check-invoice-val');
-      const iSub = $('#check-invoice-sub');
-      if (iVal) {
-        iVal.innerHTML = data.checks.invoice.isGreen ? `<span>✅</span> <span>${data.checks.invoice.status}</span>` : `<span>❌</span> <span>${data.checks.invoice.status}</span>`;
-        iVal.style.color = data.checks.invoice.isGreen ? 'var(--green)' : 'var(--red)';
-      }
-      if (iSub) iSub.textContent = data.checks.invoice.desc;
+    // 1. Render AI Markdown Feasibility Report
+    const elReport = $('#ai-feasibility-report-markdown');
+    if (elReport) {
+      elReport.innerHTML = parseSimpleMarkdown(data.aiAnalysisMarkdown);
     }
 
-    // 2. Single Overall Verdict Summary Banner (YES / NO)
-    const banner = $('#feasibility-status-banner');
-    const title = $('#feasibility-status-title');
-    const desc = $('#feasibility-status-desc');
+    // 2. Render Suggested Question Chips
+    const elChips = $('#ai-suggested-questions');
+    if (elChips && data.suggestedQuestions) {
+      elChips.innerHTML = data.suggestedQuestions.map(q => 
+        `<button class="btn btn-secondary btn-sm ai-chip-btn" style="font-size: 0.78rem; padding: 4px 10px; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2);">${q}</button>`
+      ).join('');
 
-    if (data.overallDoable) {
-      if (banner) banner.style.border = '1px solid var(--green)';
-      if (title) {
-        title.textContent = '✅ YES - DOABLE WHOLESALE PRODUCT';
-        title.style.color = 'var(--green)';
-      }
-      if (desc) desc.textContent = data.overallReason;
-    } else {
-      if (banner) banner.style.border = '1px solid var(--red)';
-      if (title) {
-        title.textContent = '❌ NO - NOT DOABLE ON AMAZON';
-        title.style.color = 'var(--red)';
-      }
-      if (desc) desc.textContent = data.overallReason;
-    }
-
-    // 3. Sleek, Minimalist Cut-Down Authorized Distributors & 1-Click Outreach List
-    const elDistBadge = $('#distributors-count-badge');
-    const elDistGrid = $('#distributors-full-grid');
-
-    const count = data.distributors ? data.distributors.length : 0;
-    if (elDistBadge) elDistBadge.textContent = `${count} Supplier${count === 1 ? '' : 's'}`;
-
-    if (count > 0 && elDistGrid) {
-      elDistGrid.innerHTML = data.distributors.map(d => `
-        <div style="padding: 10px 14px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
-          <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-            <span>🏢 ${d.name}</span>
-          </div>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <a href="${d.url}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 4px 10px;">Website ↗</a>
-            <button class="btn btn-primary btn-sm btn-pitch-distributor" data-email="${d.email}" style="font-size: 0.78rem; padding: 4px 10px; background: linear-gradient(135deg, var(--green), #16a34a);">⚡ Pitch Sales</button>
-          </div>
-        </div>
-      `).join('');
-
-      // Add event listeners for Pitch Sales Team buttons
-      elDistGrid.querySelectorAll('.btn-pitch-distributor').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const targetEmail = e.target.dataset.email;
-          const selectRecip = $('#b2b-recipient-select');
-          if (selectRecip) selectRecip.value = targetEmail;
-          updateB2bPitchText();
-          const emailCard = $('#b2b-email-card');
-          if (emailCard) {
-            emailCard.scrollIntoView({ behavior: 'smooth' });
-            showToast(`Pre-filled pitch for ${targetEmail}!`, 'success');
-          }
+      elChips.querySelectorAll('.ai-chip-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const qText = btn.textContent;
+          sendFollowupChatMessage(qText);
         });
       });
-    } else if (elDistGrid) {
-      elDistGrid.innerHTML = `<div style="color: var(--text-muted); font-size: 0.84rem; padding: 8px; text-align: center;">No 3rd party wholesale distributors permitted for this brand.</div>`;
     }
 
-    // 3. Automated 1-Click B2B Wholesale Application Email Sender Box
+    // Clear Chat History for new search
+    const elHistory = $('#ai-chat-history');
+    if (elHistory) elHistory.innerHTML = '';
+
+    // 3. Render 1-Click B2B Email Outreach Sender
     const emailCard = $('#b2b-email-card');
     if (data.distributors && data.distributors.length > 0) {
       if (emailCard) emailCard.style.display = 'block';
 
-      // Populate recipient select
       const selectRecip = $('#b2b-recipient-select');
       if (selectRecip) {
         selectRecip.innerHTML = data.distributors.map(d => 
@@ -1015,6 +964,79 @@
     } else if (emailCard) {
       emailCard.style.display = 'none';
     }
+  }
+
+  // Action: Interactive Chat Send
+  const btnSendChat = $('#btn-send-chat');
+  const inputChat = $('#ai-chat-input');
+
+  if (btnSendChat && inputChat) {
+    btnSendChat.addEventListener('click', () => {
+      const msg = inputChat.value.trim();
+      if (!msg) return;
+      inputChat.value = '';
+      sendFollowupChatMessage(msg);
+    });
+
+    inputChat.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const msg = inputChat.value.trim();
+        if (!msg) return;
+        inputChat.value = '';
+        sendFollowupChatMessage(msg);
+      }
+    });
+  }
+
+  async function sendFollowupChatMessage(msgText) {
+    const elHistory = $('#ai-chat-history');
+    if (!elHistory) return;
+
+    // Append User Message
+    const userMsgDiv = document.createElement('div');
+    userMsgDiv.style.cssText = 'align-self: flex-end; background: var(--primary); color: white; padding: 10px 14px; border-radius: 12px 12px 2px 12px; font-size: 0.88rem; max-width: 80%; margin-left: auto;';
+    userMsgDiv.textContent = msgText;
+    elHistory.appendChild(userMsgDiv);
+    elHistory.scrollTop = elHistory.scrollHeight;
+
+    // Append Loading Indicator
+    const loadingDiv = document.createElement('div');
+    loadingDiv.style.cssText = 'align-self: flex-start; background: rgba(255,255,255,0.05); color: var(--text-muted); padding: 8px 12px; border-radius: 12px 12px 12px 2px; font-size: 0.84rem; display: flex; align-items: center; gap: 6px;';
+    loadingDiv.innerHTML = '<span class="spinner" style="width: 14px; height: 14px;"></span> AI Assistant thinking...';
+    elHistory.appendChild(loadingDiv);
+    elHistory.scrollTop = elHistory.scrollHeight;
+
+    try {
+      const brandName = currentFeasibilityData ? currentFeasibilityData.brandName : '';
+      const productTitle = currentFeasibilityData ? currentFeasibilityData.productTitle : '';
+      const apiKey = localStorage.getItem('gemini_api_key_v1') || '';
+
+      const res = await fetch('/api/chat-followup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brandName, productTitle, message: msgText, apiKey })
+      });
+
+      loadingDiv.remove();
+
+      if (res.ok) {
+        const data = await res.json();
+        const aiMsgDiv = document.createElement('div');
+        aiMsgDiv.style.cssText = 'align-self: flex-start; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); padding: 12px 16px; border-radius: 12px 12px 12px 2px; font-size: 0.88rem; max-width: 85%; line-height: 1.6;';
+        aiMsgDiv.innerHTML = parseSimpleMarkdown(data.reply);
+        elHistory.appendChild(aiMsgDiv);
+        elHistory.scrollTop = elHistory.scrollHeight;
+      } else {
+        throw new Error('Failed to get AI response');
+      }
+    } catch (e) {
+      loadingDiv.remove();
+      const errDiv = document.createElement('div');
+      errDiv.style.cssText = 'align-self: flex-start; background: rgba(239,68,68,0.1); color: var(--red); padding: 8px 12px; border-radius: 8px; font-size: 0.84rem;';
+      errDiv.textContent = `Error: ${e.message}`;
+      elHistory.appendChild(errDiv);
+    }
+  }
   }
 
   function updateB2bPitchText() {
