@@ -541424,5 +541424,59 @@
         "links": []
       }
     ]
+  },
+  "B08N5WRWNW": {
+    "asin": "B08N5WRWNW",
+    "brand": "",
+    "title": "ASIN B08N5WRWNW",
+    "status": "gated",
+    "restrictions": [
+      {
+        "marketplaceId": "ATVPDKIKX0DER",
+        "reasons": [
+          {
+            "reasonCode": "ASIN_NOT_FOUND",
+            "message": "ASIN does not exist in this marketplace.",
+            "links": []
+          }
+        ]
+      }
+    ],
+    "hasApprovalRoute": false,
+    "reasonCode": "ASIN_NOT_FOUND",
+    "reasons": [
+      {
+        "reasonCode": "ASIN_NOT_FOUND",
+        "message": "ASIN does not exist in this marketplace.",
+        "links": []
+      }
+    ]
+  },
+  "B07ZPKN1B2": {
+    "asin": "B07ZPKN1B2",
+    "brand": "",
+    "title": "ASIN B07ZPKN1B2",
+    "status": "gated",
+    "restrictions": [
+      {
+        "marketplaceId": "ATVPDKIKX0DER",
+        "reasons": [
+          {
+            "reasonCode": "ASIN_NOT_FOUND",
+            "message": "ASIN does not exist in this marketplace.",
+            "links": []
+          }
+        ]
+      }
+    ],
+    "hasApprovalRoute": false,
+    "reasonCode": "ASIN_NOT_FOUND",
+    "reasons": [
+      {
+        "reasonCode": "ASIN_NOT_FOUND",
+        "message": "ASIN does not exist in this marketplace.",
+        "links": []
+      }
+    ]
   }
 }
