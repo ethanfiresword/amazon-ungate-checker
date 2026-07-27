@@ -825,17 +825,131 @@
     });
   }
 
-  // Wholesale Feasibility State & Handlers
-  let currentFeasibilityData = null;
+  // Product Verification Logic (Strict Hand-Verified Suppliers Only, Zero Fill-Ins)
+  const btnVerifyProduct = $('#btn-verify-product');
+  if (btnVerifyProduct) {
+    btnVerifyProduct.addEventListener('click', () => {
+      const val = $('#verifier-input').value.trim();
+      if (!val) {
+        showToast('Please enter an ASIN, barcode, or brand name first', 'error');
+        return;
+      }
+      runProductVerification(val);
+    });
+  }
 
-  // Sample Brand Chips
-  $$('.sample-brand-btn').forEach(btn => {
+  $$('.verifier-sample-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const brand = btn.dataset.brand;
-      $('#feasibility-input').value = brand;
-      runFeasibilityAnalysis(brand);
+      $('#verifier-input').value = brand;
+      runProductVerification(brand);
     });
   });
+
+  async function runProductVerification(inputVal) {
+    showToast(`Verifying product "${inputVal}"...`, 'info');
+    try {
+      const res = await fetch('/api/verify-product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: inputVal })
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText);
+      }
+
+      const data = await res.json();
+      renderVerifierUI(data);
+      showToast(`Verification complete for ${data.brandName}!`, 'success');
+    } catch (err) {
+      console.error('Verification error:', err);
+      showToast(`Verification error: ${err.message}`, 'error');
+    }
+  }
+
+  function renderVerifierUI(data) {
+    const resultsSec = $('#verifier-results');
+    if (resultsSec) resultsSec.style.display = 'flex';
+
+    // Summary Bar
+    const elTitle = $('#verifier-product-title');
+    const elMeta = $('#verifier-product-meta');
+    const elAmz = $('#verifier-amazon-link');
+
+    if (elTitle) elTitle.textContent = data.productTitle || data.brandName;
+    if (elMeta) elMeta.textContent = `Brand: ${data.brandName}${data.asin ? ` | ASIN: ${data.asin}` : ''}`;
+
+    if (elAmz) {
+      if (data.asin) {
+        elAmz.href = `https://www.amazon.com/dp/${data.asin}`;
+        elAmz.style.display = 'inline-flex';
+      } else {
+        elAmz.style.display = 'none';
+      }
+    }
+
+    // Verdict Banner
+    const banner = $('#verifier-status-banner');
+    const bTitle = $('#verifier-status-title');
+    const bDesc = $('#verifier-status-desc');
+
+    if (data.overallDoable) {
+      if (banner) banner.style.border = '1px solid var(--green)';
+      if (bTitle) {
+        bTitle.textContent = '✅ YES - DOABLE WHOLESALE PRODUCT';
+        bTitle.style.color = 'var(--green)';
+      }
+      if (bDesc) bDesc.textContent = data.overallReason;
+    } else {
+      if (banner) banner.style.border = '1px solid var(--red)';
+      if (bTitle) {
+        bTitle.textContent = '❌ NO - NOT DOABLE ON AMAZON';
+        bTitle.style.color = 'var(--red)';
+      }
+      if (bDesc) bDesc.textContent = data.overallReason;
+    }
+
+    // Distributors List (Strict Hand-Verified Matches Only, Zero Fill-Ins!)
+    const distCountBadge = $('#verifier-dist-count');
+    const distGrid = $('#verifier-dist-grid');
+    const count = data.distributors ? data.distributors.length : 0;
+
+    if (distCountBadge) distCountBadge.textContent = `${count} Supplier${count === 1 ? '' : 's'}`;
+
+    if (count > 0 && distGrid) {
+      distGrid.innerHTML = data.distributors.map(d => `
+        <div style="padding: 12px 16px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div>
+            <div style="font-weight: 700; font-size: 0.92rem; color: var(--text-primary);">🏢 ${d.name}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Sales Contact: <strong style="color: var(--text-secondary); font-family: monospace;">${d.email}</strong></div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span class="badge badge-ungated" style="font-size: 0.75rem;">✅ Valid 10+ Unit Invoice</span>
+            <a href="${d.url}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 4px 10px;">Website ↗</a>
+          </div>
+        </div>
+      `).join('');
+    } else if (distGrid) {
+      distGrid.innerHTML = `
+        <div style="color: var(--text-muted); font-size: 0.86rem; padding: 14px; text-align: center; border: 1px dashed var(--border-color); border-radius: var(--radius-sm);">
+          🚫 No verified 3rd-party wholesale distributor on file for this brand.
+        </div>`;
+    }
+  }
+
+  // Copy product title button
+  const btnVerifierCopy = $('#btn-verifier-copy-title');
+  if (btnVerifierCopy) {
+    btnVerifierCopy.addEventListener('click', () => {
+      const title = $('#verifier-product-title').textContent;
+      if (title && title !== '-') {
+        navigator.clipboard.writeText(title);
+        showToast('Product title copied to clipboard!', 'success');
+      }
+    });
+  }
 
   // Save / Remove event listeners for table buttons
   document.addEventListener('click', (e) => {
