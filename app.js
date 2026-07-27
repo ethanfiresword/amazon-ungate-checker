@@ -501,12 +501,24 @@
     });
   }
 
-  // Top-Level Tool Switcher Navigation
-  $$('.nav-tool-btn').forEach(btn => {
+  // Sidebar Command Navigation Switcher
+  $$('.nav-item').forEach(btn => {
     btn.addEventListener('click', () => {
-      $$('.nav-tool-btn').forEach(b => b.classList.remove('active'));
+      $$('.nav-item').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const targetTool = btn.dataset.tool;
+
+      const titleEl = $('#active-tool-title');
+      const subEl = $('#active-tool-sub');
+
+      if (targetTool === 'checker') {
+        if (titleEl) titleEl.textContent = 'Bulk Ungate Scanner';
+        if (subEl) subEl.textContent = 'Execute high-speed Amazon SP-API restriction checks across batch ASIN manifests.';
+      } else if (targetTool === 'converter') {
+        if (titleEl) titleEl.textContent = 'UPC Barcode Resolver';
+        if (subEl) subEl.textContent = 'Bulk convert 12-digit UPCs and 13-digit EAN barcodes into matched Amazon ASINs.';
+      }
+
       $$('.tool-view').forEach(v => {
         v.style.display = (v.id === `tool-view-${targetTool}`) ? 'flex' : 'none';
       });
