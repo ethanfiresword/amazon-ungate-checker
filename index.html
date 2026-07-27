@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Boxem Auto-Ungate & Wholesale Intelligence</title>
+  <title>Boxem Auto-Ungate & Wholesale Intelligence Platform</title>
   <!-- Google Fonts: Outfit, Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
     <div class="nav-container">
       <div class="nav-brand">
         <div class="brand-icon">⚡</div>
-        <span class="brand-name">BOXEM <span class="brand-badge">UNGATE</span></span>
+        <span class="brand-name">BOXEM <span class="brand-badge">UNGATE PRO</span></span>
       </div>
 
       <!-- Top-Level Tool Switcher Tabs -->
@@ -36,7 +36,7 @@
     </div>
   </header>
 
-  <!-- Main Container -->
+  <!-- Main App Container -->
   <main class="app-container">
 
     <!-- ================================================= -->
@@ -45,53 +45,60 @@
     <div id="tool-view-checker" class="tool-view active">
       <!-- Header Hero -->
       <section class="hero-section">
-        <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 800; color: var(--primary); background: rgba(99, 102, 241, 0.12); padding: 4px 14px; border-radius: var(--radius-full); border: 1px solid rgba(99, 102, 241, 0.3); margin-bottom: 12px; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 0 16px rgba(99, 102, 241, 0.2);">
-          ⚡ OFFICIAL AMAZON SELLING PARTNER API
+        <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 800; color: var(--primary); background: rgba(99, 102, 241, 0.12); padding: 5px 16px; border-radius: var(--radius-full); border: 1px solid rgba(99, 102, 241, 0.3); margin-bottom: 12px; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 0 20px rgba(99, 102, 241, 0.25);">
+          ⚡ OFFICIAL AMAZON SELLING PARTNER API ENGINE
         </div>
         <h1 class="hero-title">Bulk Ungate Checker</h1>
         <p class="hero-subtitle">Instantly verify selling eligibility, soft gates, and hard restrictions via Amazon SP-API</p>
       </section>
 
-      <!-- Scan Input Card -->
-      <section class="card input-card">
-        <div class="input-grid">
-          <!-- File Dropzone -->
-          <div class="dropzone-box" id="dropzone">
-            <input type="file" id="file-input" accept=".txt,.csv" hidden />
-            <div class="dropzone-icon">📁</div>
-            <div class="dropzone-title">Drag & Drop File</div>
-            <div class="dropzone-sub">Supports .csv or .txt (Keepa exports, ASIN lists)</div>
-            <button class="btn btn-secondary btn-sm" id="btn-browse">Browse Files</button>
+      <!-- Bento Deck: Dual Ingestion Panel -->
+      <section class="card input-card" style="padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+          <div>
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff;">📦 Batch ASIN Ingestion Deck</h3>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">Upload wholesale CSV manifests or paste raw ASIN lists for parallel ungating analysis.</p>
           </div>
-
-          <!-- Manual Text Area -->
-          <div class="manual-box">
-            <label for="bulk-paste" class="label">Or Paste ASINs Manually</label>
-            <textarea id="bulk-paste" placeholder="Paste ASINs here (one per line, comma or space separated)..."></textarea>
-            <div class="input-footer">
-              <span id="paste-count" class="count-badge">0 ASINs detected</span>
-              <button class="btn btn-secondary btn-sm" id="btn-clear-input">Clear</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="input-actions">
           <button class="btn btn-primary btn-lg" id="btn-start-scan">
             <span>⚡ Start Bulk Scan</span>
           </button>
         </div>
+
+        <div class="input-grid">
+          <!-- File Dropzone Bento Box -->
+          <div class="dropzone-box" id="dropzone">
+            <input type="file" id="file-input" accept=".txt,.csv" hidden />
+            <div class="dropzone-icon">📁</div>
+            <div class="dropzone-title">Drop Wholesale Manifest File</div>
+            <div class="dropzone-sub">Supports .csv or .txt (Keepa exports, price lists)</div>
+            <button class="btn btn-secondary btn-sm" id="btn-browse" style="margin-top: 6px;">Browse Files</button>
+          </div>
+
+          <!-- Manual Text Buffer Bento Box -->
+          <div class="manual-box">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label for="bulk-paste" class="label">Paste ASIN Buffer</label>
+              <span id="paste-count" class="count-badge">0 ASINs detected</span>
+            </div>
+            <textarea id="bulk-paste" placeholder="Paste ASINs here (e.g. B08N5WRWNW, B07ZPKN1B2, one per line or comma separated)..."></textarea>
+            <div class="input-footer">
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Max speed: 6x parallel HTTP workers</span>
+              <button class="btn btn-secondary btn-sm" id="btn-clear-input">Clear Buffer</button>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <!-- Progress Overlay / Bar -->
+      <!-- Scan Progress Overlay -->
       <section class="card progress-card" id="progress-card" style="display: none;">
         <div class="progress-header">
           <div class="progress-title">
             <span class="spinner"></span>
-            <span id="progress-status">Scanning ASINs against Amazon SP-API...</span>
+            <span id="progress-status">Querying Amazon SP-API Restrictions Engine...</span>
           </div>
-          <div class="progress-stats" style="display: flex; align-items: center; gap: 12px;">
+          <div class="progress-stats" style="display: flex; align-items: center; gap: 14px;">
             <span id="progress-eta" style="color: var(--text-muted); font-size: 0.85rem;">Est. time: --</span>
-            <span id="progress-count" style="font-weight: 700;">0 / 0</span>
+            <span id="progress-count" style="font-weight: 800; font-family: 'JetBrains Mono', monospace;">0 / 0</span>
             <button class="btn btn-secondary btn-sm" id="btn-stop-scan" style="color: var(--red); border-color: var(--red-border);">Stop Scan</button>
           </div>
         </div>
@@ -100,9 +107,9 @@
         </div>
       </section>
 
-      <!-- Results Section -->
+      <!-- Results HUD & Datatable Deck -->
       <section class="results-section" id="results-section">
-        <!-- Stats Dashboard -->
+        <!-- Stats HUD Row -->
         <div class="stats-row">
           <div class="stat-card">
             <div class="stat-icon">📦</div>
@@ -122,7 +129,7 @@
             <div class="stat-icon">⚠️</div>
             <div class="stat-content">
               <div class="stat-value text-yellow" id="stat-soft">0</div>
-              <div class="stat-label">Soft Gate (Approval Required)</div>
+              <div class="stat-label">Approval Invoice Needed</div>
             </div>
           </div>
           <div class="stat-card stat-hard">
@@ -134,10 +141,10 @@
           </div>
         </div>
 
-        <!-- Results Table Header & Controls -->
+        <!-- Filterable Datatable Surface -->
         <div class="card table-card">
           <div class="table-header">
-            <!-- Boxem Style Tabs -->
+            <!-- Filter Tabs -->
             <div class="tabs-container">
               <button class="tab-btn active" data-tab="all">
                 All Results <span class="tab-badge" id="badge-all">0</span>
@@ -146,19 +153,19 @@
                 ✅ Auto Ungated <span class="tab-badge" id="badge-ungated">0</span>
               </button>
               <button class="tab-btn tab-soft" data-tab="softgated">
-                ⚠️ Soft Gate (Approval Required) <span class="tab-badge" id="badge-soft">0</span>
+                ⚠️ Approval Required <span class="tab-badge" id="badge-soft">0</span>
               </button>
               <button class="tab-btn tab-hard" data-tab="hardgated">
-                ❌ Restricted (Not Eligible) <span class="tab-badge" id="badge-hard">0</span>
+                ❌ Restricted <span class="tab-badge" id="badge-hard">0</span>
               </button>
               <button class="tab-btn" data-tab="history" style="border-left: 1px solid var(--border-color); margin-left: 4px;">
                 📜 Saved History <span class="tab-badge" id="badge-history">0</span>
               </button>
             </div>
 
-            <!-- Actions -->
+            <!-- Table Search & CSV Actions -->
             <div class="table-actions">
-              <input type="text" id="search-input" class="search-input" placeholder="Search ASIN..." />
+              <input type="text" id="search-input" class="search-input" placeholder="Search ASIN or title..." />
               <button class="btn btn-secondary btn-sm" id="btn-clear-history" style="display: none; color: var(--red); border-color: var(--red-border);">
                 🗑️ Clear History
               </button>
@@ -168,16 +175,16 @@
             </div>
           </div>
 
-          <!-- Datatable -->
+          <!-- Main Datatable -->
           <div class="table-wrapper">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th style="width: 30%;">Title</th>
+                  <th style="width: 32%;">Product Title & Brand</th>
                   <th>ASIN</th>
-                  <th>Status</th>
+                  <th>Ungating Status</th>
                   <th>Details / Reason</th>
-                  <th style="text-align: right;">Quick Links</th>
+                  <th style="text-align: right;">Quick Actions & Links</th>
                 </tr>
               </thead>
               <tbody id="table-body">
@@ -186,7 +193,7 @@
                     <div class="empty-state">
                       <div class="empty-icon">🔍</div>
                       <div class="empty-title">No ASINs Scanned Yet</div>
-                      <div class="empty-desc">Paste ASINs above or drop a file to start bulk ungating.</div>
+                      <div class="empty-desc">Paste ASINs above or drop a wholesale CSV file to start bulk ungating.</div>
                     </div>
                   </td>
                 </tr>
@@ -203,7 +210,7 @@
     <div id="tool-view-converter" class="tool-view" style="display: none;">
       <!-- Header Hero -->
       <section class="hero-section">
-        <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 800; color: #a855f7; background: rgba(168, 85, 247, 0.12); padding: 4px 14px; border-radius: var(--radius-full); border: 1px solid rgba(168, 85, 247, 0.3); margin-bottom: 12px; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 0 16px rgba(168, 85, 247, 0.2);">
+        <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 800; color: #a855f7; background: rgba(168, 85, 247, 0.12); padding: 5px 16px; border-radius: var(--radius-full); border: 1px solid rgba(168, 85, 247, 0.3); margin-bottom: 12px; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);">
           🏷️ AMAZON CATALOG API BARCODE RESOLVER
         </div>
         <h1 class="hero-title">UPC to ASIN Converter</h1>
@@ -211,45 +218,52 @@
       </section>
 
       <!-- Input Card -->
-      <section class="card input-card">
+      <section class="card input-card" style="padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+          <div>
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff;">🏷️ Barcode Ingestion Deck</h3>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">Convert 12-digit UPCs and 13-digit EAN barcodes into matched Amazon ASINs.</p>
+          </div>
+          <button class="btn btn-primary btn-lg" id="btn-start-convert">
+            <span>🏷️ Convert Barcodes</span>
+          </button>
+        </div>
+
         <div class="input-grid">
           <!-- File Dropzone -->
           <div class="dropzone-box" id="dropzone-upc">
             <input type="file" id="file-input-upc" accept=".txt,.csv" hidden />
             <div class="dropzone-icon">🏷️</div>
-            <div class="dropzone-title">Drag & Drop UPC / EAN File</div>
-            <div class="dropzone-sub">Supports .csv or .txt (Wholesale price lists, barcode files)</div>
-            <button class="btn btn-secondary btn-sm" id="btn-browse-upc">Browse Files</button>
+            <div class="dropzone-title">Drop UPC / Barcode File</div>
+            <div class="dropzone-sub">Supports .csv or .txt (Wholesale barcode lists)</div>
+            <button class="btn btn-secondary btn-sm" id="btn-browse-upc" style="margin-top: 6px;">Browse Files</button>
           </div>
 
           <!-- Manual Text Area -->
           <div class="manual-box">
-            <label for="upc-paste" class="label">Or Paste UPCs / Barcodes Manually</label>
-            <textarea id="upc-paste" placeholder="Paste 12-digit UPCs or 13-digit EANs here (one per line, comma or space separated)..."></textarea>
-            <div class="input-footer">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label for="upc-paste" class="label">Paste Barcodes Manually</label>
               <span id="upc-paste-count" class="count-badge">0 Barcodes detected</span>
-              <button class="btn btn-secondary btn-sm" id="btn-clear-upc-input">Clear</button>
+            </div>
+            <textarea id="upc-paste" placeholder="Paste 12-digit UPCs or 13-digit EAN barcodes here (one per line, space or comma separated)..."></textarea>
+            <div class="input-footer">
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Direct Amazon SP-API Catalog Item Lookup</span>
+              <button class="btn btn-secondary btn-sm" id="btn-clear-upc-input">Clear Buffer</button>
             </div>
           </div>
         </div>
-
-        <div class="input-actions">
-          <button class="btn btn-primary btn-lg" id="btn-start-convert">
-            <span>🏷️ Convert UPCs to ASINs</span>
-          </button>
-        </div>
       </section>
 
-      <!-- Progress Overlay / Bar -->
+      <!-- Progress Overlay -->
       <section class="card progress-card" id="converter-progress-card" style="display: none;">
         <div class="progress-header">
           <div class="progress-title">
             <span class="spinner"></span>
-            <span id="converter-progress-status">Querying Amazon Catalog API by barcode...</span>
+            <span id="converter-progress-status">Querying Amazon Catalog API by Barcode...</span>
           </div>
-          <div class="progress-stats" style="display: flex; align-items: center; gap: 12px;">
+          <div class="progress-stats" style="display: flex; align-items: center; gap: 14px;">
             <span id="converter-progress-eta" style="color: var(--text-muted); font-size: 0.85rem;">Est. time: --</span>
-            <span id="converter-progress-count" style="font-weight: 700;">0 / 0</span>
+            <span id="converter-progress-count" style="font-weight: 800; font-family: 'JetBrains Mono', monospace;">0 / 0</span>
           </div>
         </div>
         <div class="progress-bar-container">
@@ -265,7 +279,7 @@
             <div class="stat-icon">🏷️</div>
             <div class="stat-content">
               <div class="stat-value" id="converter-stat-total">0</div>
-              <div class="stat-label">Total UPCs Input</div>
+              <div class="stat-label">Total Barcodes Input</div>
             </div>
           </div>
           <div class="stat-card">
@@ -286,12 +300,12 @@
             <div class="stat-icon">⚠️</div>
             <div class="stat-content">
               <div class="stat-value text-yellow" id="converter-stat-soft">0</div>
-              <div class="stat-label">Soft Gate (Approval Required)</div>
+              <div class="stat-label">Approval Required</div>
             </div>
           </div>
         </div>
 
-        <!-- Results Table Header & Controls -->
+        <!-- Table Deck -->
         <div class="card table-card">
           <div class="table-header">
             <div class="tabs-container">
@@ -316,11 +330,11 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Input UPC / Barcode</th>
+                  <th>Input Barcode / UPC</th>
                   <th>Matched ASIN</th>
-                  <th style="width: 30%;">Product Title & Brand</th>
+                  <th style="width: 32%;">Product Title & Brand</th>
                   <th>Ungating Status</th>
-                  <th style="text-align: right;">Quick Links & Actions</th>
+                  <th style="text-align: right;">Quick Actions & Links</th>
                 </tr>
               </thead>
               <tbody id="converter-table-body">
