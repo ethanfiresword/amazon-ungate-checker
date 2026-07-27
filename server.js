@@ -680,55 +680,6 @@ Rules:
   return null;
 }
 
-// API Endpoint 3: Brand & Wholesale Feasibility Analyzer + B2B Outreach Data
-app.post('/api/check-feasibility', async (req, res) => {
-  const { input, apiKey } = req.body;
-  if (!input || typeof input !== 'string') {
-    return res.status(400).json({ error: 'Missing or invalid "input" parameter' });
-  }
-
-  const query = input.trim();
-  let asin = '';
-  let brandName = query;
-  let productTitle = query;
-  let spApiResult = null;
-
-  try {
-    const accessToken = await getAccessToken();
-
-    // Check 1: Input is ASIN
-    if (/^[A-Z0-9]{10}$/i.test(query)) {
-      asin = query.toUpperCase();
-      spApiResult = await checkSingleAsinWithRetry(asin, accessToken);
-      if (spApiResult.brand) brandName = spApiResult.brand;
-      if (spApiResult.title) productTitle = spApiResult.title;
-    } 
-    // Check 2: Input is Barcode (UPC/EAN)
-    else if (/^\d{12,14}$/.test(query)) {
-      const upcMatch = await lookupUpcInAmazonCatalog(query, accessToken);
-      if (upcMatch && upcMatch.asin) {
-        asin = upcMatch.asin;
-        spApiResult = await checkSingleAsinWithRetry(asin, accessToken);
-        if (spApiResult.brand) brandName = spApiResult.brand;
-        if (spApiResult.title) productTitle = spApiResult.title;
-      }
-    } 
-    // Check 3: Input is Product Name or Keyword Search
-    else {
-      const keywordMatch = await searchAmazonCatalogByKeywords(query, accessToken);
-      if (keywordMatch && keywordMatch.asin) {
-        asin = keywordMatch.asin;
-        if (keywordMatch.brand) brandName = keywordMatch.brand;
-        if (keywordMatch.title) productTitle = keywordMatch.title;
-        spApiResult = await checkSingleAsinWithRetry(asin, accessToken);
-      }
-    }
-
-    // Attempt Live LLM Reasoning Engine (Gemini AI if valid key provided)
-    const geminiReasoning = await callGeminiAiReasoning(brandName, productTitle, apiKey);
-
-    let matchedBrandInfo = null;
-
 // Helper: Generate Comprehensive AI Feasibility Markdown & Reasoning via Gemini
 async function generateAiFeasibilityReport(brandName, productTitle, asin, spApiResult, userApiKey) {
   const apiKey = userApiKey || process.env.GEMINI_API_KEY;
