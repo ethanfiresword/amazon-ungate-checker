@@ -943,17 +943,40 @@
       elResellersPolicy.textContent = data.resellerPolicy;
     }
 
-    // 3. Authorized Distributors
+    // 3. Authorized Distributors Summary & Detail Grid
     const elDistCount = $('#card-distributors-count');
     const elDistList = $('#card-distributors-list');
+    const elDistBadge = $('#distributors-count-badge');
+    const elDistGrid = $('#distributors-full-grid');
 
-    elDistCount.textContent = data.distributors.length;
-    if (data.distributors.length > 0) {
-      elDistList.innerHTML = data.distributors.map(d => 
-        `<div style="margin-top: 2px;"><a href="${d.url}" target="_blank" style="color: var(--primary); text-decoration: underline;">${d.name}</a> (${d.email})</div>`
-      ).join('');
+    const count = data.distributors.length;
+    elDistCount.textContent = count;
+    if (elDistBadge) elDistBadge.textContent = `${count} Distributor${count === 1 ? '' : 's'} Verified`;
+
+    if (count > 0) {
+      elDistList.textContent = `${count} verified wholesale supplier${count === 1 ? '' : 's'} available below.`;
+
+      if (elDistGrid) {
+        elDistGrid.innerHTML = data.distributors.map(d => `
+          <div style="padding: 14px 18px; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 240px;">
+              <div style="font-weight: 700; font-size: 0.98rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                <span>🏢 ${d.name}</span>
+              </div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 8px;">
+                <span>Sales Email: <strong style="color: var(--text-secondary); font-family: monospace;">${d.email}</strong></span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <span class="badge badge-ungated" style="font-size: 0.75rem;">✅ Valid 10+ Unit Invoice</span>
+              <a href="${d.url}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.82rem; white-space: nowrap;">🌐 Visit B2B Portal ↗</a>
+            </div>
+          </div>
+        `).join('');
+      }
     } else {
-      elDistList.textContent = 'No public wholesale distributors listed.';
+      elDistList.textContent = 'Brand restricts 3rd party distributors.';
+      if (elDistGrid) elDistGrid.innerHTML = `<div style="color: var(--text-muted); font-size: 0.88rem; padding: 12px;">No 3rd party wholesale distributors permitted for this brand.</div>`;
     }
 
     // 4. Distributor Invoice Valid
