@@ -382,44 +382,44 @@
 
       let saveBtnHtml = '';
       if (item.isHistory) {
-        saveBtnHtml = `<button class="btn-save-link btn-remove-history" data-asin="${item.asin}" data-title="${displayTitle.replace(/"/g, '&quot;')}" title="Remove from History">🗑️ Remove</button>`;
+        saveBtnHtml = `<button class="a-save btn-remove-history" data-asin="${item.asin}" data-title="${displayTitle.replace(/"/g, '&quot;')}" title="Remove from History">🗑 Remove</button>`;
       } else if (isSaved) {
-        saveBtnHtml = `<button class="btn-save-link saved" data-asin="${item.asin}" data-title="${displayTitle.replace(/"/g, '&quot;')}" title="Saved to History">⭐ Saved</button>`;
+        saveBtnHtml = `<button class="a-save saved" data-asin="${item.asin}" data-title="${displayTitle.replace(/"/g, '&quot;')}" title="Saved to History">⭐ Saved</button>`;
       } else {
-        saveBtnHtml = `<button class="btn-save-link" data-asin="${item.asin}" data-title="${displayTitle.replace(/"/g, '&quot;')}" title="Save to History">☆ Save</button>`;
+        saveBtnHtml = `<button class="a-save" data-asin="${item.asin}" data-title="${displayTitle.replace(/"/g, '&quot;')}" title="Save to History">☆ Save</button>`;
       }
 
       if (item.isHistory) {
-        badgeHtml = `<span class="badge badge-ungated">📜 VAULT</span>`;
+        badgeHtml = `<span class="badge badge-ungated">📜 HISTORY</span>`;
         detailsHtml = `<span class="t-green">Saved ${item.date || 'Previous Scan'}</span>`;
         quickLinksHtml = `
-          <div class="link-cluster">
-            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="link-chip">Amazon</a>
-            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="link-chip">Keepa</a>
-            <a href="https://sas.selleramp.com/sas/lookup?asin=${item.asin}&country=us" target="_blank" class="link-chip">SAS</a>
+          <div class="action-cluster">
+            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="a-link">Amazon</a>
+            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="a-link">Keepa</a>
+            <a href="https://sas.selleramp.com/sas/lookup?asin=${item.asin}&country=us" target="_blank" class="a-link">SAS</a>
             ${saveBtnHtml}
           </div>
         `;
       } else if (item.status === 'ungated') {
-        badgeHtml = `<span class="badge badge-ungated">✅ AUTO UNGATED</span>`;
-        detailsHtml = `<span class="t-green">Ready to List & Sell</span>`;
+        badgeHtml = `<span class="badge badge-ungated">✅ UNGATED</span>`;
+        detailsHtml = `<span class="t-green">Ready to Sell</span>`;
         quickLinksHtml = `
-          <div class="link-cluster">
-            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="link-chip">Amazon</a>
-            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="link-chip">Keepa</a>
-            <a href="https://sas.selleramp.com/sas/lookup?asin=${item.asin}&country=us" target="_blank" class="link-chip">SAS</a>
+          <div class="action-cluster">
+            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="a-link">Amazon</a>
+            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="a-link">Keepa</a>
+            <a href="https://sas.selleramp.com/sas/lookup?asin=${item.asin}&country=us" target="_blank" class="a-link">SAS</a>
             ${saveBtnHtml}
           </div>
         `;
       } else if (item.status === 'gated' && item.hasApprovalRoute) {
-        badgeHtml = `<span class="badge badge-softgated">⚠️ SOFT GATE</span>`;
-        detailsHtml = `<span class="t-yellow">APPROVAL_REQUIRED</span>`;
+        badgeHtml = `<span class="badge badge-softgated">⚠️ APPROVAL</span>`;
+        detailsHtml = `<span class="t-amber">Invoice Required</span>`;
         const ungateUrl = `https://sellercentral.amazon.com/hz/approvalrequest/restrictions/approve?asin=${item.asin}`;
         quickLinksHtml = `
-          <div class="link-cluster">
-            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="link-chip">Amazon</a>
-            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="link-chip">Keepa</a>
-            <a href="${ungateUrl}" target="_blank" class="btn-ungate-link">⚡ 1-Click Ungate</a>
+          <div class="action-cluster">
+            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="a-link">Amazon</a>
+            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="a-link">Keepa</a>
+            <a href="${ungateUrl}" target="_blank" class="a-ungate">⚡ 1-Click Ungate</a>
             ${saveBtnHtml}
           </div>
         `;
@@ -428,10 +428,10 @@
         const reason = item.reasonCode || (item.reasons && item.reasons[0] ? item.reasons[0].reasonCode : 'NOT_ELIGIBLE');
         detailsHtml = `<span class="t-red">${reason}</span>`;
         quickLinksHtml = `
-          <div class="link-cluster">
-            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="link-chip">Amazon</a>
-            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="link-chip">Keepa</a>
-            <a href="https://sellercentral.amazon.com/product-search/search?q=${item.asin}" target="_blank" class="link-chip">Seller Central</a>
+          <div class="action-cluster">
+            <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="a-link">Amazon</a>
+            <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="a-link">Keepa</a>
+            <a href="https://sellercentral.amazon.com/product-search/search?q=${item.asin}" target="_blank" class="a-link">Seller Central</a>
             ${saveBtnHtml}
           </div>
         `;
@@ -439,20 +439,20 @@
 
       return `
         <tr>
-          <td class="title-cell" title="${item.asin} - ${displayTitle.replace(/"/g, '&quot;')}">${displayTitle}</td>
-          <td class="asin-cell">${item.asin}</td>
+          <td class="cell-title" title="${item.asin} - ${displayTitle.replace(/"/g, '&quot;')}">${displayTitle}</td>
+          <td class="cell-asin">${item.asin}</td>
           <td>${badgeHtml}</td>
           <td>${detailsHtml}</td>
-          <td style="text-align: right;">${quickLinksHtml}</td>
+          <td style="text-align:right">${quickLinksHtml}</td>
         </tr>
       `;
     }).join('');
   }
 
-  // Tab Switching (filter pills)
-  $$('.f-pill:not([data-tab^="converter-"])').forEach(btn => {
+  // Tab Switching (filter buttons)
+  $$('.f-btn:not([data-tab^="converter-"])').forEach(btn => {
     btn.addEventListener('click', () => {
-      $$('.f-pill:not([data-tab^="converter-"])').forEach(b => b.classList.remove('active'));
+      $$('.f-btn:not([data-tab^="converter-"])').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       activeTab = btn.dataset.tab;
       renderResults();
@@ -501,10 +501,10 @@
     });
   }
 
-  // Sidebar Navigation Switcher
-  $$('.nav-btn').forEach(btn => {
+  // Top Nav Tab Switcher
+  $$('.nav-tab').forEach(btn => {
     btn.addEventListener('click', () => {
-      $$('.nav-btn').forEach(b => b.classList.remove('active'));
+      $$('.nav-tab').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const targetTool = btn.dataset.tool;
       $$('.tool-view').forEach(v => {
@@ -780,10 +780,10 @@
     }).join('');
   }
 
-  // Converter Filter Pills
-  $$('.f-pill[data-tab^="converter-"]').forEach(btn => {
+  // Converter Filter Buttons
+  $$('.f-btn[data-tab^="converter-"]').forEach(btn => {
     btn.addEventListener('click', () => {
-      $$('.f-pill[data-tab^="converter-"]').forEach(b => b.classList.remove('active'));
+      $$('.f-btn[data-tab^="converter-"]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       activeConverterTab = btn.dataset.tab;
       renderConverterResults();

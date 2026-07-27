@@ -3,145 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quantum Ungate — Amazon SP-API Intelligence Dashboard</title>
-  <meta name="description" content="Professional Amazon ungating checker using the official SP-API. Bulk scan ASINs and convert UPC barcodes at speed.">
+  <title>Boxem Ungate — Amazon SP-API Dashboard</title>
+  <meta name="description" content="Bulk check Amazon ASIN ungating eligibility and convert UPC barcodes via official SP-API.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="index.css">
 </head>
-<body class="quantum-theme">
+<body>
 
-<div class="layout">
-
-  <!-- ═══════════════════════════════════════
-       SIDEBAR COMMAND RAIL
-       ═══════════════════════════════════════ -->
-  <aside class="sidebar">
-    <div>
-      <div class="sidebar-brand" style="margin-bottom: 36px;">
-        <div class="brand-mark">⚡</div>
-        <div>
-          <div class="brand-name">QUANTUM</div>
-          <div class="brand-ver">UNGATE v2.5</div>
-        </div>
+  <!-- ══════════════ TOP NAVIGATION ══════════════ -->
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <!-- Brand -->
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <span class="brand-name">Boxem Ungate</span>
+        <span class="brand-tag">SP-API</span>
       </div>
 
-      <nav class="sidebar-nav">
-        <div class="nav-label">COMMAND TOOLS</div>
-
-        <button class="nav-btn active" data-tool="checker">
-          <span class="nav-icon">⚡</span>
-          <span>Bulk Ungate Scanner</span>
-          <span class="nav-chip">SP-API</span>
+      <!-- Tool Tabs -->
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-tool="checker">
+          ⚡ Bulk Ungate Checker
         </button>
-
-        <button class="nav-btn" data-tool="converter">
-          <span class="nav-icon">🏷️</span>
-          <span>UPC Barcode Resolver</span>
-          <span class="nav-chip">Catalog</span>
+        <button class="nav-tab" data-tool="converter">
+          🏷️ UPC → ASIN Converter
         </button>
-      </nav>
-    </div>
-
-    <!-- Live SP-API Status Terminal Widget -->
-    <div class="terminal-block">
-      <div class="terminal-top">
-        <div class="dot dot-online"></div>
-        <span class="terminal-tag">LIVE CONNECTION</span>
       </div>
-      <div class="terminal-rows">
-        <div class="t-row">
-          <span>Marketplace</span>
-          <span class="t-val mono">US · ATVPDKIKX0DER</span>
-        </div>
-        <div class="t-row">
-          <span>Concurrency</span>
-          <span class="t-val mono">6× Workers</span>
-        </div>
-        <div class="t-row">
-          <span>Latency</span>
-          <span class="t-val cyan mono">42ms avg</span>
-        </div>
-        <div class="t-row">
-          <span>Seller ID</span>
-          <span class="t-val mono">A3F69VEDT4ABNH</span>
-        </div>
+
+      <!-- Live Status -->
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span>SP-API Connected</span>
       </div>
     </div>
-  </aside>
+  </nav>
 
-  <!-- ═══════════════════════════════════════
-       MAIN COMMAND STAGE
-       ═══════════════════════════════════════ -->
-  <main class="stage" id="main-stage">
+  <!-- ══════════════ MAIN STAGE ══════════════ -->
+  <div class="main">
 
-    <!-- ════════════════════════════════════ -->
-    <!-- TOOL VIEW 1: BULK UNGATE SCANNER    -->
-    <!-- ════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════════
+         TOOL VIEW 1 — BULK UNGATE CHECKER
+         ═══════════════════════════════════════ -->
     <div id="tool-view-checker" class="tool-view active">
 
-      <!-- Stage Header -->
-      <header class="stage-head">
-        <div>
-          <div class="head-label">⚡ OFFICIAL AMAZON SP-API ENGINE</div>
-          <h1 class="head-title">Bulk Ungate Scanner</h1>
-          <p class="head-sub">Batch-check ASIN selling eligibility in seconds. Auto-ungated, soft gates, and hard restrictions revealed.</p>
-        </div>
-        <div class="seller-chip">
-          <span class="chip-key">Seller ID:</span>
-          <span class="chip-val">A3F69VEDT4ABNH</span>
-        </div>
-      </header>
+      <!-- Page Heading -->
+      <div class="page-head">
+        <h1 class="page-title">Bulk Ungate Checker</h1>
+        <p class="page-sub">Paste or upload ASINs to instantly check selling eligibility via Amazon SP-API.</p>
+      </div>
 
-      <!-- ════════════════════════
-           BENTO INGESTION DECK
-           ════════════════════════ -->
-      <section class="bento-deck">
+      <!-- Input Card -->
+      <div class="input-card">
+        <div class="input-grid">
 
-        <!-- BOX 1: File Drop Zone -->
-        <div class="glass-card drop-card" id="dropzone">
-          <input type="file" id="file-input" accept=".txt,.csv" hidden />
-          <div class="drop-orb">📁</div>
-          <div class="drop-title">Drop Manifest File</div>
-          <div class="drop-sub">Keepa CSV, Tactical Arbitrage, or plain ASIN list</div>
-          <button class="btn btn-ghost btn-sm" id="btn-browse">Browse Files</button>
-        </div>
-
-        <!-- BOX 2: ASIN Buffer + Execute -->
-        <div class="glass-card buffer-card">
-          <div class="card-head">
-            <span class="section-badge">ASIN BUFFER</span>
-            <span class="live-count" id="paste-count">0 ASINs Ready</span>
+          <!-- Drop Zone -->
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="file-input" accept=".txt,.csv" hidden />
+            <div class="dz-icon">📁</div>
+            <div class="dz-title">Drop File Here</div>
+            <div class="dz-sub">Supports .csv or .txt — Keepa exports, ASIN lists</div>
+            <button class="btn btn-ghost btn-sm" id="btn-browse">Browse Files</button>
           </div>
 
-          <textarea id="bulk-paste" class="buffer-textarea"
-            placeholder="Paste ASINs here (one per line, space or comma separated)&#10;e.g. B08N5WRWNW  B07ZPKN1B2  B09M2KBPW7..."
-          ></textarea>
-
-          <div class="buffer-footer">
-            <span class="footer-note mono t-muted">Max speed: 6× parallel SP-API workers</span>
-            <div style="display:flex;gap:10px;align-items:center;">
-              <button class="btn btn-ghost btn-xs" id="btn-clear-input">Clear</button>
-              <button class="btn btn-prime" id="btn-start-scan">⚡ Execute Batch Scan</button>
+          <!-- Manual Buffer -->
+          <div class="buffer-area">
+            <div class="field-row">
+              <span class="field-label">Paste ASINs Manually</span>
+              <span class="count-pill" id="paste-count">0 ASINs</span>
             </div>
+            <textarea id="bulk-paste" class="buffer-textarea"
+              placeholder="Paste ASINs here — one per line or comma-separated&#10;e.g. B08N5WRWNW, B07ZPKN1B2, B09M2KBPW7..."></textarea>
           </div>
         </div>
-      </section>
 
-      <!-- ════════════════════════
-           PROGRESS SCANNER BAR
-           ════════════════════════ -->
-      <div class="progress-card" id="progress-card" style="display:none;">
-        <div class="prog-meta">
-          <div class="prog-left">
-            <span class="prog-ring"></span>
-            <span id="progress-status">Querying Amazon SP-API Restrictions Engine…</span>
+        <div class="card-footer">
+          <span class="footer-note">6× parallel SP-API workers · 2,800+ ASINs/batch</span>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button class="btn btn-ghost btn-sm" id="btn-clear-input">Clear</button>
+            <button class="btn btn-primary" id="btn-start-scan">⚡ Start Bulk Scan</button>
           </div>
-          <div class="prog-right">
-            <span id="progress-eta" class="mono t-muted" style="font-size:0.83rem;">Est: –</span>
-            <span id="progress-count" class="prog-counter">0 / 0</span>
-            <button class="btn btn-danger btn-xs" id="btn-stop-scan">Abort</button>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-card" id="progress-card" style="display:none;">
+        <div class="prog-row">
+          <div class="prog-label">
+            <span class="prog-spinner"></span>
+            <span id="progress-status">Querying Amazon SP-API…</span>
+          </div>
+          <div class="prog-meta">
+            <span class="prog-eta" id="progress-eta">Est: –</span>
+            <span class="prog-count" id="progress-count">0 / 0</span>
+            <button class="btn btn-danger btn-xs" id="btn-stop-scan">Stop</button>
           </div>
         </div>
         <div class="prog-track">
@@ -149,95 +105,74 @@
         </div>
       </div>
 
-      <!-- ════════════════════════
-           TELEMETRY HUD
-           ════════════════════════ -->
-      <div class="hud-grid">
-        <div class="hud-node hud-node-default">
-          <div class="hud-stripe"></div>
-          <div class="hud-emoji">📦</div>
-          <div>
-            <div class="hud-num" id="stat-total">0</div>
-            <div class="hud-tag">Total Scanned</div>
-          </div>
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-total">0</div>
+          <div class="stat-lbl">📦 Total Scanned</div>
         </div>
-
-        <div class="hud-node hud-node-green">
-          <div class="hud-stripe"></div>
-          <div class="hud-emoji">✅</div>
-          <div>
-            <div class="hud-num hud-green" id="stat-ungated">0</div>
-            <div class="hud-tag">Auto Ungated</div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-num green" id="stat-ungated">0</div>
+          <div class="stat-lbl">✅ Auto Ungated</div>
         </div>
-
-        <div class="hud-node hud-node-yellow">
-          <div class="hud-stripe"></div>
-          <div class="hud-emoji">⚠️</div>
-          <div>
-            <div class="hud-num hud-yellow" id="stat-soft">0</div>
-            <div class="hud-tag">Approval Invoice Needed</div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-num amber" id="stat-soft">0</div>
+          <div class="stat-lbl">⚠️ Approval Needed</div>
         </div>
-
-        <div class="hud-node hud-node-red">
-          <div class="hud-stripe"></div>
-          <div class="hud-emoji">❌</div>
-          <div>
-            <div class="hud-num hud-red" id="stat-hard">0</div>
-            <div class="hud-tag">Hard Restricted</div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-num red" id="stat-hard">0</div>
+          <div class="stat-lbl">❌ Restricted</div>
         </div>
       </div>
 
-      <!-- ════════════════════════
-           QUANTUM DATA TABLE
-           ════════════════════════ -->
-      <div class="table-shell">
-        <div class="table-bar">
-          <div class="filter-pills">
-            <button class="f-pill active" data-tab="all">
-              All <span class="pill-n" id="badge-all">0</span>
+      <!-- Results Table -->
+      <div class="table-card">
+        <div class="table-toolbar">
+          <!-- Filter Pills -->
+          <div class="filter-group">
+            <button class="f-btn active" data-tab="all">
+              All <span class="f-count" id="badge-all">0</span>
             </button>
-            <button class="f-pill" data-tab="ungated">
-              ✅ Ungated <span class="pill-n" id="badge-ungated">0</span>
+            <button class="f-btn" data-tab="ungated">
+              ✅ Ungated <span class="f-count" id="badge-ungated">0</span>
             </button>
-            <button class="f-pill" data-tab="softgated">
-              ⚠️ Approval <span class="pill-n" id="badge-soft">0</span>
+            <button class="f-btn" data-tab="softgated">
+              ⚠️ Approval <span class="f-count" id="badge-soft">0</span>
             </button>
-            <button class="f-pill" data-tab="hardgated">
-              ❌ Restricted <span class="pill-n" id="badge-hard">0</span>
+            <button class="f-btn" data-tab="hardgated">
+              ❌ Restricted <span class="f-count" id="badge-hard">0</span>
             </button>
-            <button class="f-pill" data-tab="history" style="border-left:1px solid var(--border);margin-left:4px;padding-left:18px;">
-              📜 Vault <span class="pill-n" id="badge-history">0</span>
+            <button class="f-btn" data-tab="history" style="border-left:1px solid var(--border);margin-left:4px;padding-left:14px;">
+              📜 History <span class="f-count" id="badge-history">0</span>
             </button>
           </div>
 
-          <div class="bar-actions">
-            <input type="text" id="search-input" class="search-box" placeholder="Search ASIN or title…" />
-            <button class="btn btn-danger btn-xs" id="btn-clear-history" style="display:none;">🗑 Clear Vault</button>
-            <button class="btn btn-accent btn-sm" id="btn-export-csv">📥 Export Ungated CSV</button>
+          <!-- Table Actions -->
+          <div class="table-actions">
+            <input type="text" id="search-input" class="search-input" placeholder="Search ASIN or title…" />
+            <button class="btn btn-danger btn-xs" id="btn-clear-history" style="display:none;">🗑 Clear History</button>
+            <button class="btn btn-accent btn-sm" id="btn-export-csv">📥 Export CSV</button>
           </div>
         </div>
 
-        <div class="table-scroller">
+        <div class="table-scroll">
           <table class="data-table">
             <thead>
               <tr>
                 <th style="width:32%">Product Title</th>
                 <th>ASIN</th>
                 <th>Status</th>
-                <th>Reason</th>
-                <th style="text-align:right">Dispatch Actions</th>
+                <th>Details</th>
+                <th style="text-align:right">Actions</th>
               </tr>
             </thead>
             <tbody id="table-body">
               <tr class="empty-row">
                 <td colspan="5">
-                  <div class="empty-vessel">
-                    <div class="empty-glyph">📡</div>
-                    <div class="empty-h">No Scan Data</div>
-                    <div class="empty-p">Paste ASINs or drop a wholesale manifest to fire the SP-API scanner.</div>
+                  <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <div class="empty-title">No ASINs Scanned Yet</div>
+                    <div class="empty-desc">Paste ASINs above or drop a file to begin checking ungating eligibility.</div>
                   </div>
                 </td>
               </tr>
@@ -249,129 +184,105 @@
     </div><!-- /tool-view-checker -->
 
 
-    <!-- ════════════════════════════════════ -->
-    <!-- TOOL VIEW 2: UPC BARCODE RESOLVER   -->
-    <!-- ════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════════
+         TOOL VIEW 2 — UPC TO ASIN CONVERTER
+         ═══════════════════════════════════════ -->
     <div id="tool-view-converter" class="tool-view" style="display:none;">
 
-      <!-- Stage Header -->
-      <header class="stage-head">
-        <div>
-          <div class="head-label" style="color:#b97bff;background:var(--violet-dim);border-color:rgba(112,0,255,0.3);box-shadow:0 0 16px rgba(112,0,255,0.2);">🏷️ AMAZON CATALOG API RESOLVER</div>
-          <h1 class="head-title">UPC Barcode Resolver</h1>
-          <p class="head-sub">Convert 12-digit UPCs and 13-digit EANs into matched Amazon ASINs and instantly verify ungating eligibility.</p>
-        </div>
-        <div class="seller-chip">
-          <span class="chip-key">Seller ID:</span>
-          <span class="chip-val">A3F69VEDT4ABNH</span>
-        </div>
-      </header>
+      <!-- Page Heading -->
+      <div class="page-head">
+        <h1 class="page-title">UPC → ASIN Converter</h1>
+        <p class="page-sub">Bulk-convert UPC / EAN barcodes into Amazon ASINs and check ungating eligibility.</p>
+      </div>
 
-      <!-- Bento Ingestion Deck for UPCs -->
-      <section class="bento-deck">
-        <div class="glass-card drop-card" id="dropzone-upc">
-          <input type="file" id="file-input-upc" accept=".txt,.csv" hidden />
-          <div class="drop-orb" style="box-shadow:0 0 30px var(--violet-glow);">🏷️</div>
-          <div class="drop-title">Drop Barcode Manifest</div>
-          <div class="drop-sub">Wholesale price lists with UPC or EAN barcode columns</div>
-          <button class="btn btn-ghost btn-sm" id="btn-browse-upc">Browse Files</button>
-        </div>
-
-        <div class="glass-card buffer-card">
-          <div class="card-head">
-            <span class="section-badge violet">UPC BUFFER</span>
-            <span class="live-count" id="upc-paste-count" style="color:#b97bff;background:rgba(112,0,255,0.1);border-color:rgba(112,0,255,0.25);">0 Barcodes Ready</span>
+      <!-- Input Card -->
+      <div class="input-card">
+        <div class="input-grid">
+          <!-- Drop Zone -->
+          <div class="dropzone" id="dropzone-upc">
+            <input type="file" id="file-input-upc" accept=".txt,.csv" hidden />
+            <div class="dz-icon">🏷️</div>
+            <div class="dz-title">Drop Barcode File</div>
+            <div class="dz-sub">Wholesale price lists with 12-digit UPCs or 13-digit EANs</div>
+            <button class="btn btn-ghost btn-sm" id="btn-browse-upc">Browse Files</button>
           </div>
 
-          <textarea id="upc-paste" class="buffer-textarea"
-            placeholder="Paste 12-digit UPC or 13-digit EAN barcodes here&#10;e.g. 848061074719  012345678901  ..."
-          ></textarea>
-
-          <div class="buffer-footer">
-            <span class="footer-note mono t-muted">Direct Amazon SP-API Catalog Item Lookup</span>
-            <div style="display:flex;gap:10px;align-items:center;">
-              <button class="btn btn-ghost btn-xs" id="btn-clear-upc-input">Clear</button>
-              <button class="btn btn-prime" id="btn-start-convert" style="background:radial-gradient(ellipse at 50% 0%, rgba(170,100,255,0.9), var(--violet) 60%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.2),0 0 30px var(--violet-glow),0 4px 20px rgba(0,0,0,0.5);">🏷️ Resolve Barcodes</button>
+          <!-- Manual Buffer -->
+          <div class="buffer-area">
+            <div class="field-row">
+              <span class="field-label">Paste UPC / EAN Barcodes</span>
+              <span class="count-pill" id="upc-paste-count">0 Barcodes</span>
             </div>
+            <textarea id="upc-paste" class="buffer-textarea"
+              placeholder="Paste 12-digit UPCs or 13-digit EANs here — one per line or comma-separated&#10;e.g. 848061074719, 012345678901..."></textarea>
           </div>
         </div>
-      </section>
 
-      <!-- Progress Bar -->
-      <div class="progress-card" id="converter-progress-card" style="display:none;border-color:rgba(112,0,255,0.25);">
-        <div class="prog-meta">
-          <div class="prog-left">
-            <span class="prog-ring" style="background:#b97bff;box-shadow:0 0 10px #b97bff;"></span>
-            <span id="converter-progress-status">Resolving barcodes against Amazon Catalog API…</span>
+        <div class="card-footer">
+          <span class="footer-note">Amazon SP-API Catalog Item Lookup</span>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button class="btn btn-ghost btn-sm" id="btn-clear-upc-input">Clear</button>
+            <button class="btn btn-primary" id="btn-start-convert">🏷️ Convert Barcodes</button>
           </div>
-          <div class="prog-right">
-            <span id="converter-progress-eta" class="mono t-muted" style="font-size:0.83rem;">Est: –</span>
-            <span id="converter-progress-count" class="prog-counter">0 / 0</span>
-          </div>
-        </div>
-        <div class="prog-track">
-          <div class="prog-fill" id="converter-progress-fill" style="background:linear-gradient(90deg,var(--violet),#a855f7,var(--cyan));"></div>
         </div>
       </div>
 
-      <!-- HUD Grid -->
-      <div class="hud-grid">
-        <div class="hud-node hud-node-default">
-          <div class="hud-stripe"></div>
-          <div class="hud-emoji">🏷️</div>
-          <div>
-            <div class="hud-num" id="converter-stat-total">0</div>
-            <div class="hud-tag">Input Barcodes</div>
+      <!-- Progress Bar -->
+      <div class="progress-card" id="converter-progress-card" style="display:none;">
+        <div class="prog-row">
+          <div class="prog-label">
+            <span class="prog-spinner"></span>
+            <span id="converter-progress-status">Resolving barcodes via Amazon Catalog API…</span>
+          </div>
+          <div class="prog-meta">
+            <span class="prog-eta" id="converter-progress-eta">Est: –</span>
+            <span class="prog-count" id="converter-progress-count">0 / 0</span>
           </div>
         </div>
-
-        <div class="hud-node hud-node-default">
-          <div class="hud-stripe" style="background:var(--violet);"></div>
-          <div class="hud-emoji">🎯</div>
-          <div>
-            <div class="hud-num" id="converter-stat-asins">0</div>
-            <div class="hud-tag">Matched ASINs</div>
-          </div>
+        <div class="prog-track">
+          <div class="prog-fill" id="converter-progress-fill"></div>
         </div>
+      </div>
 
-        <div class="hud-node hud-node-green">
-          <div class="hud-stripe"></div>
-          <div class="hud-emoji">✅</div>
-          <div>
-            <div class="hud-num hud-green" id="converter-stat-ungated">0</div>
-            <div class="hud-tag">Auto Ungated</div>
-          </div>
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num" id="converter-stat-total">0</div>
+          <div class="stat-lbl">🏷️ Input Barcodes</div>
         </div>
-
-        <div class="hud-node hud-node-yellow">
-          <div class="hud-stripe"></div>
-          <div class="hud-emoji">⚠️</div>
-          <div>
-            <div class="hud-num hud-yellow" id="converter-stat-soft">0</div>
-            <div class="hud-tag">Approval Required</div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-num green" id="converter-stat-asins">0</div>
+          <div class="stat-lbl">🎯 Matched ASINs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num green" id="converter-stat-ungated">0</div>
+          <div class="stat-lbl">✅ Auto Ungated</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num amber" id="converter-stat-soft">0</div>
+          <div class="stat-lbl">⚠️ Approval Needed</div>
         </div>
       </div>
 
       <!-- Converter Table -->
-      <div class="table-shell">
-        <div class="table-bar">
-          <div class="filter-pills">
-            <button class="f-pill active" data-tab="converter-all">
-              All Converted <span class="pill-n" id="converter-badge-all">0</span>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <div class="filter-group">
+            <button class="f-btn active" data-tab="converter-all">
+              All <span class="f-count" id="converter-badge-all">0</span>
             </button>
-            <button class="f-pill" data-tab="converter-ungated">
-              ✅ Ungated <span class="pill-n" id="converter-badge-ungated">0</span>
+            <button class="f-btn" data-tab="converter-ungated">
+              ✅ Ungated <span class="f-count" id="converter-badge-ungated">0</span>
             </button>
           </div>
 
-          <div class="bar-actions">
-            <input type="text" id="converter-search-input" class="search-box" placeholder="Search UPC or ASIN…" />
+          <div class="table-actions">
+            <input type="text" id="converter-search-input" class="search-input" placeholder="Search UPC or ASIN…" />
             <button class="btn btn-accent btn-sm" id="btn-export-converter-csv">📥 Export CSV</button>
           </div>
         </div>
 
-        <div class="table-scroller">
+        <div class="table-scroll">
           <table class="data-table">
             <thead>
               <tr>
@@ -379,16 +290,16 @@
                 <th>Matched ASIN</th>
                 <th style="width:30%">Product Title</th>
                 <th>Status</th>
-                <th style="text-align:right">Dispatch Actions</th>
+                <th style="text-align:right">Actions</th>
               </tr>
             </thead>
             <tbody id="converter-table-body">
               <tr class="empty-row">
                 <td colspan="5">
-                  <div class="empty-vessel">
-                    <div class="empty-glyph">🏷️</div>
-                    <div class="empty-h">No Barcodes Resolved</div>
-                    <div class="empty-p">Drop a wholesale price list or paste UPCs above to begin catalog resolution.</div>
+                  <div class="empty-state">
+                    <div class="empty-icon">🏷️</div>
+                    <div class="empty-title">No Barcodes Converted Yet</div>
+                    <div class="empty-desc">Paste barcodes above or drop a wholesale price list file to convert to ASINs.</div>
                   </div>
                 </td>
               </tr>
@@ -399,12 +310,11 @@
 
     </div><!-- /tool-view-converter -->
 
-  </main><!-- /stage -->
-</div><!-- /layout -->
+  </div><!-- /main -->
 
-<!-- Toast Host -->
-<div class="toast-host" id="toast-container"></div>
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
 
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
