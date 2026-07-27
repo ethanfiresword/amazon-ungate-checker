@@ -833,6 +833,8 @@ app.post('/api/check-feasibility', async (req, res) => {
     const invoiceStatusText = distributorInvoiceValid ? 'VALID INVOICE AVAILABLE' : 'NO INVOICE SUPPLIERS';
     const invoiceIsGreen = distributorInvoiceValid;
 
+    const shouldGenerateEmail = distributors.length > 0;
+
     res.json({
       query,
       asin,
