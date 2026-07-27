@@ -370,6 +370,19 @@
       <!-- Feasibility Results Display -->
       <section id="feasibility-results" style="display: none; flex-direction: column; gap: 24px;">
         
+        <!-- Matched Product & Brand Bar (Copy-Pastable) -->
+        <div class="card" id="matched-product-card" style="padding: 18px 24px; background: var(--bg-card); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+          <div>
+            <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Matched Product & Brand</div>
+            <div id="matched-product-title" style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-top: 2px;">-</div>
+            <div id="matched-product-meta" style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 2px;">-</div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn btn-secondary btn-sm" id="btn-copy-product-title">📋 Copy Product Name</button>
+            <a href="#" target="_blank" id="matched-amazon-link" class="btn btn-secondary btn-sm" style="display: none;">Amazon ↗</a>
+          </div>
+        </div>
+
         <!-- 4-Point Criteria Scorecards Grid -->
         <div class="stats-row" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
           

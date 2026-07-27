@@ -878,6 +878,23 @@
     const resultsSec = $('#feasibility-results');
     if (resultsSec) resultsSec.style.display = 'flex';
 
+    // Render Matched Product & Brand Bar
+    const elProdTitle = $('#matched-product-title');
+    const elProdMeta = $('#matched-product-meta');
+    const elAmzLink = $('#matched-amazon-link');
+
+    if (elProdTitle) elProdTitle.textContent = data.productTitle || data.brandName;
+    if (elProdMeta) elProdMeta.textContent = `Brand: ${data.brandName}${data.asin ? ` | ASIN: ${data.asin}` : ''}`;
+    
+    if (elAmzLink) {
+      if (data.asin) {
+        elAmzLink.href = `https://www.amazon.com/dp/${data.asin}`;
+        elAmzLink.style.display = 'inline-flex';
+      } else {
+        elAmzLink.style.display = 'none';
+      }
+    }
+
     // 1. Overall Doable Verdict
     const elDoable = $('#card-doable-verdict');
     const elDoableIcon = $('#card-doable-icon');
@@ -1011,6 +1028,18 @@ ${company}`;
       const pitchText = $('#b2b-pitch-textarea').value;
       navigator.clipboard.writeText(pitchText);
       showToast('B2B Wholesale Pitch copied to clipboard!', 'success');
+    });
+  }
+
+  // Action: Copy Matched Product Name
+  const btnCopyProdTitle = $('#btn-copy-product-title');
+  if (btnCopyProdTitle) {
+    btnCopyProdTitle.addEventListener('click', () => {
+      const title = $('#matched-product-title').textContent;
+      if (title && title !== '-') {
+        navigator.clipboard.writeText(title);
+        showToast('Product Name copied to clipboard!', 'success');
+      }
     });
   }
 

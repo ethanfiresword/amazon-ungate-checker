@@ -318,88 +318,129 @@ app.post('/api/convert-upc', async (req, res) => {
   }
 });
 
+// Helper: Search Amazon Catalog by Keyword / Product Name
+async function searchAmazonCatalogByKeywords(keywords, accessToken) {
+  try {
+    const url = `${CONFIG.apiBaseUrl}/catalog/2022-04-01/items?keywords=${encodeURIComponent(keywords)}&marketplaceIds=${CONFIG.marketplaceId}&includedData=summaries`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-amz-access-token': accessToken,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.items && data.items.length > 0) {
+        const item = data.items[0];
+        const asin = item.asin;
+        const summary = item.summaries && item.summaries[0];
+        const brand = summary ? (summary.brandName || summary.brand || summary.manufacturer || '') : '';
+        const title = summary ? (summary.itemName || '') : '';
+        return { asin, brand, title };
+      }
+    }
+  } catch (e) {
+    console.error('Keyword catalog search error:', e.message);
+  }
+  return null;
+}
+
 // Brand Wholesale Intelligence Database & Rules Engine
 const BRAND_INTELLIGENCE_DB = {
   'anker': {
     brandName: 'Anker',
+    category: 'Electronics',
     resellersAllowed: true,
     resellerPolicy: 'Allows authorized wholesale distributors & 3rd-party resellers with MAP compliance.',
     distributors: [
-      { name: 'Petra Industries', url: 'https://www.petra.com', email: 'sales@petra.com', invoiceValid: true },
-      { name: 'D&H Distributing', url: 'https://www.dandh.com', email: 'wholesale@dandh.com', invoiceValid: true },
-      { name: 'EE Distribution', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true }
+      { name: 'Petra Industries (Electronics Wholesale)', url: 'https://www.petra.com', email: 'sales@petra.com', invoiceValid: true },
+      { name: 'D&H Distributing (Tech & Consumer Electronics)', url: 'https://www.dandh.com', email: 'wholesale@dandh.com', invoiceValid: true },
+      { name: 'EE Distribution (Consumer Goods & Accessories)', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true }
     ],
     ipRiskLevel: 'LOW'
   },
   'lego': {
     brandName: 'LEGO',
+    category: 'Toys',
     resellersAllowed: true,
     resellerPolicy: 'Open wholesale distribution via authorized toy distributors. 3rd-party resellers permitted.',
     distributors: [
-      { name: 'EE Distribution', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true },
-      { name: 'Southern Hobby Supply', url: 'https://www.southernhobby.com', email: 'sales@southernhobby.com', invoiceValid: true }
+      { name: 'EE Distribution (Entertainment Earth Wholesale)', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true },
+      { name: 'Southern Hobby Supply (Hobby & Toy Wholesale)', url: 'https://www.southernhobby.com', email: 'sales@southernhobby.com', invoiceValid: true },
+      { name: 'ACD Distribution (Toys & Games)', url: 'https://www.acddist.com', email: 'sales@acddist.com', invoiceValid: true }
     ],
     ipRiskLevel: 'LOW'
   },
   'fisher-price': {
     brandName: 'Fisher-Price',
+    category: 'Toys',
     resellersAllowed: true,
     resellerPolicy: 'Mattel wholesale catalog available through authorized distributors.',
     distributors: [
-      { name: 'EE Distribution', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true },
-      { name: 'Kole Imports', url: 'https://www.koleimports.com', email: 'sales@koleimports.com', invoiceValid: true }
+      { name: 'EE Distribution (Toys & Games Wholesale)', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true },
+      { name: 'Kole Imports (General Wholesale Merchandise)', url: 'https://www.koleimports.com', email: 'sales@koleimports.com', invoiceValid: true }
     ],
     ipRiskLevel: 'LOW'
   },
   'logitech': {
     brandName: 'Logitech',
+    category: 'Electronics',
     resellersAllowed: true,
     resellerPolicy: 'Authorized distribution via major IT & consumer electronics wholesalers.',
     distributors: [
-      { name: 'D&H Distributing', url: 'https://www.dandh.com', email: 'sales@dandh.com', invoiceValid: true },
-      { name: 'Ingram Micro', url: 'https://www.ingrammicro.com', email: 'sales@ingrammicro.com', invoiceValid: true }
+      { name: 'D&H Distributing (IT & Electronics)', url: 'https://www.dandh.com', email: 'sales@dandh.com', invoiceValid: true },
+      { name: 'Ingram Micro (Technology Solutions)', url: 'https://www.ingrammicro.com', email: 'sales@ingrammicro.com', invoiceValid: true },
+      { name: 'Synnex Corporation', url: 'https://www.synnexcorp.com', email: 'sales@synnex.com', invoiceValid: true }
     ],
     ipRiskLevel: 'LOW'
   },
   'burt\'s bees': {
     brandName: 'Burt\'s Bees',
+    category: 'Beauty & Personal Care',
     resellersAllowed: true,
-    resellerPolicy: 'Natural health & beauty wholesale distribution permitted.',
+    resellerPolicy: 'Natural health & beauty wholesale distribution permitted via accredited distributors.',
     distributors: [
-      { name: 'Frontier Co-op', url: 'https://www.frontiercoop.com', email: 'wholesale@frontiercoop.com', invoiceValid: true },
-      { name: 'KeHE Distributors', url: 'https://www.kehe.com', email: 'retailer@kehe.com', invoiceValid: true },
-      { name: 'UNFI Wholesale', url: 'https://www.unfi.com', email: 'sales@unfi.com', invoiceValid: true }
+      { name: 'Frontier Co-op (Natural & Organic Products)', url: 'https://www.frontiercoop.com', email: 'wholesale@frontiercoop.com', invoiceValid: true },
+      { name: 'KeHE Distributors (Specialty Grocery & Beauty)', url: 'https://www.kehe.com', email: 'retailer@kehe.com', invoiceValid: true },
+      { name: 'UNFI Wholesale (United Natural Foods)', url: 'https://www.unfi.com', email: 'sales@unfi.com', invoiceValid: true }
     ],
     ipRiskLevel: 'LOW'
   },
   'neutrogena': {
     brandName: 'Neutrogena',
+    category: 'Beauty & Personal Care',
     resellersAllowed: true,
     resellerPolicy: 'Johnson & Johnson beauty wholesale catalog distributed via health & beauty suppliers.',
     distributors: [
-      { name: 'Kole Imports', url: 'https://www.koleimports.com', email: 'sales@koleimports.com', invoiceValid: true },
-      { name: 'Dollar Item Direct', url: 'https://www.dollaritemdirect.com', email: 'sales@dollaritemdirect.com', invoiceValid: true }
+      { name: 'Kole Imports (Personal Care Wholesale)', url: 'https://www.koleimports.com', email: 'sales@koleimports.com', invoiceValid: true },
+      { name: 'Dollar Item Direct', url: 'https://www.dollaritemdirect.com', email: 'sales@dollaritemdirect.com', invoiceValid: true },
+      { name: 'Lotus Light Wholesale (Natural Care)', url: 'https://www.lotuslight.com', email: 'sales@lotuslight.com', invoiceValid: true }
     ],
     ipRiskLevel: 'LOW'
   },
   'apple': {
     brandName: 'Apple',
+    category: 'Electronics',
     resellersAllowed: false,
     resellerPolicy: 'Strict Amazon Exclusive Reseller Agreement (Only Apple Authorized Resellers permitted).',
     distributors: [
-      { name: 'Ingram Micro (Apple Authorized)', url: 'https://www.ingrammicro.com', email: 'apple-sales@ingrammicro.com', invoiceValid: true }
+      { name: 'Ingram Micro (Apple Authorized Only)', url: 'https://www.ingrammicro.com', email: 'apple-sales@ingrammicro.com', invoiceValid: true }
     ],
     ipRiskLevel: 'HIGH'
   },
   'bose': {
     brandName: 'Bose',
+    category: 'Electronics',
     resellersAllowed: false,
-    resellerPolicy: 'Strict Selective Distribution System & Brand Registry IP Enforcement.',
+    resellerPolicy: 'Strict Selective Distribution System & Brand Registry IP Enforcement on Amazon.',
     distributors: [],
     ipRiskLevel: 'HIGH'
   },
   'nike': {
     brandName: 'Nike',
+    category: 'Apparel',
     resellersAllowed: false,
     resellerPolicy: 'Direct-to-Consumer & Selective Retailers. Enforces strict Brand Registry IP complaints on Amazon.',
     distributors: [],
@@ -423,19 +464,31 @@ app.post('/api/check-feasibility', async (req, res) => {
   try {
     const accessToken = await getAccessToken();
 
-    // Check if input is an ASIN or Barcode
+    // Check 1: Input is ASIN
     if (/^[A-Z0-9]{10}$/i.test(query)) {
       asin = query.toUpperCase();
       spApiResult = await checkSingleAsinWithRetry(asin, accessToken);
       if (spApiResult.brand) brandName = spApiResult.brand;
       if (spApiResult.title) productTitle = spApiResult.title;
-    } else if (/^\d{12,14}$/.test(query)) {
+    } 
+    // Check 2: Input is Barcode (UPC/EAN)
+    else if (/^\d{12,14}$/.test(query)) {
       const upcMatch = await lookupUpcInAmazonCatalog(query, accessToken);
       if (upcMatch && upcMatch.asin) {
         asin = upcMatch.asin;
         spApiResult = await checkSingleAsinWithRetry(asin, accessToken);
         if (spApiResult.brand) brandName = spApiResult.brand;
         if (spApiResult.title) productTitle = spApiResult.title;
+      }
+    } 
+    // Check 3: Input is Product Name or Keyword Search
+    else {
+      const keywordMatch = await searchAmazonCatalogByKeywords(query, accessToken);
+      if (keywordMatch && keywordMatch.asin) {
+        asin = keywordMatch.asin;
+        if (keywordMatch.brand) brandName = keywordMatch.brand;
+        if (keywordMatch.title) productTitle = keywordMatch.title;
+        spApiResult = await checkSingleAsinWithRetry(asin, accessToken);
       }
     }
 
@@ -457,10 +510,10 @@ app.post('/api/check-feasibility', async (req, res) => {
         resellersAllowed: true,
         resellerPolicy: 'Standard wholesale distribution. Brand permits MAP-compliant 3rd-party resellers.',
         distributors: [
-          { name: 'Petra Industries', url: 'https://www.petra.com', email: 'sales@petra.com', invoiceValid: true },
-          { name: 'EE Distribution', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true },
-          { name: 'Kole Imports', url: 'https://www.koleimports.com', email: 'sales@koleimports.com', invoiceValid: true },
-          { name: 'UNFI Wholesale', url: 'https://www.unfi.com', email: 'sales@unfi.com', invoiceValid: true }
+          { name: 'Petra Industries (Electronics & Consumer Goods)', url: 'https://www.petra.com', email: 'sales@petra.com', invoiceValid: true },
+          { name: 'EE Distribution (Toys, Games & Collectibles)', url: 'https://www.eedistribution.com', email: 'sales@entertainmentearth.com', invoiceValid: true },
+          { name: 'Kole Imports (General Wholesale Merchandise)', url: 'https://www.koleimports.com', email: 'sales@koleimports.com', invoiceValid: true },
+          { name: 'UNFI Wholesale (Natural Health & Beauty)', url: 'https://www.unfi.com', email: 'sales@unfi.com', invoiceValid: true }
         ],
         ipRiskLevel: 'LOW'
       };
@@ -496,7 +549,7 @@ app.post('/api/check-feasibility', async (req, res) => {
       query,
       asin,
       brandName: matchedBrandInfo.brandName,
-      productTitle,
+      productTitle: productTitle || query,
       overallDoable,
       overallReason,
       resellersAllowed,
