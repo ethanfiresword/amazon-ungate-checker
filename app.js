@@ -1034,9 +1034,7 @@
       const errDiv = document.createElement('div');
       errDiv.style.cssText = 'align-self: flex-start; background: rgba(239,68,68,0.1); color: var(--red); padding: 8px 12px; border-radius: 8px; font-size: 0.84rem;';
       errDiv.textContent = `Error: ${e.message}`;
-      elHistory.appendChild(errDiv);
     }
-  }
   }
 
   function updateB2bPitchText() {
