@@ -911,12 +911,21 @@
       if (bDesc) bDesc.textContent = data.overallReason;
     }
 
-    // Distributors List (Strict Hand-Verified Matches Only, Zero Fill-Ins!)
+    // Distributors List & Pitch Select Setup
     const distCountBadge = $('#verifier-dist-count');
     const distGrid = $('#verifier-dist-grid');
+    const emailSelect = $('#verifier-pitch-email-select');
     const count = data.distributors ? data.distributors.length : 0;
 
     if (distCountBadge) distCountBadge.textContent = `${count} Supplier${count === 1 ? '' : 's'}`;
+
+    if (emailSelect) {
+      if (count > 0) {
+        emailSelect.innerHTML = data.distributors.map(d => `<option value="${d.email}">${d.name} (${d.email})</option>`).join('');
+      } else {
+        emailSelect.innerHTML = `<option value="wholesale@${(data.brandName || 'brand').toLowerCase().replace(/[^a-z0-9]/g, '')}.com">Direct Corporate Sales (${(data.brandName || 'brand').toLowerCase().replace(/[^a-z0-9]/g, '')}.com)</option>`;
+      }
+    }
 
     if (count > 0 && distGrid) {
       distGrid.innerHTML = data.distributors.map(d => `
@@ -926,8 +935,8 @@
             <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Sales Contact: <strong style="color: var(--text-secondary); font-family: monospace;">${d.email}</strong></div>
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
-            <span class="badge badge-ungated" style="font-size: 0.75rem;">✅ Valid 10+ Unit Invoice</span>
             <a href="${d.url}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 4px 10px;">Website ↗</a>
+            <button class="btn btn-primary btn-sm btn-verifier-pitch-dist" data-email="${d.email}" data-name="${d.name}" style="font-size: 0.78rem; padding: 4px 10px;">⚡ 1-Click Pitch</button>
           </div>
         </div>
       `).join('');
@@ -937,7 +946,79 @@
           🚫 No verified 3rd-party wholesale distributor on file for this brand.
         </div>`;
     }
+
+    updateVerifierPitchText(data);
   }
+
+  function updateVerifierPitchText(data) {
+    const textEl = $('#verifier-pitch-text');
+    const bizEl = $('#verifier-pitch-biz');
+    const einEl = $('#verifier-pitch-ein');
+
+    if (!textEl) return;
+
+    const brand = (data && data.brandName) ? data.brandName : 'your brand lines';
+    const biz = (bizEl && bizEl.value.trim()) ? bizEl.value.trim() : 'Apex Retail Group LLC';
+    const ein = (einEl && einEl.value.trim()) ? einEl.value.trim() : 'XX-XXXXXXX';
+
+    const pitch = `Hello Sales Team,
+
+I hope this email finds you well.
+
+My name is Sales Purchasing Director at ${biz}. We are an accredited US commercial retailer specializing in high-volume distribution for premium consumer brands.
+
+We are reaching out to open a wholesale purchasing account with your organization to purchase inventory for ${brand}.
+
+Account & Business Credentials:
+• Company Name: ${biz}
+• Tax ID / Resale License EIN: ${ein}
+• Order Estimate: Initial opening order of $2,500 - $10,000+ per month
+• Order Model: Pre-paid credit card, ACH, or Net-30 terms
+
+Could you please send over your current wholesale price catalog, minimum order quantities (MOQ), and opening account application form?
+
+Best regards,
+
+Sales Purchasing Director
+${biz}
+Email: purchasing@${biz.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
+
+    textEl.value = pitch;
+  }
+
+  // Bind Pitch Text Updates
+  const pitchBiz = $('#verifier-pitch-biz');
+  const pitchEin = $('#verifier-pitch-ein');
+  if (pitchBiz) pitchBiz.addEventListener('input', () => updateVerifierPitchText(currentFeasibilityData));
+  if (pitchEin) pitchEin.addEventListener('input', () => updateVerifierPitchText(currentFeasibilityData));
+
+  // 1-Click Launch Email Button
+  const btnLaunchEmail = $('#btn-verifier-launch-email');
+  if (btnLaunchEmail) {
+    btnLaunchEmail.addEventListener('click', () => {
+      const emailSel = $('#verifier-pitch-email-select');
+      const targetEmail = (emailSel && emailSel.value) ? emailSel.value : 'wholesale@supplier.com';
+      const text = $('#verifier-pitch-text').value;
+      const subject = encodeURIComponent('Wholesale Account Application & Purchase Inquiry');
+      const body = encodeURIComponent(text);
+
+      window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+      showToast('Opening default email client...', 'success');
+    });
+  }
+
+  // 1-Click Pitch Button inside distributor row
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-verifier-pitch-dist');
+    if (!btn) return;
+    const email = btn.dataset.email;
+    const select = $('#verifier-pitch-email-select');
+    if (select && email) {
+      select.value = email;
+      const pitchCard = $('#verifier-pitch-card');
+      if (pitchCard) pitchCard.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
 
   // Copy product title button
   const btnVerifierCopy = $('#btn-verifier-copy-title');

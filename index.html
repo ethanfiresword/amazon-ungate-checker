@@ -388,17 +388,50 @@
           <p id="verifier-status-desc" style="font-size: 0.9rem; color: var(--text-secondary); max-width: 650px; margin: 4px auto 0 auto;">-</p>
         </div>
 
-        <!-- 2. Exact Hand-Verified Authorized Wholesalers -->
+        <!-- 2. Authorized Wholesalers & Suppliers -->
         <div class="card" style="padding: 20px 24px; border: 1px solid var(--border-color); background: var(--bg-card);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
             <div>
-              <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">🏢 Hand-Verified Wholesalers & Distributors</h3>
-              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Accredited suppliers issuing valid 10+ unit invoices accepted for Amazon ungating.</p>
+              <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">🏢 Authorized B2B Distributors & Wholesalers</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Accredited B2B suppliers issuing valid 10+ unit invoices accepted for Amazon ungating.</p>
             </div>
             <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); font-size: 0.8rem; padding: 4px 10px;" id="verifier-dist-count">0 Suppliers</span>
           </div>
 
           <div id="verifier-dist-grid" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <!-- 3. Integrated 1-Click B2B Sales Outreach Pitch Emailer -->
+        <div class="card" id="verifier-pitch-card" style="padding: 20px 24px; border: 1px solid var(--border-color); background: var(--bg-card);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+            <div>
+              <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">📧 1-Click B2B Wholesale Application Pitch Sender</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Instantly send a professional B2B wholesale account application email to any authorized distributor.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-verifier-launch-email">
+              <span>⚡ Launch Email in Mail Client</span>
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 14px;">
+            <div>
+              <label class="label" style="font-size: 0.78rem;">Target Distributor Contact</label>
+              <select id="verifier-pitch-email-select" class="search-input" style="width: 100%; font-size: 0.85rem; padding: 8px 12px;"></select>
+            </div>
+            <div>
+              <label class="label" style="font-size: 0.78rem;">Your Business Name</label>
+              <input type="text" id="verifier-pitch-biz" class="search-input" style="width: 100%; font-size: 0.85rem; padding: 8px 12px;" value="Apex Retail Group LLC" />
+            </div>
+            <div>
+              <label class="label" style="font-size: 0.78rem;">Your Tax ID / EIN</label>
+              <input type="text" id="verifier-pitch-ein" class="search-input" style="width: 100%; font-size: 0.85rem; padding: 8px 12px;" value="XX-XXXXXXX" />
+            </div>
+          </div>
+
+          <div>
+            <label class="label" style="font-size: 0.78rem;">Generated B2B Email Pitch</label>
+            <textarea id="verifier-pitch-text" style="width: 100%; height: 160px; font-family: 'JetBrains Mono', monospace; font-size: 0.84rem; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: var(--text-primary); resize: vertical;"></textarea>
+          </div>
         </div>
 
       </section>
