@@ -784,31 +784,30 @@ app.post('/api/check-feasibility', async (req, res) => {
 
     const resellersAllowed = matchedBrandInfo.resellersAllowed;
     const ipRiskLevel = matchedBrandInfo.ipRiskLevel;
+    const distributors = matchedBrandInfo.distributors || [];
+    const distributorInvoiceValid = distributors.length > 0 && distributors.some(d => d.invoiceValid);
     const isUngatedOrSoft = !spApiResult || spApiResult.status === 'ungated' || (spApiResult.status === 'gated' && spApiResult.hasApprovalRoute);
 
-    // Evaluate Overall Doable Product (YES / NO)
-    const overallDoable = matchedBrandInfo.overallDoable ?? (resellersAllowed && (ipRiskLevel !== 'HIGH') && isUngatedOrSoft);
+    // Strict Non-Contradictory Logic: overallDoable is YES ONLY IF ALL sub-checks are YES!
+    const overallDoable = resellersAllowed && (ipRiskLevel !== 'HIGH') && isUngatedOrSoft && distributorInvoiceValid;
 
-    let overallReason = matchedBrandInfo.overallReason || '';
-    if (!overallReason) {
-      if (!overallDoable) {
-        if (!resellersAllowed) {
-          overallReason = `Brand "${matchedBrandInfo.brandName}" restricts 3rd-party Amazon resellers.`;
-        } else if (ipRiskLevel === 'HIGH') {
-          overallReason = `Brand "${matchedBrandInfo.brandName}" carries high Brand Registry IP claim risk.`;
-        } else {
-          overallReason = `Hard restricted on Amazon (Not Eligible for Ungating).`;
-        }
-      } else {
-        overallReason = `Product & brand are viable for wholesale arbitrage & 3rd-party selling!`;
+    let overallReason = '';
+    if (!overallDoable) {
+      if (!resellersAllowed) {
+        overallReason = `Brand "${matchedBrandInfo.brandName}" restricts 3rd-party Amazon resellers.`;
+      } else if (ipRiskLevel === 'HIGH') {
+        overallReason = `Brand "${matchedBrandInfo.brandName}" carries high Brand Registry IP claim risk.`;
+      } else if (!isUngatedOrSoft) {
+        overallReason = `Hard restricted on Amazon (Not Eligible for Ungating application).`;
+      } else if (!distributorInvoiceValid) {
+        overallReason = `No accredited wholesale distributors issuing valid Amazon invoices found.`;
       }
+    } else {
+      overallReason = `Product & brand are 100% viable for wholesale arbitrage & 3rd-party selling!`;
     }
 
-    const distributors = matchedBrandInfo.distributors || [];
-    const distributorInvoiceValid = distributors.some(d => d.invoiceValid);
-
-    // CONDITIONAL: Generate B2B Email IF overallDoable = YES AND resellersAllowed = YES
-    const shouldGenerateEmail = overallDoable && resellersAllowed;
+    // Enable automated B2B email whenever distributors exist to contact
+    const shouldGenerateEmail = distributors.length > 0;
 
     res.json({
       query,

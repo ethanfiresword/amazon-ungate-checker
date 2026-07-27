@@ -969,10 +969,26 @@
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
               <span class="badge badge-ungated" style="font-size: 0.75rem;">✅ Valid 10+ Unit Invoice</span>
-              <a href="${d.url}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.82rem; white-space: nowrap;">🌐 Visit B2B Portal ↗</a>
+              <a href="${d.url}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.82rem; white-space: nowrap;">🌐 Visit B2B Site ↗</a>
+              <button class="btn btn-primary btn-sm btn-pitch-distributor" data-email="${d.email}" style="font-size: 0.82rem; white-space: nowrap; background: linear-gradient(135deg, var(--green), #16a34a);">⚡ Pitch Sales Team</button>
             </div>
           </div>
         `).join('');
+
+        // Add event listeners for Pitch Sales Team buttons
+        elDistGrid.querySelectorAll('.btn-pitch-distributor').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const email = e.target.dataset.email;
+            const selectRecip = $('#b2b-recipient-select');
+            if (selectRecip) selectRecip.value = email;
+            updateB2bPitchText();
+            const emailCard = $('#b2b-email-card');
+            if (emailCard) {
+              emailCard.scrollIntoView({ behavior: 'smooth' });
+              showToast(`Pre-filled B2B pitch for ${email}!`, 'success');
+            }
+          });
+        });
       }
     } else {
       elDistList.textContent = 'Brand restricts 3rd party distributors.';
@@ -993,9 +1009,9 @@
       elInvoiceIcon.textContent = '❌';
     }
 
-    // CONDITIONAL: B2B Outreach Email Card
+    // ALWAYS DISPLAY: B2B Outreach Email Card whenever distributors exist
     const emailCard = $('#b2b-email-card');
-    if (data.shouldGenerateEmail) {
+    if (data.distributors && data.distributors.length > 0) {
       emailCard.style.display = 'block';
 
       // Populate recipient select
