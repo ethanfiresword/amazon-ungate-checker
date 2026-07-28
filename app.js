@@ -604,66 +604,72 @@
     reader.readAsText(file);
   }
 
-  // Start UPC to ASIN Conversion
+  // Start UPC to ASIN Conversion (named so the mode toggle button can call it)
   const btnStartConvert = $('#btn-start-convert');
   const converterProgressCard = $('#converter-progress-card');
   const converterProgressFill = $('#converter-progress-fill');
   const converterProgressStatus = $('#converter-progress-status');
   const converterProgressCount = $('#converter-progress-count');
 
-  if (btnStartConvert) {
-    btnStartConvert.addEventListener('click', async () => {
-      const upcs = parseUpcs(upcPaste.value);
-      if (upcs.length === 0) {
-        showToast('Please enter or drop a list of UPCs first', 'error');
-        return;
-      }
+  async function startUpcScan(upcs) {
+    if (!upcs || upcs.length === 0) {
+      showToast('Please enter or drop a list of UPCs first', 'error');
+      return;
+    }
 
-      converterResults = [];
-      converterProgressCard.style.display = 'flex';
-      converterProgressFill.style.width = '0%';
-      converterProgressStatus.textContent = `Querying Amazon SP-API for ${upcs.length} barcodes...`;
-      converterProgressCount.textContent = `0 / ${upcs.length}`;
+    converterResults = [];
+    if (converterProgressCard) converterProgressCard.style.display = 'flex';
+    if (converterProgressFill) converterProgressFill.style.width = '0%';
+    if (converterProgressStatus) converterProgressStatus.textContent = `Querying Amazon SP-API for ${upcs.length} barcodes...`;
+    if (converterProgressCount) converterProgressCount.textContent = `0 / ${upcs.length}`;
 
-      const CHUNK_SIZE = 50;
-      for (let i = 0; i < upcs.length; i += CHUNK_SIZE) {
-        const chunk = upcs.slice(i, i + CHUNK_SIZE);
-        const pct = Math.round((converterResults.length / upcs.length) * 100);
-        converterProgressFill.style.width = `${pct}%`;
-        converterProgressCount.textContent = `${converterResults.length} / ${upcs.length}`;
+    const CHUNK_SIZE = 50;
+    for (let i = 0; i < upcs.length; i += CHUNK_SIZE) {
+      const chunk = upcs.slice(i, i + CHUNK_SIZE);
+      const pct = Math.round((converterResults.length / upcs.length) * 100);
+      if (converterProgressFill) converterProgressFill.style.width = `${pct}%`;
+      if (converterProgressCount) converterProgressCount.textContent = `${converterResults.length} / ${upcs.length}`;
 
-        try {
-          const res = await fetch('/api/convert-upc', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ upcs: chunk })
-          });
+      try {
+        const res = await fetch('/api/convert-upc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ upcs: chunk })
+        });
 
-          if (!res.ok) {
-            const errText = await res.text();
-            throw new Error(errText);
-          }
-
-          const data = await res.json();
-          const chunkResults = data.results || [];
-          converterResults.push(...chunkResults);
-          renderConverterResults();
-
-        } catch (err) {
-          console.error('UPC conversion error:', err);
-          showToast(`Conversion error: ${err.message}`, 'error');
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText);
         }
-      }
 
-      converterProgressFill.style.width = '100%';
-      converterProgressCount.textContent = `${converterResults.length} / ${upcs.length}`;
-      converterProgressStatus.textContent = 'Conversion Complete!';
-
-      setTimeout(() => {
-        converterProgressCard.style.display = 'none';
+        const data = await res.json();
+        const chunkResults = data.results || [];
+        converterResults.push(...chunkResults);
         renderConverterResults();
-        showToast(`Converted ${converterResults.filter(r => r.asin).length} of ${upcs.length} barcodes into ASINs!`, 'success');
-      }, 600);
+
+      } catch (err) {
+        console.error('UPC conversion error:', err);
+        showToast(`Conversion error: ${err.message}`, 'error');
+      }
+    }
+
+    if (converterProgressFill) converterProgressFill.style.width = '100%';
+    if (converterProgressCount) converterProgressCount.textContent = `${converterResults.length} / ${upcs.length}`;
+    if (converterProgressStatus) converterProgressStatus.textContent = 'Conversion Complete!';
+
+    setTimeout(() => {
+      if (converterProgressCard) converterProgressCard.style.display = 'none';
+      renderConverterResults();
+      showToast(`Converted ${converterResults.filter(r => r.asin).length} of ${upcs.length} barcodes into ASINs!`, 'success');
+    }, 600);
+  }
+
+  // Original btn-start-convert listener kept for direct UPC→ASIN mode
+  if (btnStartConvert) {
+    btnStartConvert.addEventListener('click', () => {
+      if (typeof converterMode !== 'undefined' && converterMode === 'asin-to-upc') return; // handled by mode-aware button
+      const upcs = parseUpcs(upcPaste ? upcPaste.value : '');
+      startUpcScan(upcs);
     });
   }
 
@@ -799,35 +805,309 @@
     });
   }
 
-  // Converter CSV Export
-  const btnExportConverterCsv = $('#btn-export-converter-csv');
-  if (btnExportConverterCsv) {
-    btnExportConverterCsv.addEventListener('click', () => {
-      const converted = converterResults.filter(r => r.asin);
-      if (converted.length === 0) {
-        showToast('No converted ASINs to export', 'info');
-        return;
+  // ═══════════════════════════════════════════
+  // CONVERTER MODE TOGGLE (UPC→ASIN / ASIN→UPC)
+  // ═══════════════════════════════════════════
+  let converterMode = 'upc-to-asin'; // 'upc-to-asin' | 'asin-to-upc'
+  let a2uResults = [];
+
+  const btnModeU2A = $('#btn-mode-upc-to-asin');
+  const btnModeA2U = $('#btn-mode-asin-to-upc');
+
+  function applyConverterMode(mode) {
+    converterMode = mode;
+    const isU2A = mode === 'upc-to-asin';
+
+    // Toggle button styles
+    if (btnModeU2A) {
+      btnModeU2A.style.background = isU2A ? 'var(--indigo)' : 'transparent';
+      btnModeU2A.style.color = isU2A ? '#fff' : 'var(--text-2)';
+    }
+    if (btnModeA2U) {
+      btnModeA2U.style.background = !isU2A ? 'var(--indigo)' : 'transparent';
+      btnModeA2U.style.color = !isU2A ? '#fff' : 'var(--text-2)';
+    }
+
+    // Page title / sub
+    const titleEl = $('#converter-page-title');
+    const subEl   = $('#converter-page-sub');
+    if (titleEl) titleEl.textContent = isU2A ? 'UPC → ASIN Converter' : 'ASIN → UPC Lookup';
+    if (subEl)   subEl.textContent   = isU2A
+      ? 'Bulk-convert UPC / EAN barcodes into Amazon ASINs and check ungating eligibility.'
+      : 'Look up UPC / EAN barcodes for any ASIN using the Amazon Catalog API.';
+
+    // Drop zone text
+    const dzIcon  = $('#converter-dz-icon');
+    const dzTitle = $('#converter-dz-title');
+    const dzSub   = $('#converter-dz-sub');
+    if (dzIcon)  dzIcon.textContent  = isU2A ? '🏷️' : '📦';
+    if (dzTitle) dzTitle.textContent = isU2A ? 'Drop Barcode File' : 'Drop ASIN File';
+    if (dzSub)   dzSub.textContent   = isU2A
+      ? 'Wholesale price lists with 12-digit UPCs or 13-digit EANs'
+      : 'Plain text or CSV file with one ASIN per line';
+
+    // Field label & textarea placeholder
+    const fieldLabel = $('#converter-field-label');
+    const pasteArea  = $('#upc-paste');
+    const pasteCount = $('#upc-paste-count');
+    if (fieldLabel) fieldLabel.textContent = isU2A ? 'Paste UPC / EAN Barcodes' : 'Paste ASINs';
+    if (pasteArea)  pasteArea.placeholder  = isU2A
+      ? 'Paste 12-digit UPCs or 13-digit EANs here — one per line or comma-separated\ne.g. 848061074719, 012345678901...'
+      : 'Paste Amazon ASINs here — one per line or comma-separated\ne.g. B08N5WRWNW, B07ZPKN1B2...';
+    if (pasteCount) pasteCount.textContent = '0 Items';
+
+    // Footer note & execute button
+    const footerNote   = $('#converter-footer-note');
+    const executeBtn   = $('#btn-start-convert');
+    if (footerNote)  footerNote.textContent = isU2A ? 'Amazon SP-API Catalog Item Lookup' : 'Amazon SP-API Catalog Items — identifiers includedData';
+    if (executeBtn) {
+      executeBtn.textContent = isU2A ? '🏷️ Convert Barcodes' : '📦 Lookup Barcodes';
+    }
+
+    // Stats visibility
+    const statsUpc  = $('#converter-stats-upc');
+    const statsAsin = $('#converter-stats-asin');
+    if (statsUpc)  statsUpc.style.display  = isU2A ? 'grid' : 'none';
+    if (statsAsin) statsAsin.style.display = isU2A ? 'none' : 'grid';
+
+    // Table visibility
+    const tableUpc  = $('#converter-table-upc');
+    const tableAsin = $('#converter-table-asin');
+    if (tableUpc)  tableUpc.style.display  = isU2A ? '' : 'none';
+    if (tableAsin) tableAsin.style.display = isU2A ? 'none' : '';
+
+    // Filter tab visibility
+    const tabUngated  = $('#converter-tab-ungated');
+    const tabBarcodes = $('#converter-tab-barcodes');
+    if (tabUngated)  tabUngated.style.display  = isU2A ? '' : 'none';
+    if (tabBarcodes) tabBarcodes.style.display = isU2A ? 'none' : '';
+
+    // Reset active tab & re-render
+    $$('.f-btn[data-tab^="converter-"]').forEach(b => b.classList.remove('active'));
+    const allBtn = $('.f-btn[data-tab="converter-all"]');
+    if (allBtn) allBtn.classList.add('active');
+    activeConverterTab = 'converter-all';
+
+    if (pasteArea) pasteArea.value = '';
+  }
+
+  if (btnModeU2A) btnModeU2A.addEventListener('click', () => applyConverterMode('upc-to-asin'));
+  if (btnModeA2U) btnModeA2U.addEventListener('click', () => applyConverterMode('asin-to-upc'));
+
+  // ═══════════════════════════════════════════
+  // ASIN → UPC FETCH & RENDER
+  // ═══════════════════════════════════════════
+  function renderA2UTable() {
+    const tbody = $('#a2u-table-body');
+    if (!tbody) return;
+
+    const q = converterSearchQuery.toLowerCase();
+    let filtered = a2uResults;
+    if (activeConverterTab === 'converter-barcodes') {
+      filtered = a2uResults.filter(r => r.barcodes && r.barcodes.length > 0);
+    }
+    if (q) {
+      filtered = filtered.filter(r =>
+        (r.asin && r.asin.toLowerCase().includes(q)) ||
+        (r.title && r.title.toLowerCase().includes(q)) ||
+        (r.upc && r.upc.includes(q)) ||
+        (r.ean && r.ean.includes(q))
+      );
+    }
+
+    // Update badge counts
+    const badgeAll = $('#converter-badge-all');
+    const badgeBarcode = $('#converter-badge-barcodes');
+    if (badgeAll) badgeAll.textContent = a2uResults.length;
+    if (badgeBarcode) badgeBarcode.textContent = a2uResults.filter(r => r.barcodes && r.barcodes.length > 0).length;
+
+    // Update stats
+    const total  = a2uResults.length;
+    const found  = a2uResults.filter(r => r.barcodes && r.barcodes.length > 0).length;
+    const upcs   = a2uResults.filter(r => r.upc).length;
+    const eans   = a2uResults.filter(r => r.ean).length;
+    const elT = $('#a2u-stat-total');  if (elT) elT.textContent = total;
+    const elF = $('#a2u-stat-found');  if (elF) elF.textContent = found;
+    const elU = $('#a2u-stat-upc');    if (elU) elU.textContent = upcs;
+    const elE = $('#a2u-stat-ean');    if (elE) elE.textContent = eans;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <div class="empty-title">${a2uResults.length === 0 ? 'No ASINs Looked Up Yet' : 'No Matching Results'}</div>
+        <div class="empty-desc">${a2uResults.length === 0 ? 'Paste ASINs above to retrieve their UPC / EAN barcodes.' : 'Try adjusting your search or filter.'}</div>
+      </div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(item => {
+      const allBarcodes = (item.barcodes || []).map(b => `<span style="font-family:var(--mono);font-size:0.8rem;">${b.type}: ${b.value}</span>`).join('<br>');
+      const statusBadge = item.status === 'found'
+        ? `<span class="badge badge-ungated">🏷️ FOUND</span>`
+        : item.status === 'no_barcode'
+          ? `<span class="badge badge-softgated">⚠️ NO BARCODE</span>`
+          : `<span class="badge badge-hardgated">❌ NOT FOUND</span>`;
+
+      const upcVal = item.upc ? `<span class="mono" style="font-size:0.85rem;">${item.upc}</span>` : `<span style="color:var(--text-3)">—</span>`;
+      const eanVal = item.ean ? `<span class="mono" style="font-size:0.85rem;">${item.ean}</span>` : `<span style="color:var(--text-3)">—</span>`;
+
+      return `
+        <tr>
+          <td class="cell-asin">${item.asin}</td>
+          <td class="cell-title" title="${(item.title||'').replace(/"/g,'&quot;')}">${item.title || '—'}</td>
+          <td>${upcVal}</td>
+          <td>${eanVal}</td>
+          <td style="text-align:right">
+            <div class="action-cluster">
+              <a href="https://www.amazon.com/dp/${item.asin}" target="_blank" class="a-link">Amazon</a>
+              <a href="https://keepa.com/#!product/1-${item.asin}" target="_blank" class="a-link">Keepa</a>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Intercept the execute button to handle both modes
+  const originalConverterBtn = $('#btn-start-convert');
+  if (originalConverterBtn) {
+    // Remove previous listener by cloning
+    const newBtn = originalConverterBtn.cloneNode(true);
+    originalConverterBtn.parentNode.replaceChild(newBtn, originalConverterBtn);
+
+    newBtn.addEventListener('click', async () => {
+      if (converterMode === 'asin-to-upc') {
+        // ASIN → UPC mode
+        const rawText = $('#upc-paste') ? $('#upc-paste').value : '';
+        const inputAsins = rawText
+          .split(/[\n\r,\s]+/)
+          .map(s => s.trim().replace(/^["']|["']$/g, ''))
+          .filter(s => /^[A-Z0-9]{10}$/i.test(s))
+          .map(s => s.toUpperCase());
+
+        const seen = new Set();
+        const asins = inputAsins.filter(a => { if (seen.has(a)) return false; seen.add(a); return true; });
+
+        if (asins.length === 0) {
+          showToast('Please paste valid ASINs (10-character codes) first', 'error');
+          return;
+        }
+
+        a2uResults = [];
+        const progCard   = $('#converter-progress-card');
+        const progFill   = $('#converter-progress-fill');
+        const progStatus = $('#converter-progress-status');
+        const progCount  = $('#converter-progress-count');
+        const progEta    = $('#converter-progress-eta');
+
+        if (progCard) progCard.style.display = 'flex';
+        if (progFill) progFill.style.width = '0%';
+        if (progStatus) progStatus.textContent = `Looking up barcodes for ${asins.length} ASINs…`;
+        if (progCount) progCount.textContent = `0 / ${asins.length}`;
+        if (progEta) progEta.textContent = 'Est: –';
+
+        const CHUNK = 20;
+        const startTime = Date.now();
+
+        for (let i = 0; i < asins.length; i += CHUNK) {
+          const chunk = asins.slice(i, i + CHUNK);
+          const processed = i;
+          const pct = Math.round((processed / asins.length) * 100);
+          if (progFill) progFill.style.width = `${pct}%`;
+          if (progCount) progCount.textContent = `${processed} / ${asins.length}`;
+
+          if (processed > 0) {
+            const elapsed = (Date.now() - startTime) / 1000;
+            const rate = processed / elapsed;
+            const remaining = Math.ceil((asins.length - processed) / rate);
+            const m = Math.floor(remaining / 60), s = remaining % 60;
+            if (progEta) progEta.textContent = `Est: ${m > 0 ? `${m}m ${s}s` : `${s}s`}`;
+          }
+          if (progStatus) progStatus.textContent = `Batch ${Math.floor(i/CHUNK)+1} of ${Math.ceil(asins.length/CHUNK)}…`;
+
+          try {
+            const res = await fetch('/api/asin-to-upc', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ asins: chunk })
+            });
+            if (!res.ok) throw new Error(await res.text());
+            const data = await res.json();
+            a2uResults.push(...(data.results || []));
+            renderA2UTable();
+          } catch (err) {
+            showToast(`Batch error: ${err.message}`, 'error');
+          }
+        }
+
+        if (progFill) progFill.style.width = '100%';
+        if (progCount) progCount.textContent = `${a2uResults.length} / ${asins.length}`;
+        if (progStatus) progStatus.textContent = 'Lookup complete!';
+        if (progEta) progEta.textContent = 'Done';
+        setTimeout(() => { if (progCard) progCard.style.display = 'none'; renderA2UTable(); }, 600);
+        showToast(`Barcode lookup complete — ${a2uResults.length} ASINs processed`, 'success');
+
+      } else {
+        // UPC → ASIN mode — trigger the original UPC handler
+        triggerUpcToAsinScan();
       }
-
-      let csv = 'Input UPC,Matched ASIN,Product Title,Ungating Status,Amazon Link\n';
-      converted.forEach(item => {
-        csv += `"${item.upc}","${item.asin}","${(item.title || '').replace(/"/g, '""')}","${item.status}","https://www.amazon.com/dp/${item.asin}"\n`;
-      });
-
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `converted-upc-asins-${new Date().toISOString().slice(0, 10)}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast(`Exported ${converted.length} converted UPC-to-ASIN records`, 'success');
     });
   }
 
-  // Save / Remove event listeners for table buttons
+  // Pull the UPC→ASIN scan into a named function so the new button can call it
+  function triggerUpcToAsinScan() {
+    const upcPaste = $('#upc-paste');
+    if (!upcPaste) return;
+    const upcs = upcPaste.value
+      .split(/[\n\r,]+/)
+      .map(u => u.trim())
+      .filter(u => u.length >= 8 && /^\d+$/.test(u));
+
+    if (upcs.length === 0) {
+      showToast('Please enter valid UPC/EAN barcodes (digits only, 8–13 characters)', 'error');
+      return;
+    }
+    // Dispatch the existing UPC scan (inline below)
+    startUpcScan(upcs);
+  }
+
+  // Converter CSV Export (handles both modes)
+  const btnExportConverterCsv = $('#btn-export-converter-csv');
+  if (btnExportConverterCsv) {
+    btnExportConverterCsv.addEventListener('click', () => {
+      if (converterMode === 'asin-to-upc') {
+        if (a2uResults.length === 0) { showToast('No results to export', 'info'); return; }
+        let csv = 'ASIN,Product Title,UPC,EAN,All Barcodes,Amazon Link\n';
+        a2uResults.forEach(item => {
+          const allB = (item.barcodes||[]).map(b=>`${b.type}:${b.value}`).join('|');
+          csv += `"${item.asin}","${(item.title||'').replace(/"/g,'""')}","${item.upc||''}","${item.ean||''}","${allB}","https://www.amazon.com/dp/${item.asin}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url;
+        a.download = `asin-to-upc-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click(); URL.revokeObjectURL(url);
+        showToast(`Exported ${a2uResults.length} records`, 'success');
+      } else {
+        const converted = converterResults.filter(r => r.asin);
+        if (converted.length === 0) { showToast('No converted ASINs to export', 'info'); return; }
+        let csv = 'Input UPC,Matched ASIN,Product Title,Ungating Status,Amazon Link\n';
+        converted.forEach(item => {
+          csv += `"${item.upc}","${item.asin}","${(item.title||'').replace(/"/g,'""')}","${item.status}","https://www.amazon.com/dp/${item.asin}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url;
+        a.download = `converted-upc-asins-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click(); URL.revokeObjectURL(url);
+        showToast(`Exported ${converted.length} records`, 'success');
+      }
+    });
+  }
+
+  // Save / Remove event listeners for table buttons (covers a-save + btn-save-link)
   document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-save-link');
+    const btn = e.target.closest('.a-save, .btn-save-link');
     if (!btn) return;
     e.preventDefault();
     const asin = btn.dataset.asin;
@@ -867,3 +1147,4 @@
   renderResults();
   renderConverterResults();
 })();
+

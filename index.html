@@ -185,33 +185,45 @@
 
 
     <!-- ═══════════════════════════════════════
-         TOOL VIEW 2 — UPC TO ASIN CONVERTER
+         TOOL VIEW 2 — BIDIRECTIONAL CONVERTER
          ═══════════════════════════════════════ -->
     <div id="tool-view-converter" class="tool-view" style="display:none;">
 
-      <!-- Page Heading -->
-      <div class="page-head">
-        <h1 class="page-title">UPC → ASIN Converter</h1>
-        <p class="page-sub">Bulk-convert UPC / EAN barcodes into Amazon ASINs and check ungating eligibility.</p>
+      <!-- Page Heading + Mode Toggle -->
+      <div class="page-head" style="flex-direction:row; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+        <div>
+          <h1 class="page-title" id="converter-page-title">UPC → ASIN Converter</h1>
+          <p class="page-sub" id="converter-page-sub">Bulk-convert UPC / EAN barcodes into Amazon ASINs and check ungating eligibility.</p>
+        </div>
+
+        <!-- Mode Toggle -->
+        <div style="display:flex; align-items:center; gap:10px; background:var(--bg-raised); border:1px solid var(--border); border-radius:var(--r-md); padding:4px;">
+          <button class="mode-toggle-btn active" id="btn-mode-upc-to-asin" style="padding:7px 16px; border:none; border-radius:var(--r-sm); font-family:inherit; font-size:0.82rem; font-weight:700; cursor:pointer; background:var(--indigo); color:#fff; transition:all 0.18s ease;">
+            🏷️ UPC → ASIN
+          </button>
+          <button class="mode-toggle-btn" id="btn-mode-asin-to-upc" style="padding:7px 16px; border:none; border-radius:var(--r-sm); font-family:inherit; font-size:0.82rem; font-weight:700; cursor:pointer; background:transparent; color:var(--text-2); transition:all 0.18s ease;">
+            📦 ASIN → UPC
+          </button>
+        </div>
       </div>
 
-      <!-- Input Card -->
+      <!-- Input Card — content swaps based on mode -->
       <div class="input-card">
         <div class="input-grid">
           <!-- Drop Zone -->
           <div class="dropzone" id="dropzone-upc">
             <input type="file" id="file-input-upc" accept=".txt,.csv" hidden />
-            <div class="dz-icon">🏷️</div>
-            <div class="dz-title">Drop Barcode File</div>
-            <div class="dz-sub">Wholesale price lists with 12-digit UPCs or 13-digit EANs</div>
+            <div class="dz-icon" id="converter-dz-icon">🏷️</div>
+            <div class="dz-title" id="converter-dz-title">Drop Barcode File</div>
+            <div class="dz-sub" id="converter-dz-sub">Wholesale price lists with 12-digit UPCs or 13-digit EANs</div>
             <button class="btn btn-ghost btn-sm" id="btn-browse-upc">Browse Files</button>
           </div>
 
           <!-- Manual Buffer -->
           <div class="buffer-area">
             <div class="field-row">
-              <span class="field-label">Paste UPC / EAN Barcodes</span>
-              <span class="count-pill" id="upc-paste-count">0 Barcodes</span>
+              <span class="field-label" id="converter-field-label">Paste UPC / EAN Barcodes</span>
+              <span class="count-pill" id="upc-paste-count">0 Items</span>
             </div>
             <textarea id="upc-paste" class="buffer-textarea"
               placeholder="Paste 12-digit UPCs or 13-digit EANs here — one per line or comma-separated&#10;e.g. 848061074719, 012345678901..."></textarea>
@@ -219,7 +231,7 @@
         </div>
 
         <div class="card-footer">
-          <span class="footer-note">Amazon SP-API Catalog Item Lookup</span>
+          <span class="footer-note" id="converter-footer-note">Amazon SP-API Catalog Item Lookup</span>
           <div style="display:flex; gap:8px; align-items:center;">
             <button class="btn btn-ghost btn-sm" id="btn-clear-upc-input">Clear</button>
             <button class="btn btn-primary" id="btn-start-convert">🏷️ Convert Barcodes</button>
@@ -232,7 +244,7 @@
         <div class="prog-row">
           <div class="prog-label">
             <span class="prog-spinner"></span>
-            <span id="converter-progress-status">Resolving barcodes via Amazon Catalog API…</span>
+            <span id="converter-progress-status">Resolving via Amazon Catalog API…</span>
           </div>
           <div class="prog-meta">
             <span class="prog-eta" id="converter-progress-eta">Est: –</span>
@@ -244,8 +256,8 @@
         </div>
       </div>
 
-      <!-- Stats Row -->
-      <div class="stats-row">
+      <!-- Stats Row — changes per mode -->
+      <div class="stats-row" id="converter-stats-upc" style="">
         <div class="stat-card">
           <div class="stat-num" id="converter-stat-total">0</div>
           <div class="stat-lbl">🏷️ Input Barcodes</div>
@@ -264,26 +276,50 @@
         </div>
       </div>
 
+      <!-- ASIN→UPC Mode Stats (hidden by default) -->
+      <div class="stats-row" id="converter-stats-asin" style="display:none;">
+        <div class="stat-card">
+          <div class="stat-num" id="a2u-stat-total">0</div>
+          <div class="stat-lbl">📦 ASINs Looked Up</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num green" id="a2u-stat-found">0</div>
+          <div class="stat-lbl">🏷️ Barcodes Found</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="a2u-stat-upc">0</div>
+          <div class="stat-lbl">📊 UPCs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="a2u-stat-ean">0</div>
+          <div class="stat-lbl">📊 EANs</div>
+        </div>
+      </div>
+
       <!-- Converter Table -->
       <div class="table-card">
         <div class="table-toolbar">
-          <div class="filter-group">
+          <div class="filter-group" id="converter-filter-group">
             <button class="f-btn active" data-tab="converter-all">
               All <span class="f-count" id="converter-badge-all">0</span>
             </button>
-            <button class="f-btn" data-tab="converter-ungated">
+            <button class="f-btn" data-tab="converter-ungated" id="converter-tab-ungated">
               ✅ Ungated <span class="f-count" id="converter-badge-ungated">0</span>
+            </button>
+            <button class="f-btn" id="converter-tab-barcodes" data-tab="converter-barcodes" style="display:none;">
+              🏷️ With Barcode <span class="f-count" id="converter-badge-barcodes">0</span>
             </button>
           </div>
 
           <div class="table-actions">
-            <input type="text" id="converter-search-input" class="search-input" placeholder="Search UPC or ASIN…" />
+            <input type="text" id="converter-search-input" class="search-input" placeholder="Search…" />
             <button class="btn btn-accent btn-sm" id="btn-export-converter-csv">📥 Export CSV</button>
           </div>
         </div>
 
         <div class="table-scroll">
-          <table class="data-table">
+          <!-- UPC → ASIN Table -->
+          <table class="data-table" id="converter-table-upc">
             <thead>
               <tr>
                 <th>Input UPC / Barcode</th>
@@ -300,6 +336,30 @@
                     <div class="empty-icon">🏷️</div>
                     <div class="empty-title">No Barcodes Converted Yet</div>
                     <div class="empty-desc">Paste barcodes above or drop a wholesale price list file to convert to ASINs.</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- ASIN → UPC Table (hidden by default) -->
+          <table class="data-table" id="converter-table-asin" style="display:none;">
+            <thead>
+              <tr>
+                <th>Input ASIN</th>
+                <th style="width:32%">Product Title</th>
+                <th>UPC</th>
+                <th>EAN</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="a2u-table-body">
+              <tr class="empty-row">
+                <td colspan="5">
+                  <div class="empty-state">
+                    <div class="empty-icon">📦</div>
+                    <div class="empty-title">No ASINs Looked Up Yet</div>
+                    <div class="empty-desc">Paste ASINs above to retrieve their UPC / EAN barcodes from the Amazon Catalog API.</div>
                   </div>
                 </td>
               </tr>

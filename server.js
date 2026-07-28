@@ -318,6 +318,107 @@ app.post('/api/convert-upc', async (req, res) => {
   }
 });
 
+// Fetch UPC/EAN barcodes for a given ASIN via SP-API Catalog API (identifiers data)
+async function lookupAsinBarcodes(asin, accessToken) {
+  try {
+    const url = `${CONFIG.apiBaseUrl}/catalog/2022-04-01/items/${asin}?marketplaceIds=${CONFIG.marketplaceId}&includedData=summaries,identifiers`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-amz-access-token': accessToken,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+
+    // Pull title/brand from summaries
+    const summary = data.summaries && data.summaries[0];
+    const brand = summary ? (summary.brandName || summary.brand || summary.manufacturer || '') : '';
+    const itemName = summary ? (summary.itemName || '') : '';
+    const fullTitle = brand ? `[${brand}] ${itemName}` : itemName;
+
+    // Pull barcodes from identifiers
+    const barcodes = [];
+    if (data.identifiers) {
+      for (const identGroup of data.identifiers) {
+        if (identGroup.identifiers) {
+          for (const ident of identGroup.identifiers) {
+            if (['UPC', 'EAN', 'ISBN', 'JAN'].includes(ident.identifierType)) {
+              barcodes.push({ type: ident.identifierType, value: ident.identifier });
+            }
+          }
+        }
+      }
+    }
+
+    return { asin, title: fullTitle, brand, barcodes };
+  } catch (e) {
+    console.error(`ASIN barcode lookup error for ${asin}:`, e.message);
+    return null;
+  }
+}
+
+// API Endpoint 3: ASIN → UPC/Barcode Lookup
+app.post('/api/asin-to-upc', async (req, res) => {
+  const { asins } = req.body;
+  if (!asins || !Array.isArray(asins)) {
+    return res.status(400).json({ error: 'Missing or invalid "asins" array in request body' });
+  }
+
+  try {
+    const accessToken = await getAccessToken();
+    const results = [];
+    const concurrency = 6;
+    let index = 0;
+
+    async function worker() {
+      while (index < asins.length) {
+        const currentIndex = index++;
+        const rawAsin = asins[currentIndex].trim().toUpperCase();
+        const match = await lookupAsinBarcodes(rawAsin, accessToken);
+
+        if (match && (match.barcodes.length > 0 || match.title)) {
+          results[currentIndex] = {
+            asin: rawAsin,
+            title: match.title || `ASIN ${rawAsin}`,
+            brand: match.brand || '',
+            barcodes: match.barcodes,
+            upc: match.barcodes.find(b => b.type === 'UPC')?.value || '',
+            ean: match.barcodes.find(b => b.type === 'EAN')?.value || '',
+            status: match.barcodes.length > 0 ? 'found' : 'no_barcode'
+          };
+        } else {
+          results[currentIndex] = {
+            asin: rawAsin,
+            title: 'No product found',
+            brand: '',
+            barcodes: [],
+            upc: '',
+            ean: '',
+            status: 'not_found'
+          };
+        }
+        await delay(120);
+      }
+    }
+
+    const workers = [];
+    for (let i = 0; i < Math.min(concurrency, asins.length); i++) {
+      workers.push(worker());
+    }
+
+    await Promise.all(workers);
+    res.json({ results });
+  } catch (error) {
+    console.error('Server error during ASIN→UPC lookup:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`✅ SP-API Backend Server running at http://localhost:${PORT}`);
   console.log(`📂 Serving Web App Dashboard...`);
