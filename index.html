@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="index.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -63,10 +64,10 @@
 
           <!-- Drop Zone -->
           <div class="dropzone" id="dropzone">
-            <input type="file" id="file-input" accept=".txt,.csv" hidden />
+            <input type="file" id="file-input" accept=".txt,.csv,.xls,.xlsx,.ods" hidden />
             <div class="dz-icon">📁</div>
             <div class="dz-title">Drop File Here</div>
-            <div class="dz-sub">Supports .csv or .txt — Keepa exports, ASIN lists</div>
+            <div class="dz-sub">Supports Excel (.xlsx, .xls) &amp; CSV / TXT</div>
             <button class="btn btn-ghost btn-sm" id="btn-browse">Browse Files</button>
           </div>
 
@@ -215,10 +216,10 @@
         <div class="input-grid">
           <!-- Drop Zone -->
           <div class="dropzone" id="dropzone-upc">
-            <input type="file" id="file-input-upc" accept=".txt,.csv" hidden />
+            <input type="file" id="file-input-upc" accept=".txt,.csv,.xls,.xlsx,.ods" hidden />
             <div class="dz-icon" id="converter-dz-icon">🏷️</div>
             <div class="dz-title" id="converter-dz-title">Drop Barcode File</div>
-            <div class="dz-sub" id="converter-dz-sub">Wholesale price lists with 12-digit UPCs or 13-digit EANs</div>
+            <div class="dz-sub" id="converter-dz-sub">Supports Excel (.xlsx, .xls) &amp; CSV / TXT files</div>
             <button class="btn btn-ghost btn-sm" id="btn-browse-upc">Browse Files</button>
           </div>
 
@@ -400,7 +401,7 @@
             <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
               <label class="btn btn-ghost btn-xs" style="cursor:pointer;">
                 📁 Browse
-                <input type="file" id="matcher-my-file" accept=".txt,.csv" hidden />
+                <input type="file" id="matcher-my-file" accept=".txt,.csv,.xls,.xlsx,.ods" hidden />
               </label>
               <span class="footer-note">Your brand-approved UPCs</span>
             </div>
@@ -417,7 +418,7 @@
             <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
               <label class="btn btn-ghost btn-xs" style="cursor:pointer;">
                 📁 Browse
-                <input type="file" id="matcher-ws-file" accept=".txt,.csv" hidden />
+                <input type="file" id="matcher-ws-file" accept=".txt,.csv,.xls,.xlsx,.ods" hidden />
               </label>
               <span class="footer-note">Wholesaler catalog / price list</span>
             </div>

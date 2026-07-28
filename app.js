@@ -62,6 +62,43 @@
   // Helpers
   const validAsin = (a) => /^[A-Z0-9]{10}$/i.test((a || '').trim());
 
+  // Universal File Reader (supports .xlsx, .xls, .ods, .csv, .txt)
+  function readAnyFile(file, callback) {
+    if (!file) return callback('');
+    const ext = (file.name || '').split('.').pop().toLowerCase();
+    const isExcel = ['xlsx', 'xls', 'ods', 'xlsb'].includes(ext);
+
+    if (isExcel && typeof XLSX !== 'undefined') {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array', cellDates: false, raw: true });
+          let textParts = [];
+          workbook.SheetNames.forEach(sheetName => {
+            const sheet = workbook.Sheets[sheetName];
+            if (sheet) {
+              textParts.push(XLSX.utils.sheet_to_csv(sheet));
+            }
+          });
+          callback(textParts.join('\n'));
+        } catch (err) {
+          console.error('SheetJS parse error, falling back to text read:', err);
+          fallbackTextRead(file, callback);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      fallbackTextRead(file, callback);
+    }
+  }
+
+  function fallbackTextRead(file, callback) {
+    const reader = new FileReader();
+    reader.onload = (e) => callback(e.target.result || '');
+    reader.readAsText(file);
+  }
+
   function parseAsins(text) {
     const lines = text.split(/[\n\r]+/);
     const asins = [];
@@ -169,19 +206,16 @@
   }
 
   function handleFile(file) {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const text = ev.target.result;
+    readAnyFile(file, (text) => {
       const asins = parseAsins(text);
       if (asins.length > 0) {
         bulkPaste.value = asins.join('\n');
         pasteCount.textContent = `${asins.length} ASINs loaded from ${file.name}`;
-        showToast(`Loaded ${asins.length} ASINs from file`, 'success');
+        showToast(`Loaded ${asins.length} ASINs from ${file.name}`, 'success');
       } else {
         showToast('No valid ASINs found in file', 'error');
       }
-    };
-    reader.readAsText(file);
+    });
   }
 
   // Start Bulk Scan Execution (Chunked for 2,800+ ASINs)
@@ -519,33 +553,43 @@
   let converterSearchQuery = '';
 
   function parseUpcs(text) {
-    // Handles three formats wholesale/Excel files produce:
-    // 1. Scientific notation: 8.48061074719E+11 → 848061074719 (Excel saves UPCs this way when column is "Number")
-    // 2. Plain digits: 848061074719 (correct format)
-    // 3. Quoted digits: "848061074719" (quoted CSV columns)
+    if (!text) return [];
     const seen = new Set();
     const upcs = [];
 
-    // Step 1: Detect & convert scientific notation barcodes first, then erase them from the string
-    // so the digit regex below doesn't partially match their fragments
+    function addCode(c) {
+      if (!c) return;
+      const str = String(c).trim();
+      if (!str) return;
+      if (/^\d{8,14}$/.test(str)) {
+        if (!seen.has(str)) { seen.add(str); upcs.push(str); }
+      }
+      if (/^\d{11}$/.test(str)) {
+        const padded = '0' + str;
+        if (!seen.has(padded)) { seen.add(padded); upcs.push(padded); }
+      }
+    }
+
+    // 1. Convert scientific notation (e.g. 8.48061074719E+11)
     const cleanedText = text.replace(/(\d[\d.]*)[Ee]([+\-]?\d+)/g, (match) => {
       try {
         const val = Math.round(Number(match));
-        if (!isFinite(val)) return ' ';
-        const str = val.toString();
-        // Only keep if it looks like a barcode (8–14 digits, no negatives or exponent in result)
-        if (str.length >= 8 && str.length <= 14 && /^\d+$/.test(str)) {
-          if (!seen.has(str)) { seen.add(str); upcs.push(str); }
-        }
+        if (isFinite(val)) addCode(val.toString());
       } catch (e) {}
-      return ' '; // erase matched sci notation so digit regex below won't partial-match it
+      return ' ';
     });
 
-    // Step 2: Extract plain & quoted digit sequences (8–14 digits)
+    // 2. Extract dashed/spaced codes (e.g. 8480-6107-4719 -> 848061074719)
+    const dashedMatches = cleanedText.match(/\b\d{1,4}(?:[\-\s]\d{1,6})+\b/g) || [];
+    for (const d of dashedMatches) addCode(d.replace(/[\-\s]/g, ''));
+
+    // 3. Extract 8-14 digit numbers
     const matches = cleanedText.match(/\b\d{8,14}\b/g) || [];
-    for (const m of matches) {
-      if (!seen.has(m)) { seen.add(m); upcs.push(m); }
-    }
+    for (const m of matches) addCode(m);
+
+    // 4. Extract 11 digit numbers (Excel stripped leading 0)
+    const m11 = cleanedText.match(/\b\d{11}\b/g) || [];
+    for (const m of m11) addCode(m);
 
     return upcs;
   }
@@ -607,19 +651,16 @@
   }
 
   function handleUpcFile(file) {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const raw = ev.target.result;
+    readAnyFile(file, (raw) => {
       const upcs = parseUpcs(raw);
       if (upcs.length > 0) {
         if (upcPaste) upcPaste.value = upcs.join('\n');
         if (upcPasteCount) upcPasteCount.textContent = `${upcs.length} barcodes loaded from ${file.name}`;
         showToast(`Loaded ${upcs.length} barcodes from ${file.name}`, 'success');
       } else {
-        showToast('No valid UPC/EAN barcodes found in file (need 8–13 digits)', 'error');
+        showToast('No valid UPC/EAN barcodes found in file', 'error');
       }
-    };
-    reader.readAsText(file);
+    });
   }
 
   // Start UPC to ASIN Conversion (named so the mode toggle button can call it)
@@ -1157,25 +1198,7 @@
 
   // Helper: extract all digit-only strings (8–14 digits = barcodes) from raw text
   function parseUpcSet(text) {
-    // Same logic as parseUpcs but returns a Set (for O(1) intersection lookup)
-    const set = new Set();
-
-    // Step 1: Convert scientific notation barcodes (e.g. 8.48061074719E+11 from Excel)
-    const cleanedText = text.replace(/(\d[\d.]*)[Ee]([+\-]?\d+)/g, (match) => {
-      try {
-        const val = Math.round(Number(match));
-        if (!isFinite(val)) return ' ';
-        const str = val.toString();
-        if (str.length >= 8 && str.length <= 14 && /^\d+$/.test(str)) set.add(str);
-      } catch (e) {}
-      return ' ';
-    });
-
-    // Step 2: Extract plain digit sequences
-    const matches = cleanedText.match(/\b\d{8,14}\b/g) || [];
-    for (const m of matches) set.add(m);
-
-    return set;
+    return new Set(parseUpcs(text));
   }
 
 
@@ -1211,15 +1234,14 @@
     inp.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
+      readAnyFile(file, (rawText) => {
         const ta = $(textareaId);
-        if (ta) ta.value = ev.target.result;
+        if (ta) ta.value = rawText;
         countFn();
         refreshMatcherCounts();
         showToast(`Loaded ${file.name}`, 'success');
-      };
-      reader.readAsText(file);
+      });
+      e.target.value = '';
     });
   }
   bindMatcherFile('#matcher-my-file', '#matcher-my-upcs', () => {});
