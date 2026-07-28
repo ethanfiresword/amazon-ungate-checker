@@ -1126,6 +1126,323 @@
     });
   }
 
+  // ═══════════════════════════════════════════════════
+  //  WHOLESALE MATCHER MODULE
+  // ═══════════════════════════════════════════════════
+  let matcherResults = [];
+  let matcherTab = 'matcher-all';
+  let matcherQuery = '';
+
+  // Helper: extract all digit-only strings (8–14 digits = barcodes) from raw text
+  function parseUpcSet(text) {
+    const set = new Set();
+    const tokens = text.split(/[\s,;|\t\n\r]+/);
+    for (const tok of tokens) {
+      const clean = tok.replace(/\D/g, '');
+      if (clean.length >= 8 && clean.length <= 14) set.add(clean);
+    }
+    return set;
+  }
+
+  // Live count update for each textarea
+  const matcherMyUpcs = $('#matcher-my-upcs');
+  const matcherWsUpcs = $('#matcher-ws-upcs');
+  const matcherMyCount = $('#matcher-my-count');
+  const matcherWsCount = $('#matcher-ws-count');
+  const matcherOverlapNote = $('#matcher-overlap-note');
+
+  function refreshMatcherCounts() {
+    const mySet = matcherMyUpcs ? parseUpcSet(matcherMyUpcs.value) : new Set();
+    const wsSet = matcherWsUpcs ? parseUpcSet(matcherWsUpcs.value) : new Set();
+    const overlap = [...mySet].filter(u => wsSet.has(u));
+    if (matcherMyCount) matcherMyCount.textContent = `${mySet.size} UPCs`;
+    if (matcherWsCount) matcherWsCount.textContent = `${wsSet.size} UPCs`;
+    if (matcherOverlapNote) {
+      matcherOverlapNote.textContent = mySet.size > 0 && wsSet.size > 0
+        ? `${overlap.length} overlapping UPCs found — click Match to look up ASINs & ungating`
+        : 'Load both lists to find overlapping UPCs';
+    }
+    const elMy = $('#matcher-stat-my'); if (elMy) elMy.textContent = mySet.size;
+    const elWs = $('#matcher-stat-ws'); if (elWs) elWs.textContent = wsSet.size;
+  }
+
+  if (matcherMyUpcs) matcherMyUpcs.addEventListener('input', refreshMatcherCounts);
+  if (matcherWsUpcs) matcherWsUpcs.addEventListener('input', refreshMatcherCounts);
+
+  // File browse helpers
+  function bindMatcherFile(inputId, textareaId, countFn) {
+    const inp = $(inputId);
+    if (!inp) return;
+    inp.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const ta = $(textareaId);
+        if (ta) ta.value = ev.target.result;
+        countFn();
+        refreshMatcherCounts();
+        showToast(`Loaded ${file.name}`, 'success');
+      };
+      reader.readAsText(file);
+    });
+  }
+  bindMatcherFile('#matcher-my-file', '#matcher-my-upcs', () => {});
+  bindMatcherFile('#matcher-ws-file', '#matcher-ws-upcs', () => {});
+
+  // Clear All
+  const btnMatcherClear = $('#btn-matcher-clear');
+  if (btnMatcherClear) {
+    btnMatcherClear.addEventListener('click', () => {
+      if (matcherMyUpcs) matcherMyUpcs.value = '';
+      if (matcherWsUpcs) matcherWsUpcs.value = '';
+      matcherResults = [];
+      refreshMatcherCounts();
+      renderMatcherTable();
+    });
+  }
+
+  // Search
+  const matcherSearchInput = $('#matcher-search-input');
+  if (matcherSearchInput) {
+    matcherSearchInput.addEventListener('input', (e) => {
+      matcherQuery = e.target.value.trim().toLowerCase();
+      renderMatcherTable();
+    });
+  }
+
+  // Filter tabs
+  $$('.f-btn[data-tab^="matcher-"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.f-btn[data-tab^="matcher-"]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      matcherTab = btn.dataset.tab;
+      renderMatcherTable();
+    });
+  });
+
+  // Render matcher table
+  function renderMatcherTable() {
+    const tbody = $('#matcher-table-body');
+    if (!tbody) return;
+
+    const ungated    = matcherResults.filter(r => r.status === 'ungated');
+    const approval   = matcherResults.filter(r => r.status === 'gated' && r.hasApprovalRoute);
+    const restricted = matcherResults.filter(r => (r.status === 'gated' && !r.hasApprovalRoute) || r.status === 'error' || r.status === 'no_match');
+
+    // Update badges
+    const bAll = $('#matcher-badge-all');       if (bAll) bAll.textContent = matcherResults.length;
+    const bUn  = $('#matcher-badge-ungated');   if (bUn)  bUn.textContent  = ungated.length;
+    const bAp  = $('#matcher-badge-approval');  if (bAp)  bAp.textContent  = approval.length;
+    const bRe  = $('#matcher-badge-restricted');if (bRe)  bRe.textContent  = restricted.length;
+
+    // Update stats
+    const elOv = $('#matcher-stat-overlap'); if (elOv) elOv.textContent = matcherResults.length;
+    const elUn = $('#matcher-stat-ungated'); if (elUn) elUn.textContent = ungated.length;
+
+    // Filter by tab
+    let filtered = matcherResults;
+    if (matcherTab === 'matcher-ungated')    filtered = ungated;
+    if (matcherTab === 'matcher-approval')   filtered = approval;
+    if (matcherTab === 'matcher-restricted') filtered = restricted;
+
+    // Search filter
+    if (matcherQuery) {
+      filtered = filtered.filter(r =>
+        (r.upc   && r.upc.includes(matcherQuery)) ||
+        (r.asin  && r.asin.toLowerCase().includes(matcherQuery)) ||
+        (r.title && r.title.toLowerCase().includes(matcherQuery))
+      );
+    }
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state">
+        <div class="empty-icon">🔗</div>
+        <div class="empty-title">${matcherResults.length === 0 ? 'No Matches Yet' : 'No Results in This Category'}</div>
+        <div class="empty-desc">${matcherResults.length === 0
+          ? 'Paste both UPC lists and click Match &amp; Check Ungating.'
+          : 'Try a different filter or clear the search.'}</div>
+      </div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(r => {
+      let badge, detail;
+      if (r.status === 'no_match') {
+        badge  = `<span class="badge badge-hardgated">🔍 NO ASIN</span>`;
+        detail = `<span class="t-muted">Not on Amazon</span>`;
+      } else if (r.status === 'ungated') {
+        badge  = `<span class="badge badge-ungated">✅ UNGATED</span>`;
+        detail = `<span class="t-green">Ready to sell</span>`;
+      } else if (r.status === 'gated' && r.hasApprovalRoute) {
+        badge  = `<span class="badge badge-softgated">⚠️ APPROVAL</span>`;
+        detail = `<span class="t-amber">Invoice needed</span>`;
+      } else if (r.status === 'error') {
+        badge  = `<span class="badge badge-hardgated">⚠️ ERROR</span>`;
+        detail = `<span class="t-red">API error</span>`;
+      } else {
+        badge  = `<span class="badge badge-hardgated">❌ RESTRICTED</span>`;
+        detail = `<span class="t-red">${r.reasonCode || 'NOT_ELIGIBLE'}</span>`;
+      }
+
+      const ungateBtn = (r.status === 'gated' && r.hasApprovalRoute && r.asin)
+        ? `<a href="https://sellercentral.amazon.com/hz/approvalrequest/restrictions/approve?asin=${r.asin}" target="_blank" class="a-ungate">⚡ 1-Click Ungate</a>`
+        : '';
+
+      const asinCell = r.asin
+        ? `<span class="cell-asin">${r.asin}</span>`
+        : `<span class="t-muted">—</span>`;
+
+      const amazonLink = r.asin
+        ? `<a href="https://www.amazon.com/dp/${r.asin}" target="_blank" class="a-link">Amazon</a>
+           <a href="https://keepa.com/#!product/1-${r.asin}" target="_blank" class="a-link">Keepa</a>`
+        : '';
+
+      return `
+        <tr>
+          <td><span class="mono" style="font-size:0.88rem;">${r.upc}</span></td>
+          <td>${asinCell}</td>
+          <td class="cell-title" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title || '—'}</td>
+          <td>${badge}<br><small style="margin-top:3px;display:block;">${detail}</small></td>
+          <td style="text-align:right">
+            <div class="action-cluster">
+              ${amazonLink}
+              ${ungateBtn}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // MAIN: Match & Check Ungating
+  const btnMatcherRun = $('#btn-matcher-run');
+  if (btnMatcherRun) {
+    btnMatcherRun.addEventListener('click', async () => {
+      const mySet = matcherMyUpcs ? parseUpcSet(matcherMyUpcs.value) : new Set();
+      const wsSet = matcherWsUpcs ? parseUpcSet(matcherWsUpcs.value) : new Set();
+
+      if (mySet.size === 0) { showToast('Paste your brand UPC list on the left first', 'error'); return; }
+      if (wsSet.size === 0) { showToast('Paste the wholesaler price list on the right first', 'error'); return; }
+
+      // Step 1: Find intersection
+      const overlap = [...mySet].filter(u => wsSet.has(u));
+
+      if (overlap.length === 0) {
+        showToast('No UPCs in common between the two lists', 'info');
+        matcherResults = [];
+        renderMatcherTable();
+        return;
+      }
+
+      showToast(`Found ${overlap.length} overlapping UPCs — looking up ASINs & checking ungating…`, 'info');
+
+      // Progress UI
+      const progCard   = $('#matcher-progress-card');
+      const progFill   = $('#matcher-progress-fill');
+      const progStatus = $('#matcher-progress-status');
+      const progCount  = $('#matcher-progress-count');
+      const progEta    = $('#matcher-progress-eta');
+
+      if (progCard)   progCard.style.display = 'flex';
+      if (progFill)   progFill.style.width = '0%';
+      if (progStatus) progStatus.textContent = `Step 1 of 2: Resolving ${overlap.length} UPCs to ASINs…`;
+      if (progCount)  progCount.textContent  = `0 / ${overlap.length}`;
+      if (progEta)    progEta.textContent    = 'Est: –';
+
+      matcherResults = [];
+
+      const CHUNK = 50;
+      const startTime = Date.now();
+      let upcToData = {}; // upc → { asin, title, brand }
+
+      // Step 1: UPC → ASIN via /api/convert-upc
+      for (let i = 0; i < overlap.length; i += CHUNK) {
+        const chunk = overlap.slice(i, i + CHUNK);
+        const pct   = Math.round((i / overlap.length) * 50); // first 50% of bar
+        if (progFill) progFill.style.width = `${pct}%`;
+        if (progCount) progCount.textContent = `${i} / ${overlap.length}`;
+        if (i > 0) {
+          const elapsed = (Date.now() - startTime) / 1000;
+          const rate = i / elapsed;
+          const rem = Math.ceil((overlap.length - i) / rate);
+          if (progEta) progEta.textContent = `Est: ${rem > 60 ? `${Math.floor(rem/60)}m ${rem%60}s` : `${rem}s`}`;
+        }
+
+        try {
+          const res = await fetch('/api/convert-upc', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ upcs: chunk })
+          });
+          if (!res.ok) throw new Error(await res.text());
+          const data = await res.json();
+          for (const r of (data.results || [])) {
+            upcToData[r.upc] = r; // has { upc, asin, title, brand, status, hasApprovalRoute, ... }
+          }
+        } catch (err) {
+          showToast(`UPC lookup error: ${err.message}`, 'error');
+        }
+      }
+
+      // Step 2: We already have the ungating status from convert-upc (it calls checkSingleAsinWithRetry internally)
+      // Build matcherResults directly from upcToData
+      if (progStatus) progStatus.textContent = 'Step 2 of 2: Collating ungating results…';
+      if (progFill) progFill.style.width = '90%';
+
+      for (const upc of overlap) {
+        const d = upcToData[upc];
+        if (d) {
+          matcherResults.push({
+            upc,
+            asin:            d.asin || null,
+            title:           d.title || '',
+            brand:           d.brand || '',
+            status:          d.status || 'no_match',
+            hasApprovalRoute: d.hasApprovalRoute || false,
+            reasonCode:      d.reasonCode || '',
+            reasons:         d.reasons || []
+          });
+        } else {
+          matcherResults.push({ upc, asin: null, title: 'No Amazon match', brand: '', status: 'no_match', hasApprovalRoute: false, reasonCode: '', reasons: [] });
+        }
+      }
+
+      if (progFill) progFill.style.width = '100%';
+      if (progCount) progCount.textContent = `${matcherResults.length} / ${overlap.length}`;
+      if (progStatus) progStatus.textContent = 'Match complete!';
+      if (progEta) progEta.textContent = 'Done';
+
+      setTimeout(() => {
+        if (progCard) progCard.style.display = 'none';
+        renderMatcherTable();
+        const ungatedCount = matcherResults.filter(r => r.status === 'ungated').length;
+        showToast(`Matched ${matcherResults.length} UPCs — ${ungatedCount} are ungated for you`, 'success');
+      }, 400);
+    });
+  }
+
+  // CSV Export for Matcher
+  const btnExportMatcherCsv = $('#btn-export-matcher-csv');
+  if (btnExportMatcherCsv) {
+    btnExportMatcherCsv.addEventListener('click', () => {
+      if (matcherResults.length === 0) { showToast('No results to export', 'info'); return; }
+      let csv = 'UPC,ASIN,Product Title,Ungating Status,Has Approval Route,Amazon Link\n';
+      matcherResults.forEach(r => {
+        const link = r.asin ? `https://www.amazon.com/dp/${r.asin}` : '';
+        csv += `"${r.upc}","${r.asin||''}","${(r.title||'').replace(/"/g,'""')}","${r.status}","${r.hasApprovalRoute ? 'YES' : 'NO'}","${link}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `wholesale-matches-${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`Exported ${matcherResults.length} matched products`, 'success');
+    });
+  }
+
   // Toast System
   function showToast(msg, type = 'info') {
     const container = $('#toast-container');
@@ -1147,4 +1464,3 @@
   renderResults();
   renderConverterResults();
 })();
-

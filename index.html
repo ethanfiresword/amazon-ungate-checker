@@ -28,7 +28,10 @@
           ⚡ Bulk Ungate Checker
         </button>
         <button class="nav-tab" data-tool="converter">
-          🏷️ UPC → ASIN Converter
+          🏷️ UPC ↔ ASIN Converter
+        </button>
+        <button class="nav-tab" data-tool="matcher">
+          🔗 Wholesale Matcher
         </button>
       </div>
 
@@ -369,6 +372,155 @@
       </div>
 
     </div><!-- /tool-view-converter -->
+
+
+    <!-- ═══════════════════════════════════════
+         TOOL VIEW 3 — WHOLESALE MATCHER
+         ═══════════════════════════════════════ -->
+    <div id="tool-view-matcher" class="tool-view" style="display:none;">
+
+      <!-- Page Heading -->
+      <div class="page-head">
+        <h1 class="page-title">Wholesale Matcher</h1>
+        <p class="page-sub">Paste your brand UPC list and a wholesaler price list. Find overlapping products, look up their ASINs, and check if you're ungated — all in one run.</p>
+      </div>
+
+      <!-- Two-Column Input Card -->
+      <div class="input-card">
+        <div class="input-grid">
+
+          <!-- LEFT: My Brand UPC List -->
+          <div class="buffer-area">
+            <div class="field-row">
+              <span class="field-label">📋 My Brand UPC List</span>
+              <span class="count-pill" id="matcher-my-count">0 UPCs</span>
+            </div>
+            <textarea id="matcher-my-upcs" class="buffer-textarea" style="min-height:140px;"
+              placeholder="Paste UPCs from your approved brand list&#10;One per line or comma-separated&#10;e.g. 848061074719&#10;     012345678901"></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+              <label class="btn btn-ghost btn-xs" style="cursor:pointer;">
+                📁 Browse
+                <input type="file" id="matcher-my-file" accept=".txt,.csv" hidden />
+              </label>
+              <span class="footer-note">Your brand-approved UPCs</span>
+            </div>
+          </div>
+
+          <!-- RIGHT: Wholesaler Price List -->
+          <div class="buffer-area">
+            <div class="field-row">
+              <span class="field-label">🏭 Wholesaler Price List</span>
+              <span class="count-pill" id="matcher-ws-count">0 UPCs</span>
+            </div>
+            <textarea id="matcher-ws-upcs" class="buffer-textarea" style="min-height:140px;"
+              placeholder="Paste UPCs from the wholesaler's price list&#10;One per line or comma-separated&#10;e.g. 848061074719&#10;     019075511217"></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+              <label class="btn btn-ghost btn-xs" style="cursor:pointer;">
+                📁 Browse
+                <input type="file" id="matcher-ws-file" accept=".txt,.csv" hidden />
+              </label>
+              <span class="footer-note">Wholesaler catalog / price list</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <span class="footer-note" id="matcher-overlap-note">Load both lists to find overlapping UPCs</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn btn-ghost btn-sm" id="btn-matcher-clear">Clear All</button>
+            <button class="btn btn-primary" id="btn-matcher-run">🔗 Match &amp; Check Ungating</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-card" id="matcher-progress-card" style="display:none;">
+        <div class="prog-row">
+          <div class="prog-label">
+            <span class="prog-spinner"></span>
+            <span id="matcher-progress-status">Matching UPCs…</span>
+          </div>
+          <div class="prog-meta">
+            <span class="prog-eta" id="matcher-progress-eta">Est: –</span>
+            <span class="prog-count" id="matcher-progress-count">0 / 0</span>
+          </div>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" id="matcher-progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Match Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num" id="matcher-stat-my">0</div>
+          <div class="stat-lbl">📋 My UPCs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="matcher-stat-ws">0</div>
+          <div class="stat-lbl">🏭 Wholesaler UPCs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num green" id="matcher-stat-overlap">0</div>
+          <div class="stat-lbl">🔗 Matched Products</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num green" id="matcher-stat-ungated">0</div>
+          <div class="stat-lbl">✅ Ungated Matches</div>
+        </div>
+      </div>
+
+      <!-- Results Table -->
+      <div class="table-card">
+        <div class="table-toolbar">
+          <div class="filter-group">
+            <button class="f-btn active" data-tab="matcher-all">
+              All Matches <span class="f-count" id="matcher-badge-all">0</span>
+            </button>
+            <button class="f-btn" data-tab="matcher-ungated">
+              ✅ Ungated <span class="f-count" id="matcher-badge-ungated">0</span>
+            </button>
+            <button class="f-btn" data-tab="matcher-approval">
+              ⚠️ Approval <span class="f-count" id="matcher-badge-approval">0</span>
+            </button>
+            <button class="f-btn" data-tab="matcher-restricted">
+              ❌ Restricted <span class="f-count" id="matcher-badge-restricted">0</span>
+            </button>
+          </div>
+
+          <div class="table-actions">
+            <input type="text" id="matcher-search-input" class="search-input" placeholder="Search UPC, ASIN, or title…" />
+            <button class="btn btn-accent btn-sm" id="btn-export-matcher-csv">📥 Export CSV</button>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Matched UPC</th>
+                <th>Amazon ASIN</th>
+                <th style="width:30%">Product Title</th>
+                <th>Ungating Status</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="matcher-table-body">
+              <tr class="empty-row">
+                <td colspan="5">
+                  <div class="empty-state">
+                    <div class="empty-icon">🔗</div>
+                    <div class="empty-title">No Matches Yet</div>
+                    <div class="empty-desc">Paste both UPC lists above and click "Match &amp; Check Ungating" to find overlapping products and verify selling eligibility.</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /tool-view-matcher -->
 
   </div><!-- /main -->
 
