@@ -171,37 +171,32 @@
   if (btnBrowse) {
     btnBrowse.addEventListener('click', (e) => {
       e.stopPropagation();
-      fileInput.click();
+      fileInput && fileInput.click();
     });
   }
 
   if (dropzone) {
-    dropzone.addEventListener('click', () => fileInput.click());
-
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropzone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropzone.classList.add('drag-over');
-      });
+    dropzone.addEventListener('click', (e) => {
+      if (e.target.closest('#btn-browse')) return;
+      fileInput && fileInput.click();
     });
 
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropzone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('drag-over');
-      });
-    });
-
+    dropzone.addEventListener('dragenter', (e) => { e.preventDefault(); e.stopPropagation(); dropzone.classList.add('drag-over'); });
+    dropzone.addEventListener('dragover',  (e) => { e.preventDefault(); e.stopPropagation(); dropzone.classList.add('drag-over'); });
+    dropzone.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); dropzone.classList.remove('drag-over'); });
     dropzone.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      const files = dt.files;
-      if (files.length) handleFile(files[0]);
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('drag-over');
+      const files = e.dataTransfer && e.dataTransfer.files;
+      if (files && files.length) handleFile(files[0]);
     });
   }
 
   if (fileInput) {
     fileInput.addEventListener('change', (e) => {
       if (e.target.files.length) handleFile(e.target.files[0]);
+      e.target.value = '';
     });
   }
 
@@ -554,13 +549,24 @@
 
   function parseUpcs(text) {
     if (!text) return [];
+    const lines = text.split(/[\n\r]+/);
     const seen = new Set();
     const upcs = [];
 
     function addCode(c) {
       if (!c) return;
-      const str = String(c).trim();
+      let str = String(c).trim().replace(/^["']|["']$/g, '');
       if (!str) return;
+
+      if (/(\d[\d.]*)[Ee]([+\-]?\d+)/.test(str)) {
+        try {
+          const val = Math.round(Number(str));
+          if (isFinite(val)) str = val.toString();
+        } catch (e) {}
+      }
+
+      str = str.replace(/[\-\s]/g, '');
+
       if (/^\d{8,14}$/.test(str)) {
         if (!seen.has(str)) { seen.add(str); upcs.push(str); }
       }
@@ -570,26 +576,46 @@
       }
     }
 
-    // 1. Convert scientific notation (e.g. 8.48061074719E+11)
-    const cleanedText = text.replace(/(\d[\d.]*)[Ee]([+\-]?\d+)/g, (match) => {
-      try {
-        const val = Math.round(Number(match));
-        if (isFinite(val)) addCode(val.toString());
-      } catch (e) {}
-      return ' ';
-    });
+    // Step 1: Smart CSV/Excel header detection
+    let upcColIdx = -1;
+    if (lines.length > 0) {
+      const headerCols = lines[0].split(/[,;\t]/).map(c => c.trim().replace(/^["']|["']$/g, '').toLowerCase());
+      upcColIdx = headerCols.findIndex(c =>
+        c === 'upc' || c === 'ean' || c === 'barcode' || c === 'gtin' || c === 'jan' || c === 'isbn' ||
+        c.includes('upc') || c.includes('barcode') || c.includes('ean')
+      );
+    }
 
-    // 2. Extract dashed/spaced codes (e.g. 8480-6107-4719 -> 848061074719)
-    const dashedMatches = cleanedText.match(/\b\d{1,4}(?:[\-\s]\d{1,6})+\b/g) || [];
-    for (const d of dashedMatches) addCode(d.replace(/[\-\s]/g, ''));
+    if (upcColIdx !== -1) {
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const cols = line.split(/[,;\t]/);
+        if (cols[upcColIdx] !== undefined) {
+          addCode(cols[upcColIdx]);
+        }
+      }
+    }
 
-    // 3. Extract 8-14 digit numbers
-    const matches = cleanedText.match(/\b\d{8,14}\b/g) || [];
-    for (const m of matches) addCode(m);
+    // Step 2: Fallback scan if no header column was found or header yielded no items
+    if (upcs.length === 0) {
+      const cleanedText = text.replace(/(\d[\d.]*)[Ee]([+\-]?\d+)/g, (match) => {
+        try {
+          const val = Math.round(Number(match));
+          if (isFinite(val)) addCode(val.toString());
+        } catch (e) {}
+        return ' ';
+      });
 
-    // 4. Extract 11 digit numbers (Excel stripped leading 0)
-    const m11 = cleanedText.match(/\b\d{11}\b/g) || [];
-    for (const m of m11) addCode(m);
+      const dashedMatches = cleanedText.match(/\b\d{1,4}(?:[\-\s]\d{1,6})+\b/g) || [];
+      for (const d of dashedMatches) addCode(d.replace(/[\-\s]/g, ''));
+
+      const matches = cleanedText.match(/\b\d{8,14}\b/g) || [];
+      for (const m of matches) addCode(m);
+
+      const m11 = cleanedText.match(/\b\d{11}\b/g) || [];
+      for (const m of m11) addCode(m);
+    }
 
     return upcs;
   }
