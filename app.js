@@ -519,7 +519,8 @@
   let converterSearchQuery = '';
 
   function parseUpcs(text) {
-    const matches = text.match(/\b\d{12,14}\b/g) || [];
+    // Accept 8-digit (JAN/EAN-8), 12-digit (UPC-A), 13-digit (EAN-13) barcodes
+    const matches = text.match(/\b\d{8,14}\b/g) || [];
     const seen = new Set();
     const upcs = [];
     for (const m of matches) {
@@ -561,44 +562,42 @@
   }
 
   if (dropzoneUpc) {
-    dropzoneUpc.addEventListener('click', () => fileInputUpc.click());
-
-    ['dragenter', 'dragover'].forEach(evt => {
-      dropzoneUpc.addEventListener(evt, (e) => {
-        e.preventDefault();
-        dropzoneUpc.classList.add('drag-over');
-      });
+    // Click anywhere on the zone to open file picker (but not if clicking the Browse button itself)
+    dropzoneUpc.addEventListener('click', (e) => {
+      if (e.target.closest('#btn-browse-upc')) return;
+      fileInputUpc && fileInputUpc.click();
     });
 
-    ['dragleave', 'drop'].forEach(evt => {
-      dropzoneUpc.addEventListener(evt, (e) => {
-        e.preventDefault();
-        dropzoneUpc.classList.remove('drag-over');
-      });
-    });
-
+    dropzoneUpc.addEventListener('dragenter', (e) => { e.preventDefault(); e.stopPropagation(); dropzoneUpc.classList.add('drag-over'); });
+    dropzoneUpc.addEventListener('dragover',  (e) => { e.preventDefault(); e.stopPropagation(); dropzoneUpc.classList.add('drag-over'); });
+    dropzoneUpc.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); dropzoneUpc.classList.remove('drag-over'); });
     dropzoneUpc.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      if (dt.files.length) handleUpcFile(dt.files[0]);
+      e.preventDefault();
+      e.stopPropagation();
+      dropzoneUpc.classList.remove('drag-over');
+      const files = e.dataTransfer && e.dataTransfer.files;
+      if (files && files.length) handleUpcFile(files[0]);
     });
   }
 
   if (fileInputUpc) {
     fileInputUpc.addEventListener('change', (e) => {
       if (e.target.files.length) handleUpcFile(e.target.files[0]);
+      e.target.value = ''; // reset so same file can be picked again
     });
   }
 
   function handleUpcFile(file) {
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const upcs = parseUpcs(ev.target.result);
+      const raw = ev.target.result;
+      const upcs = parseUpcs(raw);
       if (upcs.length > 0) {
-        upcPaste.value = upcs.join('\n');
-        upcPasteCount.textContent = `${upcs.length} Barcodes loaded from ${file.name}`;
-        showToast(`Loaded ${upcs.length} barcodes from file`, 'success');
+        if (upcPaste) upcPaste.value = upcs.join('\n');
+        if (upcPasteCount) upcPasteCount.textContent = `${upcs.length} barcodes loaded from ${file.name}`;
+        showToast(`Loaded ${upcs.length} barcodes from ${file.name}`, 'success');
       } else {
-        showToast('No valid 12-14 digit UPCs found in file', 'error');
+        showToast('No valid UPC/EAN barcodes found in file (need 8–13 digits)', 'error');
       }
     };
     reader.readAsText(file);
@@ -1077,10 +1076,13 @@
     btnExportConverterCsv.addEventListener('click', () => {
       if (converterMode === 'asin-to-upc') {
         if (a2uResults.length === 0) { showToast('No results to export', 'info'); return; }
+        // Use ="VALUE" to prevent Excel from converting barcodes to scientific notation
         let csv = 'ASIN,Product Title,UPC,EAN,All Barcodes,Amazon Link\n';
         a2uResults.forEach(item => {
           const allB = (item.barcodes||[]).map(b=>`${b.type}:${b.value}`).join('|');
-          csv += `"${item.asin}","${(item.title||'').replace(/"/g,'""')}","${item.upc||''}","${item.ean||''}","${allB}","https://www.amazon.com/dp/${item.asin}"\n`;
+          const upcCell = item.upc ? `="${item.upc}"` : '';
+          const eanCell = item.ean ? `="${item.ean}"` : '';
+          csv += `"${item.asin}","${(item.title||'').replace(/"/g,'""')}","${upcCell}","${eanCell}","${allB}","https://www.amazon.com/dp/${item.asin}"\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -1091,9 +1093,10 @@
       } else {
         const converted = converterResults.filter(r => r.asin);
         if (converted.length === 0) { showToast('No converted ASINs to export', 'info'); return; }
+        // Use ="VALUE" to prevent Excel from converting barcodes to scientific notation
         let csv = 'Input UPC,Matched ASIN,Product Title,Ungating Status,Amazon Link\n';
         converted.forEach(item => {
-          csv += `"${item.upc}","${item.asin}","${(item.title||'').replace(/"/g,'""')}","${item.status}","https://www.amazon.com/dp/${item.asin}"\n`;
+          csv += `="${item.upc}","${item.asin}","${(item.title||'').replace(/"/g,'""')}","${item.status}","https://www.amazon.com/dp/${item.asin}"\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -1427,10 +1430,11 @@
   if (btnExportMatcherCsv) {
     btnExportMatcherCsv.addEventListener('click', () => {
       if (matcherResults.length === 0) { showToast('No results to export', 'info'); return; }
+      // Use ="VALUE" to prevent Excel from converting barcodes to scientific notation
       let csv = 'UPC,ASIN,Product Title,Ungating Status,Has Approval Route,Amazon Link\n';
       matcherResults.forEach(r => {
         const link = r.asin ? `https://www.amazon.com/dp/${r.asin}` : '';
-        csv += `"${r.upc}","${r.asin||''}","${(r.title||'').replace(/"/g,'""')}","${r.status}","${r.hasApprovalRoute ? 'YES' : 'NO'}","${link}"\n`;
+        csv += `="${r.upc}","${r.asin||''}","${(r.title||'').replace(/"/g,'""')}","${r.status}","${r.hasApprovalRoute ? 'YES' : 'NO'}","${link}"\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
