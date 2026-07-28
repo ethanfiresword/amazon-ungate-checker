@@ -519,18 +519,37 @@
   let converterSearchQuery = '';
 
   function parseUpcs(text) {
-    // Accept 8-digit (JAN/EAN-8), 12-digit (UPC-A), 13-digit (EAN-13) barcodes
-    const matches = text.match(/\b\d{8,14}\b/g) || [];
+    // Handles three formats wholesale/Excel files produce:
+    // 1. Scientific notation: 8.48061074719E+11 → 848061074719 (Excel saves UPCs this way when column is "Number")
+    // 2. Plain digits: 848061074719 (correct format)
+    // 3. Quoted digits: "848061074719" (quoted CSV columns)
     const seen = new Set();
     const upcs = [];
+
+    // Step 1: Detect & convert scientific notation barcodes first, then erase them from the string
+    // so the digit regex below doesn't partially match their fragments
+    const cleanedText = text.replace(/(\d[\d.]*)[Ee]([+\-]?\d+)/g, (match) => {
+      try {
+        const val = Math.round(Number(match));
+        if (!isFinite(val)) return ' ';
+        const str = val.toString();
+        // Only keep if it looks like a barcode (8–14 digits, no negatives or exponent in result)
+        if (str.length >= 8 && str.length <= 14 && /^\d+$/.test(str)) {
+          if (!seen.has(str)) { seen.add(str); upcs.push(str); }
+        }
+      } catch (e) {}
+      return ' '; // erase matched sci notation so digit regex below won't partial-match it
+    });
+
+    // Step 2: Extract plain & quoted digit sequences (8–14 digits)
+    const matches = cleanedText.match(/\b\d{8,14}\b/g) || [];
     for (const m of matches) {
-      if (!seen.has(m)) {
-        seen.add(m);
-        upcs.push(m);
-      }
+      if (!seen.has(m)) { seen.add(m); upcs.push(m); }
     }
+
     return upcs;
   }
+
 
   // UPC Input Handlers & Conversion Loop
   const upcPaste = $('#upc-paste');
@@ -1138,14 +1157,27 @@
 
   // Helper: extract all digit-only strings (8–14 digits = barcodes) from raw text
   function parseUpcSet(text) {
+    // Same logic as parseUpcs but returns a Set (for O(1) intersection lookup)
     const set = new Set();
-    const tokens = text.split(/[\s,;|\t\n\r]+/);
-    for (const tok of tokens) {
-      const clean = tok.replace(/\D/g, '');
-      if (clean.length >= 8 && clean.length <= 14) set.add(clean);
-    }
+
+    // Step 1: Convert scientific notation barcodes (e.g. 8.48061074719E+11 from Excel)
+    const cleanedText = text.replace(/(\d[\d.]*)[Ee]([+\-]?\d+)/g, (match) => {
+      try {
+        const val = Math.round(Number(match));
+        if (!isFinite(val)) return ' ';
+        const str = val.toString();
+        if (str.length >= 8 && str.length <= 14 && /^\d+$/.test(str)) set.add(str);
+      } catch (e) {}
+      return ' ';
+    });
+
+    // Step 2: Extract plain digit sequences
+    const matches = cleanedText.match(/\b\d{8,14}\b/g) || [];
+    for (const m of matches) set.add(m);
+
     return set;
   }
+
 
   // Live count update for each textarea
   const matcherMyUpcs = $('#matcher-my-upcs');
