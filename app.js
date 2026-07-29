@@ -1264,7 +1264,11 @@
   function refreshMatcherCounts() {
     const mySet = matcherMyUpcs ? parseUpcSet(matcherMyUpcs.value) : new Set();
     const wsSet = matcherWsUpcs ? parseUpcSet(matcherWsUpcs.value) : new Set();
-    const overlap = [...mySet].filter(u => wsSet.has(u));
+    
+    // Normalize wsSet by stripping leading zeros for comparison
+    const wsNormalized = new Set([...wsSet].map(u => u.replace(/^0+/, '')));
+    const overlap = [...mySet].filter(u => wsNormalized.has(u.replace(/^0+/, '')));
+    
     if (matcherMyCount) matcherMyCount.textContent = `${mySet.size} UPCs`;
     if (matcherWsCount) matcherWsCount.textContent = `${wsSet.size} UPCs`;
     if (matcherOverlapNote) {
@@ -1296,8 +1300,34 @@
       e.target.value = '';
     });
   }
+  
+  // Drag & drop support for textareas
+  function bindDragDropToTextarea(textareaId, countFn) {
+    const ta = $(textareaId);
+    if (!ta) return;
+    ta.addEventListener('dragenter', (e) => { e.preventDefault(); e.stopPropagation(); ta.classList.add('drag-over'); });
+    ta.addEventListener('dragover',  (e) => { e.preventDefault(); e.stopPropagation(); ta.classList.add('drag-over'); });
+    ta.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); ta.classList.remove('drag-over'); });
+    ta.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      ta.classList.remove('drag-over');
+      const files = e.dataTransfer && e.dataTransfer.files;
+      if (files && files.length) {
+        readAnyFile(files[0], (rawText) => {
+          ta.value = rawText;
+          countFn();
+          refreshMatcherCounts();
+          showToast(`Loaded ${files[0].name}`, 'success');
+        });
+      }
+    });
+  }
+
   bindMatcherFile('#matcher-my-file', '#matcher-my-upcs', () => {});
   bindMatcherFile('#matcher-ws-file', '#matcher-ws-upcs', () => {});
+  bindDragDropToTextarea('#matcher-my-upcs', () => {});
+  bindDragDropToTextarea('#matcher-ws-upcs', () => {});
 
   // Clear All
   const btnMatcherClear = $('#btn-matcher-clear');
@@ -1434,8 +1464,9 @@
       if (mySet.size === 0) { showToast('Paste your brand UPC list on the left first', 'error'); return; }
       if (wsSet.size === 0) { showToast('Paste the wholesaler price list on the right first', 'error'); return; }
 
-      // Step 1: Find intersection
-      const overlap = [...mySet].filter(u => wsSet.has(u));
+      // Step 1: Find intersection with leading-zero normalization
+      const wsNormalized = new Set([...wsSet].map(u => u.replace(/^0+/, '')));
+      const overlap = [...mySet].filter(u => wsNormalized.has(u.replace(/^0+/, '')));
 
       if (overlap.length === 0) {
         showToast('No UPCs in common between the two lists', 'info');
@@ -1569,6 +1600,10 @@
       setTimeout(() => toast.remove(), 200);
     }, 3000);
   }
+
+  // Prevent default drag & drop behaviors globally to avoid page navigation on accidental drops
+  window.addEventListener('dragover', (e) => e.preventDefault(), false);
+  window.addEventListener('drop', (e) => e.preventDefault(), false);
 
   // Initial render
   renderResults();
