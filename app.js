@@ -18,9 +18,13 @@
   const HISTORY_KEY = 'boxem_ungated_history_v1';
 
   // One-time deletion of previous history as explicitly requested by user
-  if (!localStorage.getItem('boxem_history_deleted_user_request_v1')) {
-    localStorage.removeItem(HISTORY_KEY);
-    localStorage.setItem('boxem_history_deleted_user_request_v1', 'true');
+  try {
+    if (!localStorage.getItem('boxem_history_deleted_user_request_v1')) {
+      localStorage.removeItem(HISTORY_KEY);
+      localStorage.setItem('boxem_history_deleted_user_request_v1', 'true');
+    }
+  } catch (e) {
+    console.warn('localStorage is not available:', e);
   }
 
   function loadHistory() {
@@ -29,7 +33,9 @@
     } catch { return []; }
   }
   function saveHistory(history) {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (e) {}
   }
   function toggleSaveHistory(asin, title) {
     const history = loadHistory();
