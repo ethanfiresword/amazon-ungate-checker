@@ -626,8 +626,13 @@
   const upcPasteCount = $('#upc-paste-count');
   if (upcPaste) {
     upcPaste.addEventListener('input', () => {
-      const upcs = parseUpcs(upcPaste.value);
-      upcPasteCount.textContent = `${upcs.length} Barcodes detected`;
+      if (typeof converterMode !== 'undefined' && converterMode === 'asin-to-upc') {
+        const asins = parseAsins(upcPaste.value);
+        upcPasteCount.textContent = `${asins.length} ASIN${asins.length !== 1 ? 's' : ''} detected`;
+      } else {
+        const upcs = parseUpcs(upcPaste.value);
+        upcPasteCount.textContent = `${upcs.length} Barcodes detected`;
+      }
     });
   }
 
@@ -635,7 +640,11 @@
   if (btnClearUpc) {
     btnClearUpc.addEventListener('click', () => {
       upcPaste.value = '';
-      upcPasteCount.textContent = '0 Barcodes detected';
+      if (typeof converterMode !== 'undefined' && converterMode === 'asin-to-upc') {
+        upcPasteCount.textContent = '0 ASINs detected';
+      } else {
+        upcPasteCount.textContent = '0 Barcodes detected';
+      }
     });
   }
 
@@ -678,13 +687,24 @@
 
   function handleUpcFile(file) {
     readAnyFile(file, (raw) => {
-      const upcs = parseUpcs(raw);
-      if (upcs.length > 0) {
-        if (upcPaste) upcPaste.value = upcs.join('\n');
-        if (upcPasteCount) upcPasteCount.textContent = `${upcs.length} barcodes loaded from ${file.name}`;
-        showToast(`Loaded ${upcs.length} barcodes from ${file.name}`, 'success');
+      if (typeof converterMode !== 'undefined' && converterMode === 'asin-to-upc') {
+        const asins = parseAsins(raw);
+        if (asins.length > 0) {
+          if (upcPaste) upcPaste.value = asins.join('\n');
+          if (upcPasteCount) upcPasteCount.textContent = `${asins.length} ASINs loaded from ${file.name}`;
+          showToast(`Loaded ${asins.length} ASINs from ${file.name}`, 'success');
+        } else {
+          showToast('No valid ASINs found in file', 'error');
+        }
       } else {
-        showToast('No valid UPC/EAN barcodes found in file', 'error');
+        const upcs = parseUpcs(raw);
+        if (upcs.length > 0) {
+          if (upcPaste) upcPaste.value = upcs.join('\n');
+          if (upcPasteCount) upcPasteCount.textContent = `${upcs.length} barcodes loaded from ${file.name}`;
+          showToast(`Loaded ${upcs.length} barcodes from ${file.name}`, 'success');
+        } else {
+          showToast('No valid UPC/EAN barcodes found in file', 'error');
+        }
       }
     });
   }
