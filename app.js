@@ -65,6 +65,35 @@
     renderResults();
   }
 
+  function detectDelimiter(line) {
+    if (!line) return ',';
+    const commas = (line.match(/,/g) || []).length;
+    const tabs = (line.match(/\t/g) || []).length;
+    const semicolons = (line.match(/;/g) || []).length;
+    if (tabs > commas && tabs > semicolons) return '\t';
+    if (semicolons > commas && semicolons > tabs) return ';';
+    return ',';
+  }
+
+  function splitCsvLine(line, delimiter = ',') {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === delimiter && !inQuotes) {
+        result.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current);
+    return result;
+  }
+
   // Helpers
   const validAsin = (a) => /^[A-Z0-9]{10}$/i.test((a || '').trim());
 
@@ -114,8 +143,10 @@
     let titleIdx = -1;
     let brandIdx = -1;
 
+    let delimiter = ',';
     if (lines.length > 0) {
-      const headerCols = lines[0].split(/[,;\t]/).map(c => c.trim().replace(/^["']|["']$/g, '').toLowerCase());
+      delimiter = detectDelimiter(lines[0]);
+      const headerCols = splitCsvLine(lines[0], delimiter).map(c => c.trim().replace(/^["']|["']$/g, '').toLowerCase());
       asinIdx = headerCols.findIndex(c => c === 'asin');
       titleIdx = headerCols.findIndex(c => c === 'title' || c === 'product name' || c === 'item name' || c === 'name');
       brandIdx = headerCols.findIndex(c => c === 'brand' || c === 'manufacturer');
@@ -125,7 +156,7 @@
       const line = lines[i].trim();
       if (!line) continue;
 
-      const cols = line.split(/[,;\t]/).map(c => c.trim().replace(/^["']|["']$/g, ''));
+      const cols = splitCsvLine(line, delimiter).map(c => c.trim().replace(/^["']|["']$/g, ''));
       let asin = '';
       let title = '';
       let brand = '';
@@ -584,8 +615,10 @@
 
     // Step 1: Smart CSV/Excel header detection
     let upcColIdx = -1;
+    let delimiter = ',';
     if (lines.length > 0) {
-      const headerCols = lines[0].split(/[,;\t]/).map(c => c.trim().replace(/^["']|["']$/g, '').toLowerCase());
+      delimiter = detectDelimiter(lines[0]);
+      const headerCols = splitCsvLine(lines[0], delimiter).map(c => c.trim().replace(/^["']|["']$/g, '').toLowerCase());
       upcColIdx = headerCols.findIndex(c =>
         c === 'upc' || c === 'ean' || c === 'barcode' || c === 'gtin' || c === 'jan' || c === 'isbn' ||
         c === 'upcs' || c === 'eans' || c === 'barcodes' ||
@@ -597,7 +630,7 @@
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
-        const cols = line.split(/[,;\t]/);
+        const cols = splitCsvLine(line, delimiter);
         if (cols[upcColIdx] !== undefined) {
           addCode(cols[upcColIdx]);
         }
