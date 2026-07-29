@@ -586,7 +586,6 @@
 
   function parseUpcs(text) {
     if (!text) return [];
-    const lines = text.split(/[\n\r]+/);
     const seen = new Set();
     const upcs = [];
 
@@ -613,49 +612,23 @@
       }
     }
 
-    // Step 1: Smart CSV/Excel header detection
-    let upcColIdx = -1;
-    let delimiter = ',';
-    if (lines.length > 0) {
-      delimiter = detectDelimiter(lines[0]);
-      const headerCols = splitCsvLine(lines[0], delimiter).map(c => c.trim().replace(/^["']|["']$/g, '').toLowerCase());
-      upcColIdx = headerCols.findIndex(c =>
-        c === 'upc' || c === 'ean' || c === 'barcode' || c === 'gtin' || c === 'jan' || c === 'isbn' ||
-        c === 'upcs' || c === 'eans' || c === 'barcodes' ||
-        /\b(upc|ean|barcode|gtin|jan|isbn)\b/i.test(c)
-      );
-    }
+    // Comprehensive global scan on the entire text
+    const cleanedText = text.replace(/(\d[\d.]*)[Ee]([+\-]?\d+)/g, (match) => {
+      try {
+        const val = Math.round(Number(match));
+        if (isFinite(val)) addCode(val.toString());
+      } catch (e) {}
+      return ' ';
+    });
 
-    if (upcColIdx !== -1) {
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-        const cols = splitCsvLine(line, delimiter);
-        if (cols[upcColIdx] !== undefined) {
-          addCode(cols[upcColIdx]);
-        }
-      }
-    }
+    const dashedMatches = cleanedText.match(/\b\d{1,4}(?:[\-\s]\d{1,6})+\b/g) || [];
+    for (const d of dashedMatches) addCode(d.replace(/[\-\s]/g, ''));
 
-    // Step 2: Fallback scan if no header column was found or header yielded no items
-    if (upcs.length === 0) {
-      const cleanedText = text.replace(/(\d[\d.]*)[Ee]([+\-]?\d+)/g, (match) => {
-        try {
-          const val = Math.round(Number(match));
-          if (isFinite(val)) addCode(val.toString());
-        } catch (e) {}
-        return ' ';
-      });
+    const matches = cleanedText.match(/\b\d{8,14}\b/g) || [];
+    for (const m of matches) addCode(m);
 
-      const dashedMatches = cleanedText.match(/\b\d{1,4}(?:[\-\s]\d{1,6})+\b/g) || [];
-      for (const d of dashedMatches) addCode(d.replace(/[\-\s]/g, ''));
-
-      const matches = cleanedText.match(/\b\d{8,14}\b/g) || [];
-      for (const m of matches) addCode(m);
-
-      const m11 = cleanedText.match(/\b\d{11}\b/g) || [];
-      for (const m of m11) addCode(m);
-    }
+    const m11 = cleanedText.match(/\b\d{11}\b/g) || [];
+    for (const m of m11) addCode(m);
 
     return upcs;
   }
