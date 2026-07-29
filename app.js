@@ -729,7 +729,8 @@
     if (converterProgressCount) converterProgressCount.textContent = `0 / ${upcs.length}`;
 
     const CHUNK_SIZE = 50;
-    for (let i = 0; i < upcs.length; i += CHUNK_SIZE) {
+    let i = 0;
+    while (i < upcs.length) {
       const chunk = upcs.slice(i, i + CHUNK_SIZE);
       const pct = Math.round((converterResults.length / upcs.length) * 100);
       if (converterProgressFill) converterProgressFill.style.width = `${pct}%`;
@@ -742,6 +743,15 @@
           body: JSON.stringify({ upcs: chunk })
         });
 
+        if (res.status === 429) {
+          const errData = await res.json();
+          const waitSec = errData.waitTimeSec || 60;
+          if (converterProgressStatus) converterProgressStatus.textContent = `Keepa limit reached. Pausing for ${waitSec}s...`;
+          await new Promise(r => setTimeout(r, waitSec * 1000));
+          if (converterProgressStatus) converterProgressStatus.textContent = `Resuming scan...`;
+          continue; // Retry same chunk
+        }
+
         if (!res.ok) {
           const errText = await res.text();
           throw new Error(errText);
@@ -751,10 +761,13 @@
         const chunkResults = data.results || [];
         converterResults.push(...chunkResults);
         renderConverterResults();
+        
+        i += CHUNK_SIZE;
 
       } catch (err) {
         console.error('UPC conversion error:', err);
         showToast(`Conversion error: ${err.message}`, 'error');
+        i += CHUNK_SIZE; // skip chunk on fatal error
       }
     }
 
@@ -1113,10 +1126,10 @@
 
         const CHUNK = 20;
         const startTime = Date.now();
-
-        for (let i = 0; i < asins.length; i += CHUNK) {
+        let i = 0;
+        while (i < asins.length) {
           const chunk = asins.slice(i, i + CHUNK);
-          const processed = i;
+          const processed = a2uResults.length;
           const pct = Math.round((processed / asins.length) * 100);
           if (progFill) progFill.style.width = `${pct}%`;
           if (progCount) progCount.textContent = `${processed} / ${asins.length}`;
@@ -1136,10 +1149,22 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ asins: chunk })
             });
+            
+            if (res.status === 429) {
+              const errData = await res.json();
+              const waitSec = errData.waitTimeSec || 60;
+              if (progStatus) progStatus.textContent = `Keepa limit reached. Pausing for ${waitSec}s...`;
+              await new Promise(r => setTimeout(r, waitSec * 1000));
+              if (progStatus) progStatus.textContent = `Resuming scan...`;
+              continue; // Retry same chunk
+            }
+            
             if (!res.ok) throw new Error(await res.text());
             const data = await res.json();
             a2uResults.push(...(data.results || []));
             renderA2UTable();
+            
+            i += CHUNK;
           } catch (err) {
             showToast(`Batch error: ${err.message}`, 'error');
           }
@@ -1460,7 +1485,8 @@
       let upcToData = {}; // upc → { asin, title, brand }
 
       // Step 1: UPC → ASIN via /api/convert-upc
-      for (let i = 0; i < overlap.length; i += CHUNK) {
+      let i = 0;
+      while (i < overlap.length) {
         const chunk = overlap.slice(i, i + CHUNK);
         const pct   = Math.round((i / overlap.length) * 50); // first 50% of bar
         if (progFill) progFill.style.width = `${pct}%`;
@@ -1478,13 +1504,26 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ upcs: chunk })
           });
+          
+          if (res.status === 429) {
+            const errData = await res.json();
+            const waitSec = errData.waitTimeSec || 60;
+            if (progStatus) progStatus.textContent = `Keepa limit reached. Pausing for ${waitSec}s...`;
+            await new Promise(r => setTimeout(r, waitSec * 1000));
+            if (progStatus) progStatus.textContent = `Resuming...`;
+            continue;
+          }
+          
           if (!res.ok) throw new Error(await res.text());
           const data = await res.json();
           for (const r of (data.results || [])) {
-            upcToData[r.upc] = r; // has { upc, asin, title, brand, status, hasApprovalRoute, ... }
+            upcToData[r.upc] = r;
           }
+          
+          i += CHUNK;
         } catch (err) {
           showToast(`UPC lookup error: ${err.message}`, 'error');
+          i += CHUNK;
         }
       }
 

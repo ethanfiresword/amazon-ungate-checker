@@ -270,7 +270,13 @@ app.post('/api/convert-upc', async (req, res) => {
     const keepaRes = await fetch(keepaUrl);
     
     if (keepaRes.status === 429) {
-      return res.status(429).json({ error: 'Keepa API token limit reached! Please wait for tokens to refill (approx 5/min).' });
+      const refillRate = parseInt(keepaRes.headers.get('x-ratelimit-tokensrefillrate')) || 5; // tokens per minute
+      const requiredTokens = upcs.length;
+      const waitTimeSec = Math.ceil((requiredTokens * 60) / refillRate);
+      return res.status(429).json({ 
+        error: `Keepa API token limit reached! Pausing for ${waitTimeSec} seconds while tokens refill...`,
+        waitTimeSec: waitTimeSec
+      });
     }
     if (!keepaRes.ok) {
       throw new Error(`Keepa API error: ${await keepaRes.text()}`);
@@ -405,7 +411,13 @@ app.post('/api/asin-to-upc', async (req, res) => {
     const keepaRes = await fetch(keepaUrl);
     
     if (keepaRes.status === 429) {
-      return res.status(429).json({ error: 'Keepa API token limit reached! Please wait for tokens to refill (approx 5/min).' });
+      const refillRate = parseInt(keepaRes.headers.get('x-ratelimit-tokensrefillrate')) || 5; // tokens per minute
+      const requiredTokens = asins.length;
+      const waitTimeSec = Math.ceil((requiredTokens * 60) / refillRate);
+      return res.status(429).json({ 
+        error: `Keepa API token limit reached! Pausing for ${waitTimeSec} seconds while tokens refill...`,
+        waitTimeSec: waitTimeSec
+      });
     }
     if (!keepaRes.ok) {
       throw new Error(`Keepa API error: ${await keepaRes.text()}`);
