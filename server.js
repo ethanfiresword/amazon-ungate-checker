@@ -257,7 +257,7 @@ app.post('/api/check', async (req, res) => {
   }
 });
 
-// API Endpoint 2: Convert UPCs to ASINs & Check Ungating Eligibility
+// API Endpoint 2: Convert UPCs to ASINs & Check Ungating Eligibility (Using Keepa API)
 app.post('/api/convert-upc', async (req, res) => {
   const { upcs } = req.body;
   if (!upcs || !Array.isArray(upcs)) {
@@ -265,6 +265,37 @@ app.post('/api/convert-upc', async (req, res) => {
   }
 
   try {
+    // 1. Fetch from Keepa API in one big batch
+    const keepaUrl = `https://api.keepa.com/product?key=${process.env.KEEPA_API_KEY}&domain=1&code=${upcs.join(',')}`;
+    const keepaRes = await fetch(keepaUrl);
+    
+    if (keepaRes.status === 429) {
+      return res.status(429).json({ error: 'Keepa API token limit reached! Please wait for tokens to refill (approx 5/min).' });
+    }
+    if (!keepaRes.ok) {
+      throw new Error(`Keepa API error: ${await keepaRes.text()}`);
+    }
+    
+    const keepaData = await keepaRes.json();
+    const products = keepaData.products || [];
+    
+    const upcToAsinMap = {};
+    const upcToTitleMap = {};
+    const upcToBrandMap = {};
+    
+    products.forEach(p => {
+      const pCodes = [...(p.upcList || []), ...(p.eanList || [])].map(String);
+      const matchedUpcs = upcs.filter(u => pCodes.includes(u) || pCodes.includes('0'+u) || (u.startsWith('0') && pCodes.includes(u.substring(1))));
+      
+      matchedUpcs.forEach(u => {
+        if (!upcToAsinMap[u]) {
+          upcToAsinMap[u] = p.asin;
+          upcToTitleMap[u] = p.title || '';
+          upcToBrandMap[u] = p.brand || p.manufacturer || '';
+        }
+      });
+    });
+
     const accessToken = await getAccessToken();
     const results = [];
     const concurrency = 6;
@@ -274,15 +305,15 @@ app.post('/api/convert-upc', async (req, res) => {
       while (index < upcs.length) {
         const currentIndex = index++;
         const rawUpc = upcs[currentIndex];
-        const match = await lookupUpcInAmazonCatalog(rawUpc, accessToken);
+        const asin = upcToAsinMap[rawUpc];
 
-        if (match && match.asin) {
-          const checkResult = await checkSingleAsinWithRetry(match.asin, accessToken);
+        if (asin) {
+          const checkResult = await checkSingleAsinWithRetry(asin, accessToken);
           results[currentIndex] = {
             upc: rawUpc,
-            asin: match.asin,
-            title: checkResult.title || match.title || `ASIN ${match.asin}`,
-            brand: checkResult.brand || match.brand || '',
+            asin: asin,
+            title: checkResult.title || upcToTitleMap[rawUpc] || `ASIN ${asin}`,
+            brand: checkResult.brand || upcToBrandMap[rawUpc] || '',
             status: checkResult.status,
             hasApprovalRoute: checkResult.hasApprovalRoute,
             reasonCode: checkResult.reasonCode || '',
@@ -313,7 +344,7 @@ app.post('/api/convert-upc', async (req, res) => {
     saveCache();
     res.json({ results });
   } catch (error) {
-    console.error('Server error during UPC conversion:', error);
+    console.error('Server error during Keepa UPC conversion:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -361,7 +392,7 @@ async function lookupAsinBarcodes(asin, accessToken) {
   }
 }
 
-// API Endpoint 3: ASIN → UPC/Barcode Lookup
+// API Endpoint 3: ASIN → UPC/Barcode Lookup (Using Keepa API)
 app.post('/api/asin-to-upc', async (req, res) => {
   const { asins } = req.body;
   if (!asins || !Array.isArray(asins)) {
@@ -369,51 +400,65 @@ app.post('/api/asin-to-upc', async (req, res) => {
   }
 
   try {
-    const accessToken = await getAccessToken();
-    const results = [];
-    const concurrency = 6;
-    let index = 0;
+    // Fetch from Keepa API in one batch
+    const keepaUrl = `https://api.keepa.com/product?key=${process.env.KEEPA_API_KEY}&domain=1&asin=${asins.join(',')}`;
+    const keepaRes = await fetch(keepaUrl);
+    
+    if (keepaRes.status === 429) {
+      return res.status(429).json({ error: 'Keepa API token limit reached! Please wait for tokens to refill (approx 5/min).' });
+    }
+    if (!keepaRes.ok) {
+      throw new Error(`Keepa API error: ${await keepaRes.text()}`);
+    }
+    
+    const keepaData = await keepaRes.json();
+    const products = keepaData.products || [];
+    
+    const asinToDataMap = {};
+    products.forEach(p => {
+      const barcodes = [];
+      if (p.upcList) p.upcList.forEach(u => barcodes.push({ type: 'UPC', value: String(u) }));
+      if (p.eanList) p.eanList.forEach(e => barcodes.push({ type: 'EAN', value: String(e) }));
+      
+      asinToDataMap[p.asin] = {
+        title: p.title || '',
+        brand: p.brand || p.manufacturer || '',
+        barcodes: barcodes,
+        upc: (p.upcList && p.upcList.length > 0) ? String(p.upcList[0]) : '',
+        ean: (p.eanList && p.eanList.length > 0) ? String(p.eanList[0]) : ''
+      };
+    });
 
-    async function worker() {
-      while (index < asins.length) {
-        const currentIndex = index++;
-        const rawAsin = asins[currentIndex].trim().toUpperCase();
-        const match = await lookupAsinBarcodes(rawAsin, accessToken);
-
-        if (match && (match.barcodes.length > 0 || match.title)) {
-          results[currentIndex] = {
-            asin: rawAsin,
-            title: match.title || `ASIN ${rawAsin}`,
-            brand: match.brand || '',
-            barcodes: match.barcodes,
-            upc: match.barcodes.find(b => b.type === 'UPC')?.value || '',
-            ean: match.barcodes.find(b => b.type === 'EAN')?.value || '',
-            status: match.barcodes.length > 0 ? 'found' : 'no_barcode'
-          };
-        } else {
-          results[currentIndex] = {
-            asin: rawAsin,
-            title: 'No product found',
-            brand: '',
-            barcodes: [],
-            upc: '',
-            ean: '',
-            status: 'not_found'
-          };
-        }
-        await delay(120);
+    const results = asins.map((rawAsin) => {
+      const asin = rawAsin.trim().toUpperCase();
+      const match = asinToDataMap[asin];
+      
+      if (match && match.barcodes.length > 0) {
+        return {
+          asin: asin,
+          title: match.title || `ASIN ${asin}`,
+          brand: match.brand || '',
+          barcodes: match.barcodes,
+          upc: match.upc,
+          ean: match.ean,
+          status: 'found'
+        };
+      } else {
+        return {
+          asin: asin,
+          title: (match && match.title) ? match.title : 'No product found',
+          brand: (match && match.brand) ? match.brand : '',
+          barcodes: [],
+          upc: '',
+          ean: '',
+          status: 'not_found'
+        };
       }
-    }
+    });
 
-    const workers = [];
-    for (let i = 0; i < Math.min(concurrency, asins.length); i++) {
-      workers.push(worker());
-    }
-
-    await Promise.all(workers);
     res.json({ results });
   } catch (error) {
-    console.error('Server error during ASIN→UPC lookup:', error);
+    console.error('Server error during Keepa ASIN→UPC lookup:', error);
     res.status(500).json({ error: error.message });
   }
 });
