@@ -1196,12 +1196,13 @@
       if (converterMode === 'asin-to-upc') {
         if (a2uResults.length === 0) { showToast('No results to export', 'info'); return; }
         // Use ="VALUE" to prevent Excel from converting barcodes to scientific notation
-        let csv = 'ASIN,Product Title,UPC,EAN,All Barcodes,Amazon Link\n';
+        let csv = 'ASIN,Product Title,UPC,UPC (No Leading Zeros),EAN,All Barcodes,Amazon Link\n';
         a2uResults.forEach(item => {
           const allB = (item.barcodes||[]).map(b=>`${b.type}:${b.value}`).join('|');
           const upcCell = item.upc ? `="${item.upc}"` : '';
+          const upcNoZeros = item.upc ? (item.upc.replace(/^0+/, '') || '0') : '';
           const eanCell = item.ean ? `="${item.ean}"` : '';
-          csv += `"${item.asin}","${(item.title||'').replace(/"/g,'""')}","${upcCell}","${eanCell}","${allB}","https://www.amazon.com/dp/${item.asin}"\n`;
+          csv += `"${item.asin}","${(item.title||'').replace(/"/g,'""')}","${upcCell}","${upcNoZeros}","${eanCell}","${allB}","https://www.amazon.com/dp/${item.asin}"\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -1213,9 +1214,10 @@
         const converted = converterResults.filter(r => r.asin);
         if (converted.length === 0) { showToast('No converted ASINs to export', 'info'); return; }
         // Use ="VALUE" to prevent Excel from converting barcodes to scientific notation
-        let csv = 'Input UPC,Matched ASIN,Product Title,Ungating Status,Amazon Link\n';
+        let csv = 'Input UPC,Input UPC (No Leading Zeros),Matched ASIN,Product Title,Ungating Status,Amazon Link\n';
         converted.forEach(item => {
-          csv += `="${item.upc}","${item.asin}","${(item.title||'').replace(/"/g,'""')}","${item.status}","https://www.amazon.com/dp/${item.asin}"\n`;
+          const upcNoZeros = item.upc ? (item.upc.replace(/^0+/, '') || '0') : '';
+          csv += `="${item.upc}","${upcNoZeros}","${item.asin}","${(item.title||'').replace(/"/g,'""')}","${item.status}","https://www.amazon.com/dp/${item.asin}"\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -1575,10 +1577,11 @@
     btnExportMatcherCsv.addEventListener('click', () => {
       if (matcherResults.length === 0) { showToast('No results to export', 'info'); return; }
       // Use ="VALUE" to prevent Excel from converting barcodes to scientific notation
-      let csv = 'UPC,ASIN,Product Title,Ungating Status,Has Approval Route,Amazon Link\n';
+      let csv = 'UPC,UPC (No Leading Zeros),ASIN,Product Title,Ungating Status,Has Approval Route,Amazon Link\n';
       matcherResults.forEach(r => {
         const link = r.asin ? `https://www.amazon.com/dp/${r.asin}` : '';
-        csv += `="${r.upc}","${r.asin||''}","${(r.title||'').replace(/"/g,'""')}","${r.status}","${r.hasApprovalRoute ? 'YES' : 'NO'}","${link}"\n`;
+        const upcNoZeros = r.upc ? (r.upc.replace(/^0+/, '') || '0') : '';
+        csv += `="${r.upc}","${upcNoZeros}","${r.asin||''}","${(r.title||'').replace(/"/g,'""')}","${r.status}","${r.hasApprovalRoute ? 'YES' : 'NO'}","${link}"\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
