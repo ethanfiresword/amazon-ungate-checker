@@ -588,7 +588,8 @@
       const headerCols = lines[0].split(/[,;\t]/).map(c => c.trim().replace(/^["']|["']$/g, '').toLowerCase());
       upcColIdx = headerCols.findIndex(c =>
         c === 'upc' || c === 'ean' || c === 'barcode' || c === 'gtin' || c === 'jan' || c === 'isbn' ||
-        c.includes('upc') || c.includes('barcode') || c.includes('ean')
+        c === 'upcs' || c === 'eans' || c === 'barcodes' ||
+        /\b(upc|ean|barcode|gtin|jan|isbn)\b/i.test(c)
       );
     }
 
