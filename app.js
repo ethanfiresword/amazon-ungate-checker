@@ -604,11 +604,9 @@
       str = str.replace(/[\-\s]/g, '');
 
       if (/^\d{8,14}$/.test(str)) {
-        if (!seen.has(str)) { seen.add(str); upcs.push(str); }
-      }
-      if (/^\d{11}$/.test(str)) {
-        const padded = '0' + str;
-        if (!seen.has(padded)) { seen.add(padded); upcs.push(padded); }
+        // Normalize: strip leading zeros so all formats become the same key
+        const normalized = str.replace(/^0+/, '') || '0';
+        if (!seen.has(normalized)) { seen.add(normalized); upcs.push(normalized); }
       }
     }
 
@@ -627,6 +625,7 @@
     const matches = cleanedText.match(/\b\d{8,14}\b/g) || [];
     for (const m of matches) addCode(m);
 
+    // Also catch 11-digit numbers (Excel-stripped UPCs missing leading zero)
     const m11 = cleanedText.match(/\b\d{11}\b/g) || [];
     for (const m of m11) addCode(m);
 
@@ -1272,9 +1271,8 @@
     const mySet = matcherMyUpcs ? parseUpcSet(matcherMyUpcs.value) : new Set();
     const wsSet = matcherWsUpcs ? parseUpcSet(matcherWsUpcs.value) : new Set();
     
-    // Normalize wsSet by stripping leading zeros for comparison
-    const wsNormalized = new Set([...wsSet].map(u => u.replace(/^0+/, '')));
-    const overlap = [...mySet].filter(u => wsNormalized.has(u.replace(/^0+/, '')));
+    // Both sets are already normalized (no leading zeros) by parseUpcs
+    const overlap = [...mySet].filter(u => wsSet.has(u));
     
     if (matcherMyCount) matcherMyCount.textContent = `${mySet.size} UPCs`;
     if (matcherWsCount) matcherWsCount.textContent = `${wsSet.size} UPCs`;
@@ -1471,9 +1469,8 @@
       if (mySet.size === 0) { showToast('Paste your brand UPC list on the left first', 'error'); return; }
       if (wsSet.size === 0) { showToast('Paste the wholesaler price list on the right first', 'error'); return; }
 
-      // Step 1: Find intersection with leading-zero normalization
-      const wsNormalized = new Set([...wsSet].map(u => u.replace(/^0+/, '')));
-      const overlap = [...mySet].filter(u => wsNormalized.has(u.replace(/^0+/, '')));
+      // Step 1: Find intersection — UPCs are already normalized by parseUpcs
+      const overlap = [...mySet].filter(u => wsSet.has(u));
 
       if (overlap.length === 0) {
         showToast('No UPCs in common between the two lists', 'info');
@@ -1539,10 +1536,9 @@
 
       for (const upc of overlap) {
         const d = upcToData[upc];
-        const cleanUpc = upc.replace(/^0+/, '') || '0';
         if (d) {
           matcherResults.push({
-            upc: cleanUpc,
+            upc,
             asin:            d.asin || null,
             title:           d.title || '',
             brand:           d.brand || '',
@@ -1552,7 +1548,7 @@
             reasons:         d.reasons || []
           });
         } else {
-          matcherResults.push({ upc: cleanUpc, asin: null, title: 'No Amazon match', brand: '', status: 'no_match', hasApprovalRoute: false, reasonCode: '', reasons: [] });
+          matcherResults.push({ upc, asin: null, title: 'No Amazon match', brand: '', status: 'no_match', hasApprovalRoute: false, reasonCode: '', reasons: [] });
         }
       }
 
