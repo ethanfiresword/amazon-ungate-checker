@@ -1337,8 +1337,17 @@
   let matcherQuery = '';
 
   // Helper: extract all digit-only strings (8–14 digits = barcodes) from raw text
-  function parseUpcSet(text) {
-    return new Set(parseUpcs(text));
+  function parseUpcMap(text) {
+    const arr = parseUpcs(text);
+    const map = new Map();
+    for (const item of arr) {
+      if (typeof item === 'object') {
+        map.set(item.upc, item);
+      } else {
+        map.set(item, item);
+      }
+    }
+    return map;
   }
 
 
@@ -1350,21 +1359,21 @@
   const matcherOverlapNote = $('#matcher-overlap-note');
 
   function refreshMatcherCounts() {
-    const mySet = matcherMyUpcs ? parseUpcSet(matcherMyUpcs.value) : new Set();
-    const wsSet = matcherWsUpcs ? parseUpcSet(matcherWsUpcs.value) : new Set();
+    const myMap = matcherMyUpcs ? parseUpcMap(matcherMyUpcs.value) : new Map();
+    const wsMap = matcherWsUpcs ? parseUpcMap(matcherWsUpcs.value) : new Map();
     
-    // Both sets are already normalized (no leading zeros) by parseUpcs
-    const overlap = [...mySet].filter(u => wsSet.has(u));
+    // Both maps use normalized UPCs as keys
+    const overlap = [...myMap.keys()].filter(u => wsMap.has(u));
     
-    if (matcherMyCount) matcherMyCount.textContent = `${mySet.size} UPCs`;
-    if (matcherWsCount) matcherWsCount.textContent = `${wsSet.size} UPCs`;
+    if (matcherMyCount) matcherMyCount.textContent = `${myMap.size} UPCs`;
+    if (matcherWsCount) matcherWsCount.textContent = `${wsMap.size} UPCs`;
     if (matcherOverlapNote) {
-      matcherOverlapNote.textContent = mySet.size > 0 && wsSet.size > 0
+      matcherOverlapNote.textContent = myMap.size > 0 && wsMap.size > 0
         ? `${overlap.length} overlapping UPCs found — click Match to look up ASINs & ungating`
         : 'Load both lists to find overlapping UPCs';
     }
-    const elMy = $('#matcher-stat-my'); if (elMy) elMy.textContent = mySet.size;
-    const elWs = $('#matcher-stat-ws'); if (elWs) elWs.textContent = wsSet.size;
+    const elMy = $('#matcher-stat-my'); if (elMy) elMy.textContent = myMap.size;
+    const elWs = $('#matcher-stat-ws'); if (elWs) elWs.textContent = wsMap.size;
   }
 
   if (matcherMyUpcs) matcherMyUpcs.addEventListener('input', refreshMatcherCounts);
@@ -1545,23 +1554,31 @@
   const btnMatcherRun = $('#btn-matcher-run');
   if (btnMatcherRun) {
     btnMatcherRun.addEventListener('click', async () => {
-      const mySet = matcherMyUpcs ? parseUpcSet(matcherMyUpcs.value) : new Set();
-      const wsSet = matcherWsUpcs ? parseUpcSet(matcherWsUpcs.value) : new Set();
+      const myMap = matcherMyUpcs ? parseUpcMap(matcherMyUpcs.value) : new Map();
+      const wsMap = matcherWsUpcs ? parseUpcMap(matcherWsUpcs.value) : new Map();
 
-      if (mySet.size === 0) { showToast('Paste your brand UPC list on the left first', 'error'); return; }
-      if (wsSet.size === 0) { showToast('Paste the wholesaler price list on the right first', 'error'); return; }
+      if (myMap.size === 0) { showToast('Paste your brand UPC list on the left first', 'error'); return; }
+      if (wsMap.size === 0) { showToast('Paste the wholesaler price list on the right first', 'error'); return; }
 
       // Step 1: Find intersection — UPCs are already normalized by parseUpcs
-      const overlap = [...mySet].filter(u => wsSet.has(u));
+      const overlapKeys = [...myMap.keys()].filter(u => wsMap.has(u));
 
-      if (overlap.length === 0) {
+      if (overlapKeys.length === 0) {
         showToast('No UPCs in common between the two lists', 'info');
         matcherResults = [];
         renderMatcherTable();
         return;
       }
+      
+      const overlapData = overlapKeys.map(u => {
+        const wsItem = wsMap.get(u);
+        if (typeof wsItem === 'object' && wsItem.title) return wsItem;
+        const myItem = myMap.get(u);
+        if (typeof myItem === 'object' && myItem.title) return myItem;
+        return wsItem || u;
+      });
 
-      showToast(`Found ${overlap.length} overlapping UPCs — looking up ASINs & checking ungating…`, 'info');
+      showToast(`Found ${overlapKeys.length} overlapping UPCs — looking up ASINs & checking ungating…`, 'info');
 
       // Progress UI
       const progCard   = $('#matcher-progress-card');
@@ -1572,8 +1589,8 @@
 
       if (progCard)   progCard.style.display = 'flex';
       if (progFill)   progFill.style.width = '0%';
-      if (progStatus) progStatus.textContent = `Step 1 of 2: Resolving ${overlap.length} UPCs to ASINs…`;
-      if (progCount)  progCount.textContent  = `0 / ${overlap.length}`;
+      if (progStatus) progStatus.textContent = `Step 1 of 2: Resolving ${overlapKeys.length} UPCs to ASINs…`;
+      if (progCount)  progCount.textContent  = `0 / ${overlapKeys.length}`;
       if (progEta)    progEta.textContent    = 'Est: –';
 
       matcherResults = [];
@@ -1583,15 +1600,15 @@
       let upcToData = {}; // upc → { asin, title, brand }
 
       // Step 1: UPC → ASIN via /api/convert-upc
-      for (let i = 0; i < overlap.length; i += CHUNK) {
-        const chunk = overlap.slice(i, i + CHUNK);
-        const pct   = Math.round((i / overlap.length) * 50); // first 50% of bar
+      for (let i = 0; i < overlapData.length; i += CHUNK) {
+        const chunk = overlapData.slice(i, i + CHUNK);
+        const pct   = Math.round((i / overlapData.length) * 50); // first 50% of bar
         if (progFill) progFill.style.width = `${pct}%`;
-        if (progCount) progCount.textContent = `${i} / ${overlap.length}`;
+        if (progCount) progCount.textContent = `${i} / ${overlapData.length}`;
         if (i > 0) {
           const elapsed = (Date.now() - startTime) / 1000;
           const rate = i / elapsed;
-          const rem = Math.ceil((overlap.length - i) / rate);
+          const rem = Math.ceil((overlapData.length - i) / rate);
           if (progEta) progEta.textContent = `Est: ${rem > 60 ? `${Math.floor(rem/60)}m ${rem%60}s` : `${rem}s`}`;
         }
 
@@ -1616,7 +1633,7 @@
       if (progStatus) progStatus.textContent = 'Step 2 of 2: Collating ungating results…';
       if (progFill) progFill.style.width = '90%';
 
-      for (const upc of overlap) {
+      for (const upc of overlapKeys) {
         const d = upcToData[upc];
         if (d) {
           matcherResults.push({
