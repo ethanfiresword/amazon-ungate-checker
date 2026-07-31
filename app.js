@@ -1617,15 +1617,7 @@
         return;
       }
       
-      const overlapData = overlapKeys.map(u => {
-        const wsItem = wsMap.get(u);
-        if (typeof wsItem === 'object' && wsItem.title) return wsItem;
-        const myItem = myMap.get(u);
-        if (typeof myItem === 'object' && myItem.title) return myItem;
-        return wsItem || u;
-      });
-
-      showToast(`Found ${overlapKeys.length} overlapping UPCs — looking up ASINs & checking ungating…`, 'info');
+      showToast(`Found ${overlapData.length} overlapping UPCs — looking up ASINs & checking ungating…`, 'info');
 
       // Progress UI
       const progCard   = $('#matcher-progress-card');
@@ -1636,8 +1628,8 @@
 
       if (progCard)   progCard.style.display = 'flex';
       if (progFill)   progFill.style.width = '0%';
-      if (progStatus) progStatus.textContent = `Step 1 of 2: Resolving ${overlapKeys.length} UPCs to ASINs…`;
-      if (progCount)  progCount.textContent  = `0 / ${overlapKeys.length}`;
+      if (progStatus) progStatus.textContent = `Step 1 of 2: Resolving ${overlapData.length} UPCs to ASINs…`;
+      if (progCount)  progCount.textContent  = `0 / ${overlapData.length}`;
       if (progEta)    progEta.textContent    = 'Est: –';
 
       matcherResults = [];
@@ -1680,7 +1672,8 @@
       if (progStatus) progStatus.textContent = 'Step 2 of 2: Collating ungating results…';
       if (progFill) progFill.style.width = '90%';
 
-      for (const upc of overlapKeys) {
+      for (const item of overlapData) {
+        const upc = typeof item === 'object' ? item.upc : item;
         const d = upcToData[upc];
         if (d) {
           matcherResults.push({
