@@ -1373,8 +1373,22 @@
     const myMap = matcherMyUpcs ? parseUpcMap(matcherMyUpcs.value) : new Map();
     const wsMap = matcherWsUpcs ? parseUpcMap(matcherWsUpcs.value) : new Map();
     
-    // Both maps use normalized UPCs as keys
-    const overlap = [...myMap.keys()].filter(u => wsMap.has(u));
+    // Normalize helper for local comparison (strip leading zeros)
+    const norm = (s) => s.replace(/^0+/, '');
+    
+    // Map normalized wholesaler keys to original keys
+    const wsNormMap = new Map();
+    for (const k of wsMap.keys()) {
+      wsNormMap.set(norm(k), k);
+    }
+    
+    // Find intersection using normalized keys
+    const overlap = [];
+    for (const k of myMap.keys()) {
+      if (wsNormMap.has(norm(k))) {
+        overlap.push(k);
+      }
+    }
     
     if (matcherMyCount) matcherMyCount.textContent = `${myMap.size} Items`;
     if (matcherWsCount) matcherWsCount.textContent = `${wsMap.size} Items`;
@@ -1571,10 +1585,32 @@
       if (myMap.size === 0) { showToast('Paste your brand list on the left first', 'error'); return; }
       if (wsMap.size === 0) { showToast('Paste the wholesaler price list on the right first', 'error'); return; }
 
-      // Step 1: Find intersection — UPCs are already normalized by parseUpcs
-      const overlapKeys = [...myMap.keys()].filter(u => wsMap.has(u));
+      // Normalize helper for local comparison (strip leading zeros)
+      const norm = (s) => s.replace(/^0+/, '');
+      
+      const wsNormMap = new Map();
+      for (const [k, v] of wsMap.entries()) {
+        wsNormMap.set(norm(k), v);
+      }
 
-      if (overlapKeys.length === 0) {
+      // Step 1: Find intersection using normalized keys
+      const overlapData = [];
+      for (const [myKey, myVal] of myMap.entries()) {
+        const myNorm = norm(myKey);
+        if (wsNormMap.has(myNorm)) {
+          // Prioritize wholesaler item if it has a title (useful for fallback search)
+          const wsVal = wsNormMap.get(myNorm);
+          if (typeof wsVal === 'object' && wsVal.title) {
+            overlapData.push(wsVal);
+          } else if (typeof myVal === 'object' && myVal.title) {
+            overlapData.push(myVal);
+          } else {
+            overlapData.push(myKey);
+          }
+        }
+      }
+
+      if (overlapData.length === 0) {
         showToast('No items in common between the two lists', 'info');
         matcherResults = [];
         renderMatcherTable();
