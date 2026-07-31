@@ -206,6 +206,55 @@ async function processBatchConcurrent(asins, accessToken, concurrency = 6) {
   return results;
 }
 
+// Look up product name from free barcode databases when we only have a UPC
+async function lookupProductNameByUpc(upc) {
+  const cleanUpc = (upc || '').trim().replace(/\D/g, '');
+  if (!cleanUpc || cleanUpc.length < 8) return null;
+
+  // Try 1: UPCitemdb.com (free, no key required for basic lookups)
+  try {
+    const url = `https://api.upcitemdb.com/prod/trial/lookup?upc=${cleanUpc}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json', 'User-Agent': 'Amazon-Product-Finder/1.0' }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.items && data.items.length > 0) {
+        const item = data.items[0];
+        const title = item.title || item.description || '';
+        const brand = item.brand || '';
+        if (title) {
+          console.log(`  [UPCitemdb] Found: "${brand ? brand + ' ' : ''}${title}" for UPC ${cleanUpc}`);
+          return { title, brand };
+        }
+      }
+    }
+  } catch (e) {}
+
+  // Try 2: Open Food Facts (free, open source, good for health/beauty/food)
+  try {
+    const url = `https://world.openfoodfacts.org/api/v2/product/${cleanUpc}.json?fields=product_name,brands`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json', 'User-Agent': 'Amazon-Product-Finder/1.0' }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.status === 1 && data.product) {
+        const title = data.product.product_name || '';
+        const brand = data.product.brands || '';
+        if (title) {
+          console.log(`  [OpenFoodFacts] Found: "${brand ? brand + ' ' : ''}${title}" for UPC ${cleanUpc}`);
+          return { title, brand };
+        }
+      }
+    }
+  } catch (e) {}
+
+  return null;
+}
+
 // Enhanced UPC/EAN/GTIN/Title lookup in Amazon SP-API Catalog API
 async function lookupUpcInAmazonCatalog(itemInput, accessToken) {
   let rawUpc = '';
@@ -265,7 +314,16 @@ async function lookupUpcInAmazonCatalog(itemInput, accessToken) {
     }
   }
 
-  // 2. Title / Keyword Fallback Search if direct barcode lookup yielded no result
+  // 2. If no title was provided by the frontend, look up the UPC in free barcode databases
+  if (!itemTitle && cleanUpc) {
+    const productInfo = await lookupProductNameByUpc(cleanUpc);
+    if (productInfo && productInfo.title) {
+      itemTitle = productInfo.brand ? `${productInfo.brand} ${productInfo.title}` : productInfo.title;
+      console.log(`  [Barcode DB Fallback] Using title "${itemTitle}" for UPC ${cleanUpc}`);
+    }
+  }
+
+  // 3. Title / Keyword Fallback Search using Amazon Catalog keyword search
   if (itemTitle && itemTitle.length > 3) {
     try {
       const cleanKeywords = itemTitle.replace(/[^\w\s]/gi, '').slice(0, 60).trim();

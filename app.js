@@ -627,6 +627,48 @@
     const seen = new Set();
     const upcs = [];
 
+    // First, try to detect CSV with headers containing both a barcode column AND a title column
+    const lines = text.split(/[\n\r]+/).filter(l => l.trim());
+    if (lines.length > 1) {
+      const firstLine = lines[0].toLowerCase().trim();
+      const possibleHeaders = splitCsvLine(firstLine, detectDelimiter(firstLine)).map(c => c.trim().replace(/^["']|["']$/g, '').toLowerCase());
+
+      const upcColIdx = possibleHeaders.findIndex(c => ['upc', 'ean', 'gtin', 'barcode', 'code', 'item_upc', 'upc_code'].includes(c));
+      const titleColIdx = possibleHeaders.findIndex(c => ['title', 'name', 'product', 'product name', 'product_name', 'description', 'item', 'item name', 'item_name', 'product title', 'product_title'].includes(c));
+
+      if (upcColIdx !== -1) {
+        // CSV mode: we have a header row with a UPC column
+        const delimiter = detectDelimiter(firstLine);
+        for (let i = 1; i < lines.length; i++) {
+          const cols = splitCsvLine(lines[i], delimiter).map(c => c.trim().replace(/^["']|["']$/g, ''));
+          let rawUpc = (cols[upcColIdx] || '').trim();
+
+          // Handle Excel scientific notation
+          if (/(\d[\d.]*)[Ee]([+\-]?\d+)/.test(rawUpc)) {
+            try {
+              const val = Math.round(Number(rawUpc));
+              if (isFinite(val)) rawUpc = val.toString();
+            } catch (e) {}
+          }
+
+          rawUpc = rawUpc.replace(/[\-\s]/g, '');
+          if (!/^\d{8,14}$/.test(rawUpc)) continue;
+          if (seen.has(rawUpc)) continue;
+          seen.add(rawUpc);
+
+          const title = titleColIdx !== -1 ? (cols[titleColIdx] || '').trim() : '';
+
+          if (title) {
+            upcs.push({ upc: rawUpc, title });
+          } else {
+            upcs.push(rawUpc);
+          }
+        }
+        return upcs;
+      }
+    }
+
+    // Fallback: plain text mode (one UPC per line, no headers)
     function addCode(c) {
       if (!c) return;
       let str = String(c).trim().replace(/^["']|["']$/g, '');
