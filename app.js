@@ -674,6 +674,13 @@
       let str = String(c).trim().replace(/^["']|["']$/g, '');
       if (!str) return;
 
+      // Check if it's an ASIN (B0 followed by 8 chars, or a 10-char ISBN starting with numbers)
+      if (/^B0[A-Z0-9]{8}$/i.test(str) || /^[0-9]{9}[X0-9]$/i.test(str)) {
+        str = str.toUpperCase();
+        if (!seen.has(str)) { seen.add(str); upcs.push(str); }
+        return;
+      }
+
       if (/(\d[\d.]*)[Ee]([+\-]?\d+)/.test(str)) {
         try {
           const val = Math.round(Number(str));
@@ -700,6 +707,10 @@
       } catch (e) {}
       return ' ';
     });
+    
+    // Extract ASINs first (10 chars, starting with B0 or standard ISBNs)
+    const asinMatches = text.match(/\b(?:B0[A-Z0-9]{8}|[0-9]{9}[X0-9])\b/gi) || [];
+    for (const a of asinMatches) addCode(a);
 
     const dashedMatches = cleanedText.match(/\b\d{1,4}(?:[\-\s]\d{1,6})+\b/g) || [];
     for (const d of dashedMatches) addCode(d.replace(/[\-\s]/g, ''));
@@ -1365,12 +1376,12 @@
     // Both maps use normalized UPCs as keys
     const overlap = [...myMap.keys()].filter(u => wsMap.has(u));
     
-    if (matcherMyCount) matcherMyCount.textContent = `${myMap.size} UPCs`;
-    if (matcherWsCount) matcherWsCount.textContent = `${wsMap.size} UPCs`;
+    if (matcherMyCount) matcherMyCount.textContent = `${myMap.size} Items`;
+    if (matcherWsCount) matcherWsCount.textContent = `${wsMap.size} Items`;
     if (matcherOverlapNote) {
       matcherOverlapNote.textContent = myMap.size > 0 && wsMap.size > 0
-        ? `${overlap.length} overlapping UPCs found — click Match to look up ASINs & ungating`
-        : 'Load both lists to find overlapping UPCs';
+        ? `${overlap.length} overlapping items found — click Match to look up ASINs & ungating`
+        : 'Load both lists to find overlapping items (UPCs or ASINs)';
     }
     const elMy = $('#matcher-stat-my'); if (elMy) elMy.textContent = myMap.size;
     const elWs = $('#matcher-stat-ws'); if (elWs) elWs.textContent = wsMap.size;
@@ -1557,14 +1568,14 @@
       const myMap = matcherMyUpcs ? parseUpcMap(matcherMyUpcs.value) : new Map();
       const wsMap = matcherWsUpcs ? parseUpcMap(matcherWsUpcs.value) : new Map();
 
-      if (myMap.size === 0) { showToast('Paste your brand UPC list on the left first', 'error'); return; }
+      if (myMap.size === 0) { showToast('Paste your brand list on the left first', 'error'); return; }
       if (wsMap.size === 0) { showToast('Paste the wholesaler price list on the right first', 'error'); return; }
 
       // Step 1: Find intersection — UPCs are already normalized by parseUpcs
       const overlapKeys = [...myMap.keys()].filter(u => wsMap.has(u));
 
       if (overlapKeys.length === 0) {
-        showToast('No UPCs in common between the two lists', 'info');
+        showToast('No items in common between the two lists', 'info');
         matcherResults = [];
         renderMatcherTable();
         return;
