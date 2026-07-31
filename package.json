@@ -11,7 +11,9 @@
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^16.4.0",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "jsdom": "^29.1.1",
+    "puppeteer": "^25.4.0"
   },
   "keywords": [],
   "author": "",

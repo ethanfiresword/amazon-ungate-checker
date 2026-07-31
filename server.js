@@ -206,37 +206,95 @@ async function processBatchConcurrent(asins, accessToken, concurrency = 6) {
   return results;
 }
 
-// Lookup UPC or EAN barcode in Amazon SP-API Catalog API
-async function lookupUpcInAmazonCatalog(upc, accessToken) {
-  try {
-    const cleanUpc = upc.trim().replace(/\D/g, '');
-    if (!cleanUpc) return null;
-    const type = cleanUpc.length === 13 ? 'EAN' : (cleanUpc.length === 8 ? 'JAN' : 'UPC');
-    const url = `${CONFIG.apiBaseUrl}/catalog/2022-04-01/items?identifiers=${encodeURIComponent(cleanUpc)}&identifiersType=${type}&marketplaceIds=${CONFIG.marketplaceId}&includedData=summaries`;
-    
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'x-amz-access-token': accessToken,
-        'Accept': 'application/json'
-      }
-    });
+// Enhanced UPC/EAN/GTIN/Title lookup in Amazon SP-API Catalog API
+async function lookupUpcInAmazonCatalog(itemInput, accessToken) {
+  let rawUpc = '';
+  let itemTitle = '';
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data.items && data.items.length > 0) {
-        const item = data.items[0];
-        const asin = item.asin;
-        const summary = item.summaries && item.summaries[0];
-        const brand = summary ? (summary.brandName || summary.brand || summary.manufacturer || '') : '';
-        const title = summary ? (summary.itemName || '') : '';
-        const fullTitle = brand ? `[${brand}] ${title}` : title;
-        return { asin, title: fullTitle, brand };
-      }
-    }
-  } catch (e) {
-    console.error(`UPC Lookup error for ${upc}:`, e.message);
+  if (typeof itemInput === 'string') {
+    rawUpc = itemInput;
+  } else if (typeof itemInput === 'object' && itemInput !== null) {
+    rawUpc = itemInput.upc || itemInput.barcode || itemInput.code || '';
+    itemTitle = itemInput.title || itemInput.name || itemInput.productName || '';
   }
+
+  const cleanUpc = (rawUpc || '').trim().replace(/\D/g, '');
+
+  // 1. Try identifier-based lookups (UPC, GTIN-14, EAN)
+  if (cleanUpc) {
+    const typesToTry = [];
+    if (cleanUpc.length === 12) {
+      typesToTry.push({ type: 'GTIN', value: cleanUpc.padStart(14, '0') });
+      typesToTry.push({ type: 'UPC', value: cleanUpc });
+      typesToTry.push({ type: 'EAN', value: '0' + cleanUpc });
+    } else if (cleanUpc.length === 13) {
+      typesToTry.push({ type: 'EAN', value: cleanUpc });
+      typesToTry.push({ type: 'GTIN', value: '0' + cleanUpc });
+    } else if (cleanUpc.length === 14) {
+      typesToTry.push({ type: 'GTIN', value: cleanUpc });
+    } else if (cleanUpc.length === 8) {
+      typesToTry.push({ type: 'JAN', value: cleanUpc });
+    } else {
+      typesToTry.push({ type: 'UPC', value: cleanUpc });
+    }
+
+    for (const entry of typesToTry) {
+      try {
+        const url = `${CONFIG.apiBaseUrl}/catalog/2022-04-01/items?identifiers=${encodeURIComponent(entry.value)}&identifiersType=${entry.type}&marketplaceIds=${CONFIG.marketplaceId}&includedData=summaries`;
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'x-amz-access-token': accessToken,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.items && data.items.length > 0) {
+            const item = data.items[0];
+            const asin = item.asin;
+            const summary = item.summaries && item.summaries[0];
+            const brand = summary ? (summary.brandName || summary.brand || summary.manufacturer || '') : '';
+            const title = summary ? (summary.itemName || '') : '';
+            const fullTitle = brand ? `[${brand}] ${title}` : title;
+            return { asin, title: fullTitle, brand, matchedBy: entry.type };
+          }
+        }
+      } catch (e) {}
+    }
+  }
+
+  // 2. Title / Keyword Fallback Search if direct barcode lookup yielded no result
+  if (itemTitle && itemTitle.length > 3) {
+    try {
+      const cleanKeywords = itemTitle.replace(/[^\w\s]/gi, '').slice(0, 60).trim();
+      if (cleanKeywords) {
+        const url = `${CONFIG.apiBaseUrl}/catalog/2022-04-01/items?keywords=${encodeURIComponent(cleanKeywords)}&marketplaceIds=${CONFIG.marketplaceId}&includedData=summaries`;
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'x-amz-access-token': accessToken,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.items && data.items.length > 0) {
+            const item = data.items[0];
+            const asin = item.asin;
+            const summary = item.summaries && item.summaries[0];
+            const brand = summary ? (summary.brandName || summary.brand || summary.manufacturer || '') : '';
+            const title = summary ? (summary.itemName || '') : '';
+            const fullTitle = brand ? `[${brand}] ${title}` : title;
+            return { asin, title: fullTitle, brand, matchedBy: 'KEYWORD_TITLE' };
+          }
+        }
+      }
+    } catch (e) {}
+  }
+
   return null;
 }
 
@@ -273,8 +331,9 @@ app.post('/api/convert-upc', async (req, res) => {
     async function worker() {
       while (index < upcs.length) {
         const currentIndex = index++;
-        const rawUpc = upcs[currentIndex];
-        const match = await lookupUpcInAmazonCatalog(rawUpc, accessToken);
+        const itemInput = upcs[currentIndex];
+        const rawUpc = typeof itemInput === 'string' ? itemInput : (itemInput.upc || itemInput.barcode || '');
+        const match = await lookupUpcInAmazonCatalog(itemInput, accessToken);
 
         if (match && match.asin) {
           const checkResult = await checkSingleAsinWithRetry(match.asin, accessToken);
@@ -292,7 +351,7 @@ app.post('/api/convert-upc', async (req, res) => {
           results[currentIndex] = {
             upc: rawUpc,
             asin: null,
-            title: 'No Amazon ASIN Found',
+            title: typeof itemInput === 'object' && itemInput.title ? itemInput.title : 'No Amazon ASIN Found',
             brand: '',
             status: 'no_match',
             hasApprovalRoute: false,
@@ -356,12 +415,11 @@ async function lookupAsinBarcodes(asin, accessToken) {
 
     return { asin, title: fullTitle, brand, barcodes };
   } catch (e) {
-    console.error(`ASIN barcode lookup error for ${asin}:`, e.message);
     return null;
   }
 }
 
-// API Endpoint 3: ASIN → UPC/Barcode Lookup
+// API Endpoint 3: Reverse Lookup - Get UPCs for ASINs
 app.post('/api/asin-to-upc', async (req, res) => {
   const { asins } = req.body;
   if (!asins || !Array.isArray(asins)) {
@@ -377,30 +435,9 @@ app.post('/api/asin-to-upc', async (req, res) => {
     async function worker() {
       while (index < asins.length) {
         const currentIndex = index++;
-        const rawAsin = asins[currentIndex].trim().toUpperCase();
-        const match = await lookupAsinBarcodes(rawAsin, accessToken);
-
-        if (match && (match.barcodes.length > 0 || match.title)) {
-          results[currentIndex] = {
-            asin: rawAsin,
-            title: match.title || `ASIN ${rawAsin}`,
-            brand: match.brand || '',
-            barcodes: match.barcodes,
-            upc: match.barcodes.find(b => b.type === 'UPC')?.value || '',
-            ean: match.barcodes.find(b => b.type === 'EAN')?.value || '',
-            status: match.barcodes.length > 0 ? 'found' : 'no_barcode'
-          };
-        } else {
-          results[currentIndex] = {
-            asin: rawAsin,
-            title: 'No product found',
-            brand: '',
-            barcodes: [],
-            upc: '',
-            ean: '',
-            status: 'not_found'
-          };
-        }
+        const asin = asins[currentIndex];
+        const data = await lookupAsinBarcodes(asin, accessToken);
+        results[currentIndex] = data || { asin, title: `ASIN ${asin}`, brand: '', barcodes: [] };
         await delay(120);
       }
     }
@@ -413,13 +450,11 @@ app.post('/api/asin-to-upc', async (req, res) => {
     await Promise.all(workers);
     res.json({ results });
   } catch (error) {
-    console.error('Server error during ASIN→UPC lookup:', error);
+    console.error('Server error during ASIN to UPC lookup:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-
 app.listen(PORT, () => {
-  console.log(`✅ SP-API Backend Server running at http://localhost:${PORT}`);
-  console.log(`📂 Serving Web App Dashboard...`);
+  console.log(`🚀 Amazon Product Finder Server running on http://localhost:${PORT}`);
 });

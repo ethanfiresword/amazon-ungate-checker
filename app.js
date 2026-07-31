@@ -96,50 +96,15 @@
 
   // Helpers
   const validAsin = (a) => /^[A-Z0-9]{10}$/i.test((a || '').trim());
-
-  // Universal File Reader (supports .xlsx, .xls, .ods, .csv, .txt)
-  function readAnyFile(file, callback) {
-    if (!file) return callback('');
-    const ext = (file.name || '').split('.').pop().toLowerCase();
-    const isExcel = ['xlsx', 'xls', 'ods', 'xlsb'].includes(ext);
-
-    if (isExcel && typeof XLSX !== 'undefined') {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array', cellDates: false, raw: true });
-          let textParts = [];
-          workbook.SheetNames.forEach(sheetName => {
-            const sheet = workbook.Sheets[sheetName];
-            if (sheet) {
-              textParts.push(XLSX.utils.sheet_to_csv(sheet));
-            }
-          });
-          callback(textParts.join('\n'));
-        } catch (err) {
-          console.error('SheetJS parse error, falling back to text read:', err);
-          fallbackTextRead(file, callback);
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    } else {
-      fallbackTextRead(file, callback);
-    }
-  }
-
-  function fallbackTextRead(file, callback) {
-    const reader = new FileReader();
-    reader.onload = (e) => callback(e.target.result || '');
-    reader.readAsText(file);
-  }
+  const validUpc = (u) => /^\d{8,14}$/.test((u || '').trim());
 
   function parseAsins(text) {
     const lines = text.split(/[\n\r]+/);
-    const asins = [];
+    const items = [];
     const seen = new Set();
 
     let asinIdx = -1;
+    let upcIdx = -1;
     let titleIdx = -1;
     let brandIdx = -1;
 
@@ -148,6 +113,7 @@
       delimiter = detectDelimiter(lines[0]);
       const headerCols = splitCsvLine(lines[0], delimiter).map(c => c.trim().replace(/^["']|["']$/g, '').toLowerCase());
       asinIdx = headerCols.findIndex(c => c === 'asin');
+      upcIdx = headerCols.findIndex(c => c === 'upc' || c === 'ean' || c === 'gtin' || c === 'barcode');
       titleIdx = headerCols.findIndex(c => c === 'title' || c === 'product name' || c === 'item name' || c === 'name');
       brandIdx = headerCols.findIndex(c => c === 'brand' || c === 'manufacturer');
     }
@@ -158,27 +124,53 @@
 
       const cols = splitCsvLine(line, delimiter).map(c => c.trim().replace(/^["']|["']$/g, ''));
       let asin = '';
+      let upc = '';
       let title = '';
       let brand = '';
 
       if (asinIdx !== -1 && cols[asinIdx]) {
         const match = cols[asinIdx].match(/\b([A-Z0-9]{10})\b/i);
         if (match) asin = match[1].toUpperCase();
-        if (titleIdx !== -1 && cols[titleIdx]) title = cols[titleIdx];
-        if (brandIdx !== -1 && cols[brandIdx]) brand = cols[brandIdx];
-      } else {
-        const match = line.match(/\b([A-Z0-9]{10})\b/i);
-        if (match) asin = match[1].toUpperCase();
+      }
+      if (upcIdx !== -1 && cols[upcIdx]) {
+        const clean = cols[upcIdx].replace(/\D/g, '');
+        if (validUpc(clean)) upc = clean;
+      }
+      if (titleIdx !== -1 && cols[titleIdx]) title = cols[titleIdx];
+      if (brandIdx !== -1 && cols[brandIdx]) brand = cols[brandIdx];
+
+      if (!asin && !upc) {
+        const trimmedLine = line.trim();
+        // If the line is purely digits (8-14 chars), it's a barcode — never try ASIN regex
+        if (/^\d{8,14}$/.test(trimmedLine)) {
+          upc = trimmedLine;
+        } else {
+          // Only try ASIN regex on lines that contain at least one letter
+          const asinMatch = trimmedLine.match(/\b([A-Z][A-Z0-9]{9}|[A-Z0-9]{9}[A-Z]|B[A-Z0-9]{9})\b/i);
+          if (asinMatch && /[A-Za-z]/.test(asinMatch[1])) {
+            asin = asinMatch[1].toUpperCase();
+          } else {
+            // Last resort: try to extract a barcode from mixed content
+            const digitsMatch = trimmedLine.match(/\b(\d{8,14})\b/);
+            if (digitsMatch) {
+              upc = digitsMatch[1];
+            }
+          }
+        }
       }
 
-      if (validAsin(asin) && !seen.has(asin)) {
+      if (asin && validAsin(asin) && !seen.has(asin)) {
         seen.add(asin);
-        asins.push(asin);
         const fullTitle = brand ? `[${brand}] ${title}` : (title || `ASIN ${asin}`);
         asinTitleMap[asin] = fullTitle;
+        items.push({ type: 'asin', value: asin, title: fullTitle, brand });
+      } else if (upc && validUpc(upc) && !seen.has(upc)) {
+        seen.add(upc);
+        const fullTitle = brand ? `[${brand}] ${title}` : title;
+        items.push({ type: 'upc', value: upc, upc, title: fullTitle, brand });
       }
     }
-    return asins;
+    return items;
   }
 
   // Textarea Live Detection
@@ -187,8 +179,8 @@
 
   if (bulkPaste) {
     bulkPaste.addEventListener('input', () => {
-      const asins = parseAsins(bulkPaste.value);
-      pasteCount.textContent = `${asins.length} ASIN${asins.length !== 1 ? 's' : ''} detected`;
+      const items = parseAsins(bulkPaste.value);
+      pasteCount.textContent = `${items.length} item${items.length !== 1 ? 's' : ''} detected`;
     });
   }
 
@@ -196,7 +188,7 @@
   if (btnClearInput) {
     btnClearInput.addEventListener('click', () => {
       bulkPaste.value = '';
-      pasteCount.textContent = '0 ASINs detected';
+      pasteCount.textContent = '0 items detected';
     });
   }
 
@@ -239,15 +231,52 @@
 
   function handleFile(file) {
     readAnyFile(file, (text) => {
-      const asins = parseAsins(text);
-      if (asins.length > 0) {
-        bulkPaste.value = asins.join('\n');
-        pasteCount.textContent = `${asins.length} ASINs loaded from ${file.name}`;
-        showToast(`Loaded ${asins.length} ASINs from ${file.name}`, 'success');
+      const items = parseAsins(text);
+      if (items.length > 0) {
+        bulkPaste.value = items.map(it => it.upc || it.value).join('\n');
+        pasteCount.textContent = `${items.length} items loaded from ${file.name}`;
+        showToast(`Loaded ${items.length} items from ${file.name}`, 'success');
       } else {
-        showToast('No valid ASINs found in file', 'error');
+        showToast('No valid ASINs or UPCs found in file', 'error');
       }
     });
+  }
+
+  // Universal File Reader (supports .xlsx, .xls, .ods, .csv, .txt)
+  function readAnyFile(file, callback) {
+    if (!file) return callback('');
+    const ext = (file.name || '').split('.').pop().toLowerCase();
+    const isExcel = ['xlsx', 'xls', 'ods', 'xlsb'].includes(ext);
+
+    if (isExcel && typeof XLSX !== 'undefined') {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array', cellDates: false, raw: true });
+          let textParts = [];
+          workbook.SheetNames.forEach(sheetName => {
+            const sheet = workbook.Sheets[sheetName];
+            if (sheet) {
+              textParts.push(XLSX.utils.sheet_to_csv(sheet));
+            }
+          });
+          callback(textParts.join('\n'));
+        } catch (err) {
+          console.error('SheetJS parse error, falling back to text read:', err);
+          fallbackTextRead(file, callback);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      fallbackTextRead(file, callback);
+    }
+  }
+
+  function fallbackTextRead(file, callback) {
+    const reader = new FileReader();
+    reader.onload = (e) => callback(e.target.result || '');
+    reader.readAsText(file);
   }
 
   // Start Bulk Scan Execution (Chunked for 2,800+ ASINs)
@@ -271,9 +300,9 @@
 
   if (btnStart) {
     btnStart.addEventListener('click', async () => {
-      const asins = parseAsins(bulkPaste.value);
-      if (asins.length === 0) {
-        showToast('Please enter or drop a list of ASINs first', 'error');
+      const items = parseAsins(bulkPaste.value);
+      if (items.length === 0) {
+        showToast('Please enter or drop a list of ASINs or UPCs first', 'error');
         return;
       }
 
@@ -283,57 +312,66 @@
 
       progressCard.style.display = 'flex';
       progressBarFill.style.width = '0%';
-      progressStatus.textContent = `Starting batch scan for ${asins.length} ASINs...`;
-      progressCount.textContent = `0 / ${asins.length}`;
+      progressStatus.textContent = `Starting batch scan for ${items.length} items...`;
+      progressCount.textContent = `0 / ${items.length}`;
       progressEta.textContent = 'Est. time: --';
 
-      const CHUNK_SIZE = 50; // 50 ASINs per batch with 6 parallel workers
+      const CHUNK_SIZE = 50;
       const startTime = Date.now();
 
-      for (let i = 0; i < asins.length; i += CHUNK_SIZE) {
+      for (let i = 0; i < items.length; i += CHUNK_SIZE) {
         if (cancelScan) {
           showToast('Scan stopped by user', 'info');
           break;
         }
 
-        const chunk = asins.slice(i, i + CHUNK_SIZE);
+        const chunk = items.slice(i, i + CHUNK_SIZE);
+        const asinsChunk = chunk.filter(it => it.type === 'asin').map(it => it.value);
+        const upcsChunk = chunk.filter(it => it.type === 'upc').map(it => ({ upc: it.value, title: it.title }));
+
         const processedCount = scannedResults.length;
-        const pct = Math.round((processedCount / asins.length) * 100);
+        const pct = Math.round((processedCount / items.length) * 100);
 
         progressBarFill.style.width = `${pct}%`;
-        progressCount.textContent = `${processedCount} / ${asins.length}`;
+        progressCount.textContent = `${processedCount} / ${items.length}`;
 
-        // Live ETA Calculation
         if (processedCount > 0) {
           const elapsedSec = (Date.now() - startTime) / 1000;
           const ratePerSec = processedCount / elapsedSec;
-          const remainingSec = Math.ceil((asins.length - processedCount) / ratePerSec);
+          const remainingSec = Math.ceil((items.length - processedCount) / ratePerSec);
           const mins = Math.floor(remainingSec / 60);
           const secs = remainingSec % 60;
           progressEta.textContent = `Est. time: ${mins > 0 ? `${mins}m ${secs}s` : `${secs}s`}`;
         }
 
-        progressStatus.textContent = `Scanning batch ${Math.floor(i / CHUNK_SIZE) + 1} of ${Math.ceil(asins.length / CHUNK_SIZE)}...`;
+        progressStatus.textContent = `Scanning batch ${Math.floor(i / CHUNK_SIZE) + 1} of ${Math.ceil(items.length / CHUNK_SIZE)}...`;
 
         try {
-          const res = await fetch('/api/check', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ asins: chunk })
-          });
-
-          if (!res.ok) {
-            const errText = await res.text();
-            throw new Error(errText);
+          if (asinsChunk.length > 0) {
+            const res = await fetch('/api/check', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ asins: asinsChunk })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              scannedResults.push(...(data.results || []));
+            }
           }
 
-          const data = await res.json();
-          const chunkResults = data.results || [];
-          scannedResults.push(...chunkResults);
+          if (upcsChunk.length > 0) {
+            const res = await fetch('/api/convert-upc', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ upcs: upcsChunk })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              scannedResults.push(...(data.results || []));
+            }
+          }
 
-          // LIVE UPDATE UI: Table and counter update immediately after every batch!
           renderResults();
-
         } catch (err) {
           console.error('Batch error:', err);
           showToast(`Batch error: ${err.message}`, 'error');
@@ -341,7 +379,7 @@
       }
 
       progressBarFill.style.width = '100%';
-      progressCount.textContent = `${scannedResults.length} / ${asins.length}`;
+      progressCount.textContent = `${scannedResults.length} / ${items.length}`;
       progressStatus.textContent = cancelScan ? 'Scan Stopped' : 'Scan Complete!';
       progressEta.textContent = 'Done!';
 
@@ -604,9 +642,11 @@
       str = str.replace(/[\-\s]/g, '');
 
       if (/^\d{8,14}$/.test(str)) {
-        // Normalize: strip leading zeros so all formats become the same key
-        const normalized = str.replace(/^0+/, '') || '0';
-        if (!seen.has(normalized)) { seen.add(normalized); upcs.push(normalized); }
+        // IMPORTANT: Do NOT strip leading zeros! UPC-A is always 12 digits,
+        // EAN-13 is always 13 digits. Stripping zeros makes them invalid
+        // and Amazon's API will reject them (e.g. 049056102016 -> 49056102016 = broken).
+        // Only deduplicate by the full original barcode string.
+        if (!seen.has(str)) { seen.add(str); upcs.push(str); }
       }
     }
 
@@ -625,9 +665,9 @@
     const matches = cleanedText.match(/\b\d{8,14}\b/g) || [];
     for (const m of matches) addCode(m);
 
-    // Also catch 11-digit numbers (Excel-stripped UPCs missing leading zero)
+    // Also catch 11-digit numbers (Excel-stripped UPCs missing leading zero) — re-pad them
     const m11 = cleanedText.match(/\b\d{11}\b/g) || [];
-    for (const m of m11) addCode(m);
+    for (const m of m11) addCode('0' + m); // Re-add the stripped leading zero to make valid 12-digit UPC
 
     return upcs;
   }
