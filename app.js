@@ -1369,12 +1369,14 @@
   const matcherWsCount = $('#matcher-ws-count');
   const matcherOverlapNote = $('#matcher-overlap-note');
 
-  // Canonical comparison helper (aligns 11-digit, 12-digit, and 13-digit UPC/EANs without mutating original barcodes)
+  // Canonical comparison helper (aligns 11-digit, 12-digit, 13-digit, and 14-digit UPC/EAN/GTINs without mutating original barcodes)
   function getMatchKey(str) {
     if (!str) return '';
     let s = String(str).trim();
     if (/^\d{11}$/.test(s)) s = '0' + s;
-    if (/^\d{13}$/.test(s) && s.startsWith('0')) s = s.slice(1);
+    while (s.length > 12 && s.startsWith('0')) {
+      s = s.slice(1);
+    }
     return s;
   }
 
