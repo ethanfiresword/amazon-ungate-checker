@@ -267,7 +267,10 @@ async function lookupUpcInAmazonCatalog(itemInput, accessToken) {
     itemTitle = itemInput.title || itemInput.name || itemInput.productName || '';
   }
 
-  const cleanUpc = (rawUpc || '').trim().replace(/\D/g, '');
+  let cleanUpc = (rawUpc || '').trim().replace(/\D/g, '');
+  if (cleanUpc.length === 11) {
+    cleanUpc = '0' + cleanUpc;
+  }
 
   // 1. Try identifier-based lookups (UPC, GTIN-14, EAN)
   if (cleanUpc) {

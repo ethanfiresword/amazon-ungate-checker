@@ -1369,23 +1369,29 @@
   const matcherWsCount = $('#matcher-ws-count');
   const matcherOverlapNote = $('#matcher-overlap-note');
 
+  // Canonical comparison helper (aligns 11-digit, 12-digit, and 13-digit UPC/EANs without mutating original barcodes)
+  function getMatchKey(str) {
+    if (!str) return '';
+    let s = String(str).trim();
+    if (/^\d{11}$/.test(s)) s = '0' + s;
+    if (/^\d{13}$/.test(s) && s.startsWith('0')) s = s.slice(1);
+    return s;
+  }
+
   function refreshMatcherCounts() {
     const myMap = matcherMyUpcs ? parseUpcMap(matcherMyUpcs.value) : new Map();
     const wsMap = matcherWsUpcs ? parseUpcMap(matcherWsUpcs.value) : new Map();
     
-    // Normalize helper for local comparison (strip leading zeros)
-    const norm = (s) => s.replace(/^0+/, '');
-    
-    // Map normalized wholesaler keys to original keys
+    // Map canonical wholesaler keys to original keys
     const wsNormMap = new Map();
     for (const k of wsMap.keys()) {
-      wsNormMap.set(norm(k), k);
+      wsNormMap.set(getMatchKey(k), k);
     }
     
-    // Find intersection using normalized keys
+    // Find intersection using canonical keys
     const overlap = [];
     for (const k of myMap.keys()) {
-      if (wsNormMap.has(norm(k))) {
+      if (wsNormMap.has(getMatchKey(k))) {
         overlap.push(k);
       }
     }
@@ -1585,28 +1591,34 @@
       if (myMap.size === 0) { showToast('Paste your brand list on the left first', 'error'); return; }
       if (wsMap.size === 0) { showToast('Paste the wholesaler price list on the right first', 'error'); return; }
 
-      // Normalize helper for local comparison (strip leading zeros)
-      const norm = (s) => s.replace(/^0+/, '');
-      
+      // Step 1: Find intersection using canonical keys
       const wsNormMap = new Map();
       for (const [k, v] of wsMap.entries()) {
-        wsNormMap.set(norm(k), v);
+        wsNormMap.set(getMatchKey(k), v);
       }
 
-      // Step 1: Find intersection using normalized keys
       const overlapData = [];
       for (const [myKey, myVal] of myMap.entries()) {
-        const myNorm = norm(myKey);
-        if (wsNormMap.has(myNorm)) {
-          // Prioritize wholesaler item if it has a title (useful for fallback search)
-          const wsVal = wsNormMap.get(myNorm);
+        const myKeyCanonical = getMatchKey(myKey);
+        if (wsNormMap.has(myKeyCanonical)) {
+          const wsVal = wsNormMap.get(myKeyCanonical);
+          let selected = wsVal;
           if (typeof wsVal === 'object' && wsVal.title) {
-            overlapData.push(wsVal);
+            selected = { ...wsVal };
           } else if (typeof myVal === 'object' && myVal.title) {
-            overlapData.push(myVal);
+            selected = { ...myVal };
           } else {
-            overlapData.push(myKey);
+            selected = typeof wsVal === 'object' ? wsVal.upc : (wsVal || myKey);
           }
+
+          // Ensure 11-digit UPCs are padded to valid 12-digit UPCs so Amazon API accepts them
+          if (typeof selected === 'object') {
+            if (/^\d{11}$/.test(selected.upc)) selected.upc = '0' + selected.upc;
+          } else if (typeof selected === 'string') {
+            if (/^\d{11}$/.test(selected)) selected = '0' + selected;
+          }
+
+          overlapData.push(selected);
         }
       }
 
