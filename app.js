@@ -635,7 +635,7 @@
 
       const upcColIdx = possibleHeaders.findIndex(c => ['upc', 'ean', 'gtin', 'barcode', 'code', 'item_upc', 'upc_code'].includes(c));
       const titleColIdx = possibleHeaders.findIndex(c => ['title', 'name', 'product', 'product name', 'product_name', 'description', 'item', 'item name', 'item_name', 'product title', 'product_title'].includes(c));
-      const costColIdx = possibleHeaders.findIndex(c => ['cost', 'wholesale', 'wholesale price', 'wholesaler price', 'wsp', 'unit cost', 'price', 'unit_cost', 'cost_price', 'our price', 'our_price', 'whl price', 'wholesale_price'].includes(c));
+      const costColIdx = possibleHeaders.findIndex(c => ['cost', 'wholesale', 'wholesale price', 'wholesaler price', 'wsp', 'unit cost', 'price', 'unit_cost', 'cost_price', 'our price', 'our_price', 'whl price', 'wholesale_price', 'dealer', 'dealer price', 'dealer_price', 'case cost', 'cost/unit', 'unit price', 'price each', 'net cost', 'whls', 'map', 'retail', 'msrp'].some(h => c.includes(h) || h.includes(c)));
 
       if (upcColIdx !== -1) {
         // CSV mode: we have a header row with a UPC column
@@ -706,23 +706,32 @@
       }
     }
 
-    // Plain-text line-by-line scanner for UPC + Price pairs (e.g. 071383684601  $14.99 or tab-separated)
+    // Plain-text line-by-line scanner for UPC + Price pairs (e.g. 071383684601  $14.99 or tab/space/comma separated)
     for (const line of lines) {
-      const barcodeMatch = line.match(/\b\d{11,14}\b/);
+      const cleanLine = line.replace(/,/g, '');
+      const barcodeMatch = cleanLine.match(/\b\d{11,14}\b/);
       if (barcodeMatch) {
         let rawUpc = barcodeMatch[0];
         if (rawUpc.length === 11) rawUpc = '0' + rawUpc;
         if (!seen.has(rawUpc)) {
           seen.add(rawUpc);
-          const priceMatch = line.match(/\$?\b(\d+\.\d{2})\b/);
-          if (priceMatch) {
-            const cost = parseFloat(priceMatch[1]);
-            if (!isNaN(cost) && cost > 0) {
-              upcs.push({ upc: rawUpc, cost });
-              continue;
+          const prices = cleanLine.match(/\$?\b(\d+(?:\.\d{1,2})?)\b/g) || [];
+          let cost = null;
+          for (const p of prices) {
+            const numStr = p.replace('$', '');
+            if (numStr !== rawUpc && numStr !== rawUpc.slice(1)) {
+              const val = parseFloat(numStr);
+              if (!isNaN(val) && val > 0 && val < 50000) {
+                cost = val;
+                break;
+              }
             }
           }
-          upcs.push(rawUpc);
+          if (cost !== null) {
+            upcs.push({ upc: rawUpc, cost });
+          } else {
+            upcs.push(rawUpc);
+          }
         }
       }
     }
@@ -1652,20 +1661,24 @@
         const myKeyCanonical = getMatchKey(myKey);
         if (wsNormMap.has(myKeyCanonical)) {
           const wsVal = wsNormMap.get(myKeyCanonical);
-          let selected = wsVal;
-          if (typeof wsVal === 'object' && wsVal.title) {
+          let selected;
+          if (typeof wsVal === 'object') {
             selected = { ...wsVal };
-          } else if (typeof myVal === 'object' && myVal.title) {
+            if (typeof myVal === 'object') {
+              if (myVal.title && !selected.title) selected.title = myVal.title;
+              if (myVal.cost && !selected.cost) selected.cost = myVal.cost;
+            }
+          } else if (typeof myVal === 'object') {
             selected = { ...myVal };
           } else {
-            selected = typeof wsVal === 'object' ? wsVal.upc : (wsVal || myKey);
+            selected = { upc: wsVal || myKey };
           }
 
           // Ensure 11-digit UPCs are padded to valid 12-digit UPCs so Amazon API accepts them
           if (typeof selected === 'object') {
             if (/^\d{11}$/.test(selected.upc)) selected.upc = '0' + selected.upc;
           } else if (typeof selected === 'string') {
-            if (/^\d{11}$/.test(selected)) selected = '0' + selected;
+            selected = { upc: /^\d{11}$/.test(selected) ? '0' + selected : selected };
           }
 
           overlapData.push(selected);
