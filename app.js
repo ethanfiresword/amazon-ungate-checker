@@ -706,6 +706,27 @@
       }
     }
 
+    // Plain-text line-by-line scanner for UPC + Price pairs (e.g. 071383684601  $14.99 or tab-separated)
+    for (const line of lines) {
+      const barcodeMatch = line.match(/\b\d{11,14}\b/);
+      if (barcodeMatch) {
+        let rawUpc = barcodeMatch[0];
+        if (rawUpc.length === 11) rawUpc = '0' + rawUpc;
+        if (!seen.has(rawUpc)) {
+          seen.add(rawUpc);
+          const priceMatch = line.match(/\$?\b(\d+\.\d{2})\b/);
+          if (priceMatch) {
+            const cost = parseFloat(priceMatch[1]);
+            if (!isNaN(cost) && cost > 0) {
+              upcs.push({ upc: rawUpc, cost });
+              continue;
+            }
+          }
+          upcs.push(rawUpc);
+        }
+      }
+    }
+
     // Comprehensive global scan on the entire text
     const cleanedText = text.replace(/(\d[\d.]*)[Ee]([+\-]?\d+)/g, (match) => {
       try {
@@ -727,7 +748,7 @@
 
     // Also catch 11-digit numbers (Excel-stripped UPCs missing leading zero) — re-pad them
     const m11 = cleanedText.match(/\b\d{11}\b/g) || [];
-    for (const m of m11) addCode('0' + m); // Re-add the stripped leading zero to make valid 12-digit UPC
+    for (const m of m11) addCode('0' + m);
 
     return upcs;
   }
