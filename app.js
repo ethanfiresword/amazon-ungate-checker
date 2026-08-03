@@ -706,9 +706,10 @@
       }
     }
 
-    // Plain-text line-by-line scanner for UPC + Price pairs (e.g. 46878710047   16.41 or tab/space/comma separated)
+    // Plain-text line-by-line scanner for UPC + Price pairs (e.g. 7-92850-02730-5   16.41 or tab/space/comma separated)
     for (const line of lines) {
-      const cleanLine = line.replace(/,/g, '');
+      // Strip hyphens between digits (e.g. 7-92850-02730-5 -> 792850027305)
+      const cleanLine = line.replace(/(\d)-(\d)/g, '$1$2').replace(/(\d)-(\d)/g, '$1$2').replace(/,/g, '');
       const barcodeMatch = cleanLine.match(/\b\d{11,14}\b/);
       if (barcodeMatch) {
         const rawBarcode = barcodeMatch[0];
@@ -1412,10 +1413,10 @@
   const matcherWsCount = $('#matcher-ws-count');
   const matcherOverlapNote = $('#matcher-overlap-note');
 
-  // Canonical comparison helper (aligns 11-digit, 12-digit, 13-digit, and 14-digit UPC/EAN/GTINs without mutating original barcodes)
+  // Canonical comparison helper (aligns 11-digit, 12-digit, 13-digit, and 14-digit UPC/EAN/GTINs, stripping hyphens without mutating original barcodes)
   function getMatchKey(str) {
     if (!str) return '';
-    let s = String(str).trim();
+    let s = String(str).trim().replace(/[\-\s]/g, '');
     if (/^\d{11}$/.test(s)) s = '0' + s;
     while (s.length > 12 && s.startsWith('0')) {
       s = s.slice(1);
