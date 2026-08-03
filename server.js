@@ -376,6 +376,36 @@ app.post('/api/check', async (req, res) => {
   }
 });
 
+// Fetch Amazon Buy Box / Competitive Price for an ASIN
+async function lookupAsinPrice(asin, accessToken) {
+  if (!asin) return null;
+  try {
+    const url = `${CONFIG.apiBaseUrl}/products/pricing/v0/competitivePrice?MarketplaceId=${CONFIG.marketplaceId}&ItemType=Asin&Asins=${encodeURIComponent(asin)}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-amz-access-token': accessToken,
+        'Accept': 'application/json'
+      }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const payload = data.payload && data.payload[0];
+      if (payload && payload.Product && payload.Product.CompetitivePricing) {
+        const prices = payload.Product.CompetitivePricing.CompetitivePrices || [];
+        if (prices.length > 0) {
+          const p = prices[0].Price;
+          const listingPrice = p && p.LandedPrice ? parseFloat(p.LandedPrice.Amount) : (p && p.ListingPrice ? parseFloat(p.ListingPrice.Amount) : null);
+          return listingPrice;
+        }
+      }
+    }
+  } catch (e) {
+    console.error(`Error fetching price for ASIN ${asin}:`, e.message);
+  }
+  return null;
+}
+
 // API Endpoint 2: Convert UPCs to ASINs & Check Ungating Eligibility
 app.post('/api/convert-upc', async (req, res) => {
   const { upcs } = req.body;
@@ -398,11 +428,13 @@ app.post('/api/convert-upc', async (req, res) => {
 
         if (match && match.asin) {
           const checkResult = await checkSingleAsinWithRetry(match.asin, accessToken);
+          const price = await lookupAsinPrice(match.asin, accessToken);
           results[currentIndex] = {
             upc: rawUpc,
             asin: match.asin,
             title: checkResult.title || match.title || `ASIN ${match.asin}`,
             brand: checkResult.brand || match.brand || '',
+            amazonPrice: price,
             status: checkResult.status,
             hasApprovalRoute: checkResult.hasApprovalRoute,
             reasonCode: checkResult.reasonCode || '',
@@ -414,6 +446,7 @@ app.post('/api/convert-upc', async (req, res) => {
             asin: null,
             title: typeof itemInput === 'object' && itemInput.title ? itemInput.title : 'No Amazon ASIN Found',
             brand: '',
+            amazonPrice: null,
             status: 'no_match',
             hasApprovalRoute: false,
             reasonCode: 'NO_AMAZON_MATCH',

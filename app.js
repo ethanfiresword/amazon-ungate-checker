@@ -635,6 +635,7 @@
 
       const upcColIdx = possibleHeaders.findIndex(c => ['upc', 'ean', 'gtin', 'barcode', 'code', 'item_upc', 'upc_code'].includes(c));
       const titleColIdx = possibleHeaders.findIndex(c => ['title', 'name', 'product', 'product name', 'product_name', 'description', 'item', 'item name', 'item_name', 'product title', 'product_title'].includes(c));
+      const costColIdx = possibleHeaders.findIndex(c => ['cost', 'wholesale', 'wholesale price', 'wholesaler price', 'wsp', 'unit cost', 'price', 'unit_cost', 'cost_price', 'our price', 'our_price', 'whl price', 'wholesale_price'].includes(c));
 
       if (upcColIdx !== -1) {
         // CSV mode: we have a header row with a UPC column
@@ -657,9 +658,15 @@
           seen.add(rawUpc);
 
           const title = titleColIdx !== -1 ? (cols[titleColIdx] || '').trim() : '';
+          let cost = null;
+          if (costColIdx !== -1) {
+            const rawCost = (cols[costColIdx] || '').trim().replace(/[^0-9.]/g, '');
+            const parsedCost = parseFloat(rawCost);
+            if (!isNaN(parsedCost) && parsedCost > 0) cost = parsedCost;
+          }
 
-          if (title) {
-            upcs.push({ upc: rawUpc, title });
+          if (title || cost !== null) {
+            upcs.push({ upc: rawUpc, title, cost });
           } else {
             upcs.push(rawUpc);
           }
@@ -1495,12 +1502,14 @@
     if (!tbody) return;
 
     const ungated    = matcherResults.filter(r => r.status === 'ungated');
+    const profitable = matcherResults.filter(r => r.profit !== null && r.profit > 0 && r.roi !== null && r.roi >= 20);
     const approval   = matcherResults.filter(r => r.status === 'gated' && r.hasApprovalRoute);
     const restricted = matcherResults.filter(r => (r.status === 'gated' && !r.hasApprovalRoute) || r.status === 'error' || r.status === 'no_match');
 
     // Update badges
     const bAll = $('#matcher-badge-all');       if (bAll) bAll.textContent = matcherResults.length;
     const bUn  = $('#matcher-badge-ungated');   if (bUn)  bUn.textContent  = ungated.length;
+    const bPr  = $('#matcher-badge-profitable');if (bPr)  bPr.textContent  = profitable.length;
     const bAp  = $('#matcher-badge-approval');  if (bAp)  bAp.textContent  = approval.length;
     const bRe  = $('#matcher-badge-restricted');if (bRe)  bRe.textContent  = restricted.length;
 
@@ -1511,6 +1520,7 @@
     // Filter by tab
     let filtered = matcherResults;
     if (matcherTab === 'matcher-ungated')    filtered = ungated;
+    if (matcherTab === 'matcher-profitable') filtered = profitable;
     if (matcherTab === 'matcher-approval')   filtered = approval;
     if (matcherTab === 'matcher-restricted') filtered = restricted;
 
@@ -1524,7 +1534,7 @@
     }
 
     if (filtered.length === 0) {
-      tbody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state">
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="8"><div class="empty-state">
         <div class="empty-icon">🔗</div>
         <div class="empty-title">${matcherResults.length === 0 ? 'No Matches Yet' : 'No Results in This Category'}</div>
         <div class="empty-desc">${matcherResults.length === 0
@@ -1566,11 +1576,28 @@
            <a href="https://keepa.com/#!product/1-${r.asin}" target="_blank" class="a-link">Keepa</a>`
         : '';
 
+      const costCell = r.cost != null ? `$${Number(r.cost).toFixed(2)}` : '<span class="t-muted">—</span>';
+      const amazonPriceCell = r.amazonPrice != null ? `$${Number(r.amazonPrice).toFixed(2)}` : '<span class="t-muted">—</span>';
+      
+      let profitCell = '<span class="t-muted">—</span>';
+      if (r.profit != null && r.roi != null) {
+        if (r.roi >= 20) {
+          profitCell = `<span class="badge badge-ungated" style="font-weight:600;">+$${r.profit.toFixed(2)} (+${r.roi.toFixed(0)}% ROI)</span>`;
+        } else if (r.profit > 0) {
+          profitCell = `<span class="badge badge-softgated" style="font-weight:600;">+$${r.profit.toFixed(2)} (+${r.roi.toFixed(0)}% ROI)</span>`;
+        } else {
+          profitCell = `<span class="badge badge-hardgated" style="font-weight:600;">-$${Math.abs(r.profit).toFixed(2)} (${r.roi.toFixed(0)}% ROI)</span>`;
+        }
+      }
+
       return `
         <tr>
           <td><span class="mono" style="font-size:0.88rem;">${r.upc}</span></td>
           <td>${asinCell}</td>
           <td class="cell-title" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title || '—'}</td>
+          <td>${costCell}</td>
+          <td>${amazonPriceCell}</td>
+          <td>${profitCell}</td>
           <td>${badge}<br><small style="margin-top:3px;display:block;">${detail}</small></td>
           <td style="text-align:right">
             <div class="action-cluster">
@@ -1688,20 +1715,36 @@
 
       for (const item of overlapData) {
         const upc = typeof item === 'object' ? item.upc : item;
+        const cost = typeof item === 'object' && item.cost ? item.cost : null;
         const d = upcToData[upc];
         if (d) {
+          const amazonPrice = d.amazonPrice || null;
+          let profit = null;
+          let roi = null;
+          if (cost && amazonPrice) {
+            const refFee = amazonPrice * 0.15;
+            const fbaFee = Math.max(3.75, Number((amazonPrice * 0.12).toFixed(2)));
+            const payout = amazonPrice - refFee - fbaFee;
+            profit = Number((payout - cost).toFixed(2));
+            roi = Number(((profit / cost) * 100).toFixed(1));
+          }
+
           matcherResults.push({
             upc,
             asin:            d.asin || null,
             title:           d.title || '',
             brand:           d.brand || '',
+            cost:            cost,
+            amazonPrice:     amazonPrice,
+            profit:          profit,
+            roi:             roi,
             status:          d.status || 'no_match',
             hasApprovalRoute: d.hasApprovalRoute || false,
             reasonCode:      d.reasonCode || '',
             reasons:         d.reasons || []
           });
         } else {
-          matcherResults.push({ upc, asin: null, title: 'No Amazon match', brand: '', status: 'no_match', hasApprovalRoute: false, reasonCode: '', reasons: [] });
+          matcherResults.push({ upc, asin: null, title: 'No Amazon match', brand: '', cost, amazonPrice: null, profit: null, roi: null, status: 'no_match', hasApprovalRoute: false, reasonCode: '', reasons: [] });
         }
       }
 
@@ -1725,10 +1768,14 @@
     btnExportMatcherCsv.addEventListener('click', () => {
       if (matcherResults.length === 0) { showToast('No results to export', 'info'); return; }
       // Use ="VALUE" to prevent Excel from converting barcodes to scientific notation
-      let csv = 'UPC,ASIN,Product Title,Ungating Status,Has Approval Route,Amazon Link\n';
+      let csv = 'UPC,ASIN,Product Title,Wholesale Cost,Amazon Price,Est FBA Net Profit,Est ROI %,Ungating Status,Has Approval Route,Amazon Link\n';
       matcherResults.forEach(r => {
         const link = r.asin ? `https://www.amazon.com/dp/${r.asin}` : '';
-        csv += `="${r.upc}","${r.asin||''}","${(r.title||'').replace(/"/g,'""')}","${r.status}","${r.hasApprovalRoute ? 'YES' : 'NO'}","${link}"\n`;
+        const costStr = r.cost != null ? r.cost.toFixed(2) : '';
+        const priceStr = r.amazonPrice != null ? r.amazonPrice.toFixed(2) : '';
+        const profitStr = r.profit != null ? r.profit.toFixed(2) : '';
+        const roiStr = r.roi != null ? r.roi.toFixed(1) + '%' : '';
+        csv += `="${r.upc}","${r.asin||''}","${(r.title||'').replace(/"/g,'""')}","${costStr}","${priceStr}","${profitStr}","${roiStr}","${r.status}","${r.hasApprovalRoute ? 'YES' : 'NO'}","${link}"\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);

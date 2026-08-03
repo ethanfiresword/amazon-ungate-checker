@@ -481,6 +481,9 @@
             <button class="f-btn" data-tab="matcher-ungated">
               ✅ Ungated <span class="f-count" id="matcher-badge-ungated">0</span>
             </button>
+            <button class="f-btn" data-tab="matcher-profitable">
+              🟢 Profitable <span class="f-count" id="matcher-badge-profitable">0</span>
+            </button>
             <button class="f-btn" data-tab="matcher-approval">
               ⚠️ Approval <span class="f-count" id="matcher-badge-approval">0</span>
             </button>
@@ -501,7 +504,10 @@
               <tr>
                 <th>Matched UPC</th>
                 <th>Amazon ASIN</th>
-                <th style="width:30%">Product Title</th>
+                <th style="width:25%">Product Title</th>
+                <th>Wholesale Cost</th>
+                <th>Amazon Price</th>
+                <th>Est. FBA Profit (ROI)</th>
                 <th>Ungating Status</th>
                 <th style="text-align:right">Actions</th>
               </tr>
@@ -528,6 +534,6 @@
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>
