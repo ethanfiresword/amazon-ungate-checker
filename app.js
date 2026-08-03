@@ -1706,7 +1706,7 @@
       }
 
       if (progFill) progFill.style.width = '100%';
-      if (progCount) progCount.textContent = `${matcherResults.length} / ${overlap.length}`;
+      if (progCount) progCount.textContent = `${matcherResults.length} / ${overlapData.length}`;
       if (progStatus) progStatus.textContent = 'Match complete!';
       if (progEta) progEta.textContent = 'Done';
 
