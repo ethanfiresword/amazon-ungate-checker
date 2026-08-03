@@ -706,20 +706,23 @@
       }
     }
 
-    // Plain-text line-by-line scanner for UPC + Price pairs (e.g. 071383684601  $14.99 or tab/space/comma separated)
+    // Plain-text line-by-line scanner for UPC + Price pairs (e.g. 46878710047   16.41 or tab/space/comma separated)
     for (const line of lines) {
       const cleanLine = line.replace(/,/g, '');
       const barcodeMatch = cleanLine.match(/\b\d{11,14}\b/);
       if (barcodeMatch) {
-        let rawUpc = barcodeMatch[0];
-        if (rawUpc.length === 11) rawUpc = '0' + rawUpc;
-        if (!seen.has(rawUpc)) {
+        const rawBarcode = barcodeMatch[0];
+        const rawUpc = rawBarcode.length === 11 ? '0' + rawBarcode : rawBarcode;
+        
+        if (!seen.has(rawUpc) && !seen.has(rawBarcode)) {
+          seen.add(rawBarcode);
           seen.add(rawUpc);
+          
           const prices = cleanLine.match(/\$?\b(\d+(?:\.\d{1,2})?)\b/g) || [];
           let cost = null;
           for (const p of prices) {
             const numStr = p.replace('$', '');
-            if (numStr !== rawUpc && numStr !== rawUpc.slice(1)) {
+            if (numStr !== rawBarcode && numStr !== rawUpc) {
               const val = parseFloat(numStr);
               if (!isNaN(val) && val > 0 && val < 50000) {
                 cost = val;
@@ -1389,10 +1392,13 @@
     const arr = parseUpcs(text);
     const map = new Map();
     for (const item of arr) {
-      if (typeof item === 'object') {
-        map.set(item.upc, item);
-      } else {
-        map.set(item, item);
+      const upcKey = typeof item === 'object' ? item.upc : item;
+      const existing = map.get(upcKey);
+      if (!existing) {
+        map.set(upcKey, item);
+      } else if (typeof item === 'object' && item.cost !== undefined && item.cost !== null) {
+        // Always prefer object with cost over a costless entry
+        map.set(upcKey, item);
       }
     }
     return map;
