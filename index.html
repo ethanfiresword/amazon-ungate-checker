@@ -484,9 +484,6 @@
             <button class="f-btn" data-tab="matcher-profitable">
               🟢 Profitable <span class="f-count" id="matcher-badge-profitable">0</span>
             </button>
-            <button class="f-btn" data-tab="matcher-by-brand">
-              🏢 Group by Brand
-            </button>
             <button class="f-btn" data-tab="matcher-approval">
               ⚠️ Approval <span class="f-count" id="matcher-badge-approval">0</span>
             </button>
@@ -496,14 +493,7 @@
           </div>
 
           <div class="table-actions">
-            <select id="matcher-sort-select" class="search-input" style="width: auto; padding: 6px 12px; font-size: 0.85rem; background: var(--card-bg); border-color: var(--border-color); color: #fff;">
-              <option value="default">Sort: Default</option>
-              <option value="brand-az">Sort: Brand (A-Z)</option>
-              <option value="profit-desc">Sort: Highest Profit ($)</option>
-              <option value="roi-desc">Sort: Highest ROI (%)</option>
-              <option value="price-desc">Sort: Amazon Price ($)</option>
-            </select>
-            <input type="text" id="matcher-search-input" class="search-input" placeholder="Search UPC, ASIN, brand, or title…" />
+            <input type="text" id="matcher-search-input" class="search-input" placeholder="Search UPC, ASIN, or title…" />
             <button class="btn btn-accent btn-sm" id="btn-export-matcher-csv">📥 Export CSV</button>
           </div>
         </div>
@@ -511,8 +501,7 @@
         <div class="table-scroll">
           <table class="data-table">
             <thead>
-              <tr id="matcher-table-head">
-                <th>Brand</th>
+              <tr>
                 <th>Matched UPC</th>
                 <th>Amazon ASIN</th>
                 <th style="width:25%">Product Title</th>
@@ -545,6 +534,6 @@
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
-  <script src="app.js?v=15"></script>
+  <script src="app.js?v=14"></script>
 </body>
 </html>
