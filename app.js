@@ -1387,6 +1387,7 @@
   let matcherResults = [];
   let matcherTab = 'matcher-all';
   let matcherQuery = '';
+  let matcherSort = 'default';
 
   // Helper: extract all digit-only strings (8–14 digits = barcodes) from raw text
   function parseUpcMap(text) {
@@ -1523,6 +1524,15 @@
     });
   }
 
+  // Sort Select
+  const matcherSortSelect = $('#matcher-sort-select');
+  if (matcherSortSelect) {
+    matcherSortSelect.addEventListener('change', (e) => {
+      matcherSort = e.target.value;
+      renderMatcherTable();
+    });
+  }
+
   // Filter tabs
   $$('.f-btn[data-tab^="matcher-"]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1533,9 +1543,22 @@
     });
   });
 
+  // Filter Tab Helper for Brand Summary
+  window.filterByBrandName = function(brandName) {
+    matcherTab = 'matcher-all';
+    matcherQuery = brandName.toLowerCase();
+    const searchInput = $('#matcher-search-input');
+    if (searchInput) searchInput.value = brandName;
+    $$('.f-btn[data-tab^="matcher-"]').forEach(b => b.classList.remove('active'));
+    const allBtn = $('.f-btn[data-tab="matcher-all"]');
+    if (allBtn) allBtn.classList.add('active');
+    renderMatcherTable();
+  };
+
   // Render matcher table
   function renderMatcherTable() {
     const tbody = $('#matcher-table-body');
+    const theadRow = $('#matcher-table-head');
     if (!tbody) return;
 
     const ungated    = matcherResults.filter(r => r.status === 'ungated');
@@ -1554,6 +1577,77 @@
     const elOv = $('#matcher-stat-overlap'); if (elOv) elOv.textContent = matcherResults.length;
     const elUn = $('#matcher-stat-ungated'); if (elUn) elUn.textContent = ungated.length;
 
+    // Group by Brand view mode
+    if (matcherTab === 'matcher-by-brand') {
+      if (theadRow) {
+        theadRow.innerHTML = `
+          <th>Brand Name</th>
+          <th>Total ASINs</th>
+          <th>Ungated ASINs</th>
+          <th>Profitable ASINs (≥20% ROI)</th>
+          <th>Avg. Amazon Price</th>
+          <th style="text-align:right">Action</th>
+        `;
+      }
+
+      const brandMap = new Map();
+      matcherResults.forEach(r => {
+        const bName = (r.brand || 'Unspecified Brand').trim();
+        if (!brandMap.has(bName)) {
+          brandMap.set(bName, { brand: bName, total: 0, ungated: 0, profitable: 0, prices: [] });
+        }
+        const bData = brandMap.get(bName);
+        bData.total++;
+        if (r.status === 'ungated') bData.ungated++;
+        if (r.profit != null && r.profit > 0 && r.roi != null && r.roi >= 20) bData.profitable++;
+        if (r.amazonPrice != null) bData.prices.push(r.amazonPrice);
+      });
+
+      let brandList = Array.from(brandMap.values());
+      if (matcherQuery) {
+        brandList = brandList.filter(b => b.brand.toLowerCase().includes(matcherQuery));
+      }
+
+      brandList.sort((a, b) => b.total - a.total);
+
+      if (brandList.length === 0) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><div class="empty-title">No Brands Found</div></div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = brandList.map(b => {
+        const avgPrice = b.prices.length > 0 ? (b.prices.reduce((s, p) => s + p, 0) / b.prices.length).toFixed(2) : '—';
+        return `
+          <tr>
+            <td><strong style="color:#fff; font-size:0.95rem;">${b.brand}</strong></td>
+            <td><span class="badge" style="background:rgba(255,255,255,0.08);color:#fff;">${b.total} Products</span></td>
+            <td><span class="badge badge-ungated">✅ ${b.ungated} Ungated</span></td>
+            <td><span class="badge badge-ungated" style="font-weight:600;">🟢 ${b.profitable} Profitable</span></td>
+            <td>${avgPrice !== '—' ? '$' + avgPrice : '—'}</td>
+            <td style="text-align:right">
+              <button class="btn btn-secondary btn-sm" onclick="filterByBrandName('${b.brand.replace(/'/g, "\\'")}')">Filter Items</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      return;
+    }
+
+    // Standard view mode
+    if (theadRow) {
+      theadRow.innerHTML = `
+        <th>Brand</th>
+        <th>Matched UPC</th>
+        <th>Amazon ASIN</th>
+        <th style="width:25%">Product Title</th>
+        <th>Wholesale Cost</th>
+        <th>Amazon Price</th>
+        <th>Est. FBA Profit (ROI)</th>
+        <th>Ungating Status</th>
+        <th style="text-align:right">Actions</th>
+      `;
+    }
+
     // Filter by tab
     let filtered = matcherResults;
     if (matcherTab === 'matcher-ungated')    filtered = ungated;
@@ -1564,14 +1658,26 @@
     // Search filter
     if (matcherQuery) {
       filtered = filtered.filter(r =>
+        (r.brand && r.brand.toLowerCase().includes(matcherQuery)) ||
         (r.upc   && r.upc.includes(matcherQuery)) ||
         (r.asin  && r.asin.toLowerCase().includes(matcherQuery)) ||
         (r.title && r.title.toLowerCase().includes(matcherQuery))
       );
     }
 
+    // Apply Sorting
+    if (matcherSort === 'brand-az') {
+      filtered.sort((a, b) => (a.brand || '').localeCompare(b.brand || ''));
+    } else if (matcherSort === 'profit-desc') {
+      filtered.sort((a, b) => (b.profit || -9999) - (a.profit || -9999));
+    } else if (matcherSort === 'roi-desc') {
+      filtered.sort((a, b) => (b.roi || -9999) - (a.roi || -9999));
+    } else if (matcherSort === 'price-desc') {
+      filtered.sort((a, b) => (b.amazonPrice || 0) - (a.amazonPrice || 0));
+    }
+
     if (filtered.length === 0) {
-      tbody.innerHTML = `<tr class="empty-row"><td colspan="8"><div class="empty-state">
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="9"><div class="empty-state">
         <div class="empty-icon">🔗</div>
         <div class="empty-title">${matcherResults.length === 0 ? 'No Matches Yet' : 'No Results in This Category'}</div>
         <div class="empty-desc">${matcherResults.length === 0
@@ -1613,6 +1719,10 @@
            <a href="https://keepa.com/#!product/1-${r.asin}" target="_blank" class="a-link">Keepa</a>`
         : '';
 
+      const brandCell = r.brand
+        ? `<span class="badge" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);font-weight:600;">${r.brand}</span>`
+        : '<span class="t-muted">—</span>';
+
       const costCell = r.cost != null ? `$${Number(r.cost).toFixed(2)}` : '<span class="t-muted">—</span>';
       const amazonPriceCell = r.amazonPrice != null ? `$${Number(r.amazonPrice).toFixed(2)}` : '<span class="t-muted">—</span>';
       
@@ -1629,6 +1739,7 @@
 
       return `
         <tr>
+          <td>${brandCell}</td>
           <td><span class="mono" style="font-size:0.88rem;">${r.upc}</span></td>
           <td>${asinCell}</td>
           <td class="cell-title" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title || '—'}</td>
@@ -1809,14 +1920,14 @@
     btnExportMatcherCsv.addEventListener('click', () => {
       if (matcherResults.length === 0) { showToast('No results to export', 'info'); return; }
       // Use ="VALUE" to prevent Excel from converting barcodes to scientific notation
-      let csv = 'UPC,ASIN,Product Title,Wholesale Cost,Amazon Price,Est FBA Net Profit,Est ROI %,Ungating Status,Has Approval Route,Amazon Link\n';
+      let csv = 'Brand,UPC,ASIN,Product Title,Wholesale Cost,Amazon Price,Est FBA Net Profit,Est ROI %,Ungating Status,Has Approval Route,Amazon Link\n';
       matcherResults.forEach(r => {
         const link = r.asin ? `https://www.amazon.com/dp/${r.asin}` : '';
         const costStr = r.cost != null ? r.cost.toFixed(2) : '';
         const priceStr = r.amazonPrice != null ? r.amazonPrice.toFixed(2) : '';
         const profitStr = r.profit != null ? r.profit.toFixed(2) : '';
         const roiStr = r.roi != null ? r.roi.toFixed(1) + '%' : '';
-        csv += `="${r.upc}","${r.asin||''}","${(r.title||'').replace(/"/g,'""')}","${costStr}","${priceStr}","${profitStr}","${roiStr}","${r.status}","${r.hasApprovalRoute ? 'YES' : 'NO'}","${link}"\n`;
+        csv += `"${(r.brand||'').replace(/"/g,'""')}","=${r.upc}","${r.asin||''}","${(r.title||'').replace(/"/g,'""')}","${costStr}","${priceStr}","${profitStr}","${roiStr}","${r.status}","${r.hasApprovalRoute ? 'YES' : 'NO'}","${link}"\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
